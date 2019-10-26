@@ -31,7 +31,7 @@ set_property IOSTANDART LVCMOS33 [get_ports {dbg_led}]
 set_property PACKAGE_PIN  M15    [get_ports {mgt_pwr_en}]
 set_property IOSTANDART LVCMOS33 [get_ports {mgt_pwr_en}]
 
-set_property PACKAGE_PIN         [get_ports {clk20_p}]
+set_property PACKAGE_PIN  R3     [get_ports {clk20_p}] #P/N on board swap
 set_property IOSTANDART LVDS_25  [get_ports {clk20_p}]
 create_clock -period 50.000 -name clk20_p -waveform {0.000 25.00} [get_ports clk20_p]
 
@@ -147,21 +147,21 @@ set_property IOSTANDART LVCMOS33 [get_ports {rgmii_rx_c[2]}]
 set_property IOSTANDART LVCMOS33 [get_ports {eth_phy_rst[2]}]
 
 #ETH3 (POARTD)
-set_property PACKAGE_PIN         [get_ports {rgmii_txd[12]}]
-set_property PACKAGE_PIN         [get_ports {rgmii_txd[13]}]
-set_property PACKAGE_PIN         [get_ports {rgmii_txd[14]}]
-set_property PACKAGE_PIN         [get_ports {rgmii_txd[15]}]
-set_property PACKAGE_PIN         [get_ports {rgmii_tx_ctl[3]}]
-set_property PACKAGE_PIN         [get_ports {rgmii_tx_c[3]}]
+set_property PACKAGE_PIN  M16    [get_ports {rgmii_txd[12]}]
+set_property PACKAGE_PIN  R18    [get_ports {rgmii_txd[13]}]
+set_property PACKAGE_PIN  T18    [get_ports {rgmii_txd[14]}]
+set_property PACKAGE_PIN  N18    [get_ports {rgmii_txd[15]}]
+set_property PACKAGE_PIN  T17    [get_ports {rgmii_tx_ctl[3]}]
+set_property PACKAGE_PIN  P18    [get_ports {rgmii_tx_c[3]}]
 
-set_property PACKAGE_PIN         [get_ports {rgmii_rxd[12]}]
-set_property PACKAGE_PIN         [get_ports {rgmii_rxd[13]}]
-set_property PACKAGE_PIN         [get_ports {rgmii_rxd[14]}]
-set_property PACKAGE_PIN         [get_ports {rgmii_rxd[15]}]
-set_property PACKAGE_PIN         [get_ports {rgmii_rx_ctl[3]}]
-set_property PACKAGE_PIN         [get_ports {rgmii_rx_c[3]}]
+set_property PACKAGE_PIN  U16    [get_ports {rgmii_rxd[12]}]
+set_property PACKAGE_PIN  V16    [get_ports {rgmii_rxd[13]}]
+set_property PACKAGE_PIN  V17    [get_ports {rgmii_rxd[14]}]
+set_property PACKAGE_PIN  U17    [get_ports {rgmii_rxd[15]}]
+set_property PACKAGE_PIN  U15    [get_ports {rgmii_rx_ctl[3]}]
+set_property PACKAGE_PIN  U14    [get_ports {rgmii_rx_c[3]}]
 
-set_property PACKAGE_PIN         [get_ports {eth_phy_rst[3]}]
+set_property PACKAGE_PIN  V14    [get_ports {eth_phy_rst[3]}]
 
 set_property IOSTANDART LVCMOS33 [get_ports {rgmii_txd[12]}]
 set_property IOSTANDART LVCMOS33 [get_ports {rgmii_txd[13]}]
