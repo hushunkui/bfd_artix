@@ -66,17 +66,18 @@ add_files -fileset constrs_1 -norecurse $script_folder/src/main.xdc
 add_files -norecurse $script_folder/src/main.v
 add_files -norecurse $script_folder/src/firmware_rev.v
 add_files -norecurse $script_folder/src/core_gen/eth_mac/eth_mac.xci
+add_files -norecurse $script_folder/src/core_gen/clk25_wiz0/clk25_wiz0.xci
 set_property include_dirs $script_folder/src [current_fileset]
 
-#add_files -fileset sim_1 -norecurse $script_folder/sim/main_tb.v
-#set_property include_dirs $script_folder/src/ [get_filesets sim_1]
-#set_property -name {modelsim.simulate.custom_wave_do} -value $script_folder/sim/main_wave.do -objects [get_filesets sim_1]
-#set_property -name {modelsim.simulate.runtime} -value {5us} -objects [get_filesets sim_1]
+add_files -fileset sim_1 -norecurse $script_folder/sim/main_tb.v
+set_property include_dirs $script_folder/src/ [get_filesets sim_1]
+set_property -name {modelsim.simulate.custom_wave_do} -value $script_folder/sim/main_wave.do -objects [get_filesets sim_1]
+set_property -name {modelsim.simulate.runtime} -value {5us} -objects [get_filesets sim_1]
 
 set obj [get_runs synth_1]
 set_property steps.synth_design.tcl.pre [file normalize "$script_folder/src/firmware_rev.tcl"] $obj
 #-include_dirs is path at dir ./vv/<name>.runs/synth_1
 set_property -name {steps.synth_design.args.more options} -value {-include_dirs ../../../src} -objects $obj
 
-#set obj [get_runs impl_1]
-#set_property steps.write_bitstream.tcl.post [file normalize "$script_folder/src/firmware_copy.tcl"] $obj
+set obj [get_runs impl_1]
+set_property steps.write_bitstream.tcl.post [file normalize "$script_folder/src/firmware_copy.tcl"] $obj

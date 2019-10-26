@@ -81,104 +81,104 @@ set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxc[0]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {eth_phy_rst[0]}]
 
 
-#ETH1 (POARTB)
-set_property PACKAGE_PIN C14 [get_ports {rgmii_txd[4]}]
-set_property PACKAGE_PIN B15 [get_ports {rgmii_txd[5]}]
-set_property PACKAGE_PIN A17 [get_ports {rgmii_txd[6]}]
-set_property PACKAGE_PIN B16 [get_ports {rgmii_txd[7]}]
-set_property PACKAGE_PIN C16 [get_ports {rgmii_tx_ctl[1]}]
-set_property PACKAGE_PIN B17 [get_ports {rgmii_txc[1]}]
-
-set_property PACKAGE_PIN E17 [get_ports {rgmii_rxd[4]}]
-set_property PACKAGE_PIN D18 [get_ports {rgmii_rxd[5]}]
-set_property PACKAGE_PIN C17 [get_ports {rgmii_rxd[6]}]
-set_property PACKAGE_PIN C18 [get_ports {rgmii_rxd[7]}]
-set_property PACKAGE_PIN E13 [get_ports {rgmii_rx_ctl[1]}]
-set_property PACKAGE_PIN D14 [get_ports {rgmii_rxc[1]}]
-
-set_property PACKAGE_PIN D16 [get_ports {eth_phy_rst[1]}]
-
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[4]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[5]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[6]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[7]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_tx_ctl[1]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txc[1]}]
-
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[4]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[5]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[6]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[7]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rx_ctl[1]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxc[1]}]
-
-set_property IOSTANDARD LVCMOS33 [get_ports {eth_phy_rst[1]}]
-
-#ETH2 (POARTC)
-set_property PACKAGE_PIN E18 [get_ports {rgmii_txd[8]}]
-set_property PACKAGE_PIN F17 [get_ports {rgmii_txd[9]}]
-set_property PACKAGE_PIN F18 [get_ports {rgmii_txd[10]}]
-set_property PACKAGE_PIN G17 [get_ports {rgmii_txd[11]}]
-set_property PACKAGE_PIN G15 [get_ports {rgmii_tx_ctl[2]}]
-set_property PACKAGE_PIN F15 [get_ports {rgmii_txc[2]}]
-
-set_property PACKAGE_PIN L18 [get_ports {rgmii_rxd[8]}]
-set_property PACKAGE_PIN K17 [get_ports {rgmii_rxd[9]}]
-set_property PACKAGE_PIN H18 [get_ports {rgmii_rxd[10]}]
-set_property PACKAGE_PIN H17 [get_ports {rgmii_rxd[11]}]
-set_property PACKAGE_PIN M17 [get_ports {rgmii_rx_ctl[2]}]
-set_property PACKAGE_PIN D15 [get_ports {rgmii_rxc[2]}]
-
-set_property PACKAGE_PIN E16 [get_ports {eth_phy_rst[2]}]
-
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[8]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[9]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[10]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[11]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_tx_ctl[2]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txc[2]}]
-
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[8]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[9]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[10]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[11]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rx_ctl[2]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxc[2]}]
-
-set_property IOSTANDARD LVCMOS33 [get_ports {eth_phy_rst[2]}]
-
-#ETH3 (POARTD)
-set_property PACKAGE_PIN M16 [get_ports {rgmii_txd[12]}]
-set_property PACKAGE_PIN R18 [get_ports {rgmii_txd[13]}]
-set_property PACKAGE_PIN T18 [get_ports {rgmii_txd[14]}]
-set_property PACKAGE_PIN N18 [get_ports {rgmii_txd[15]}]
-set_property PACKAGE_PIN T17 [get_ports {rgmii_tx_ctl[3]}]
-set_property PACKAGE_PIN P18 [get_ports {rgmii_txc[3]}]
-
-set_property PACKAGE_PIN U16 [get_ports {rgmii_rxd[12]}]
-set_property PACKAGE_PIN V16 [get_ports {rgmii_rxd[13]}]
-set_property PACKAGE_PIN V17 [get_ports {rgmii_rxd[14]}]
-set_property PACKAGE_PIN U17 [get_ports {rgmii_rxd[15]}]
-set_property PACKAGE_PIN U15 [get_ports {rgmii_rx_ctl[3]}]
-set_property PACKAGE_PIN U14 [get_ports {rgmii_rxc[3]}]
-
-set_property PACKAGE_PIN V14 [get_ports {eth_phy_rst[3]}]
-
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[12]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[13]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[14]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[15]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_tx_ctl[3]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txc[3]}]
-
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[12]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[13]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[14]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[15]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rx_ctl[3]}]
-set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxc[3]}]
-
-set_property IOSTANDARD LVCMOS33 [get_ports {eth_phy_rst[3]}]
+##ETH1 (POARTB)
+#set_property PACKAGE_PIN C14 [get_ports {rgmii_txd[4]}]
+#set_property PACKAGE_PIN B15 [get_ports {rgmii_txd[5]}]
+#set_property PACKAGE_PIN A17 [get_ports {rgmii_txd[6]}]
+#set_property PACKAGE_PIN B16 [get_ports {rgmii_txd[7]}]
+#set_property PACKAGE_PIN C16 [get_ports {rgmii_tx_ctl[1]}]
+#set_property PACKAGE_PIN B17 [get_ports {rgmii_txc[1]}]
+#
+#set_property PACKAGE_PIN E17 [get_ports {rgmii_rxd[4]}]
+#set_property PACKAGE_PIN D18 [get_ports {rgmii_rxd[5]}]
+#set_property PACKAGE_PIN C17 [get_ports {rgmii_rxd[6]}]
+#set_property PACKAGE_PIN C18 [get_ports {rgmii_rxd[7]}]
+#set_property PACKAGE_PIN E13 [get_ports {rgmii_rx_ctl[1]}]
+#set_property PACKAGE_PIN D14 [get_ports {rgmii_rxc[1]}]
+#
+#set_property PACKAGE_PIN D16 [get_ports {eth_phy_rst[1]}]
+#
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[4]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[5]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[6]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[7]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_tx_ctl[1]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txc[1]}]
+#
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[4]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[5]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[6]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[7]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rx_ctl[1]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxc[1]}]
+#
+#set_property IOSTANDARD LVCMOS33 [get_ports {eth_phy_rst[1]}]
+#
+##ETH2 (POARTC)
+#set_property PACKAGE_PIN E18 [get_ports {rgmii_txd[8]}]
+#set_property PACKAGE_PIN F17 [get_ports {rgmii_txd[9]}]
+#set_property PACKAGE_PIN F18 [get_ports {rgmii_txd[10]}]
+#set_property PACKAGE_PIN G17 [get_ports {rgmii_txd[11]}]
+#set_property PACKAGE_PIN G15 [get_ports {rgmii_tx_ctl[2]}]
+#set_property PACKAGE_PIN F15 [get_ports {rgmii_txc[2]}]
+#
+#set_property PACKAGE_PIN L18 [get_ports {rgmii_rxd[8]}]
+#set_property PACKAGE_PIN K17 [get_ports {rgmii_rxd[9]}]
+#set_property PACKAGE_PIN H18 [get_ports {rgmii_rxd[10]}]
+#set_property PACKAGE_PIN H17 [get_ports {rgmii_rxd[11]}]
+#set_property PACKAGE_PIN M17 [get_ports {rgmii_rx_ctl[2]}]
+#set_property PACKAGE_PIN D15 [get_ports {rgmii_rxc[2]}]
+#
+#set_property PACKAGE_PIN E16 [get_ports {eth_phy_rst[2]}]
+#
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[8]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[9]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[10]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[11]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_tx_ctl[2]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txc[2]}]
+#
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[8]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[9]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[10]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[11]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rx_ctl[2]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxc[2]}]
+#
+#set_property IOSTANDARD LVCMOS33 [get_ports {eth_phy_rst[2]}]
+#
+##ETH3 (POARTD)
+#set_property PACKAGE_PIN M16 [get_ports {rgmii_txd[12]}]
+#set_property PACKAGE_PIN R18 [get_ports {rgmii_txd[13]}]
+#set_property PACKAGE_PIN T18 [get_ports {rgmii_txd[14]}]
+#set_property PACKAGE_PIN N18 [get_ports {rgmii_txd[15]}]
+#set_property PACKAGE_PIN T17 [get_ports {rgmii_tx_ctl[3]}]
+#set_property PACKAGE_PIN P18 [get_ports {rgmii_txc[3]}]
+#
+#set_property PACKAGE_PIN U16 [get_ports {rgmii_rxd[12]}]
+#set_property PACKAGE_PIN V16 [get_ports {rgmii_rxd[13]}]
+#set_property PACKAGE_PIN V17 [get_ports {rgmii_rxd[14]}]
+#set_property PACKAGE_PIN U17 [get_ports {rgmii_rxd[15]}]
+#set_property PACKAGE_PIN U15 [get_ports {rgmii_rx_ctl[3]}]
+#set_property PACKAGE_PIN U14 [get_ports {rgmii_rxc[3]}]
+#
+#set_property PACKAGE_PIN V14 [get_ports {eth_phy_rst[3]}]
+#
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[12]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[13]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[14]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[15]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_tx_ctl[3]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txc[3]}]
+#
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[12]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[13]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[14]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[15]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rx_ctl[3]}]
+#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxc[3]}]
+#
+#set_property IOSTANDARD LVCMOS33 [get_ports {eth_phy_rst[3]}]
 
 
 #user lvds
@@ -221,12 +221,12 @@ set_property IOSTANDARD LVDS_25 [get_ports {usr_lvds_p[13]}]
 ###############################################################################
 #Configutarion params
 ###############################################################################
-#set_property CONFIG_MODE SPIx4 [current_design]
-#set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
-#set_property BITSTREAM.CONFIG.EXTMASTERCCLK_EN div-1 [current_design]
+set_property CONFIG_MODE SPIx4 [current_design]
+set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
+#set_property BITSTREAM.CONFIG.SPI_32BIT_ADDR YES [current_design]
 #set_property BITSTREAM.CONFIG.SPI_FALL_EDGE YES [current_design]
-#set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
-#set_property BITSTREAM.CONFIG.UNUSEDPIN Pulldown [current_design]
+set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
+set_property BITSTREAM.CONFIG.UNUSEDPIN Pulldown [current_design]
 set_property CONFIG_VOLTAGE 3.3 [current_design]
 set_property CFGBVS VCCO [current_design]
 

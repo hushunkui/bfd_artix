@@ -5,7 +5,7 @@
 `timescale 1ns / 1ps
 
 module main #(
-    parameter ETHCOUNT = 4,
+    parameter ETHCOUNT = 1,
     parameter SIM = 0
 ) (
     output mgt_pwr_en,
@@ -63,6 +63,9 @@ wire [ETHCOUNT-1:0]     mac_tx_axis_tready;
 wire [ETHCOUNT-1:0]     mac_tx_aclk;
 wire [ETHCOUNT-1:0]     mac_tx_reset;
 wire [79:0]             mac_tx_cfg_vector;
+
+wire mac_gtx_clk;
+wire mac_gtx_clk90;
 
 wire sysrst;
 
@@ -143,6 +146,22 @@ BUFG sysclk25_bufg (
 );
 
 
+wire pll0_locked;
+clk25_wiz0 pll0(
+    // Clock out ports
+    .clk_out1(mac_gtx_clk),
+    .clk_out2(mac_gtx_clk90),
+    .clk_out3(),
+    // Status and control signals
+    .reset(sysrst), // input reset
+    .locked(pll0_locked),       // output locked
+    // Clock in ports
+    .clk_in1(sysclk25_g)
+);
+
+
+
+assign mgt_pwr_en = 1'b1;
 
 assign uart_tx = uart_rx;
 
@@ -152,7 +171,12 @@ assign  spi_mosi = 1'bz;
 assign  spi_miso = 1'bz;
 
 
-assign mgt_pwr_en = 1'b1;
+//(* IODELAY_GROUP = <iodelay_group_name> *) // Specifies group name for associated IDELAYs/ODELAYs and IDELAYCTRL
+IDELAYCTRL idelayctrl (
+    .RDY(),
+    .REFCLK(mac_gtx_clk),
+    .RST(pll0_locked)
+);
 
 genvar x;
 generate
@@ -207,8 +231,8 @@ generate
           .rx_configuration_vector(mac_rx_cfg_vector),  // input wire [79 : 0] rx_configuration_vector
           .tx_configuration_vector(mac_tx_cfg_vector),  // input wire [79 : 0] tx_configuration_vector
 
-          .gtx_clk  (sysclk25_g),//(gtx_clk),      // input wire gtx_clk
-          .gtx_clk90(sysclk25_g),//(gtx_clk90),    // input wire gtx_clk90
+          .gtx_clk  (mac_gtx_clk),      // input wire gtx_clk   //(sysclk25_g),//
+          .gtx_clk90(mac_gtx_clk90),    // input wire gtx_clk90 //(sysclk25_g),//
           .glbl_rstn(sysrst)        // input wire glbl_rstn
         );
     end
