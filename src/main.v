@@ -8,16 +8,42 @@ module main #(
     parameter ETHCOUNT = 1,
     parameter SIM = 0
 ) (
+    output mgt_pwr_en,
 
-  output [(ETHCOUNT*4)-1:0] rgmii_txd   ,
-  output [ETHCOUNT-1:0]     rgmii_tx_ctl,
-  output [ETHCOUNT-1:0]     rgmii_txc   ,
-  input  [(ETHCOUNT*4)-1:0] rgmii_rxd   ,
-  input  [ETHCOUNT-1:0]     rgmii_rx_ctl,
-  input  [ETHCOUNT-1:0]     rgmii_rxc   ,
+    input [13:0] usr_lvds_i_p,
+    input [13:0] usr_lvds_i_n,
 
-  input sysclk_p,
-  input sysclk_n
+    output [(ETHCOUNT*4)-1:0] rgmii_txd   ,
+    output [ETHCOUNT-1:0]     rgmii_tx_ctl,
+    output [ETHCOUNT-1:0]     rgmii_txc   ,
+    input  [(ETHCOUNT*4)-1:0] rgmii_rxd   ,
+    input  [ETHCOUNT-1:0]     rgmii_rx_ctl,
+    input  [ETHCOUNT-1:0]     rgmii_rxc   ,
+
+    output [ETHCOUNT-1:0]     eth_phy_rst ,
+
+    inout                     eth_phy_mdio,
+    output                    eth_phy_mdc ,
+
+    input  uart_rx,
+    output uart_tx,
+
+//    inout spi_clk ,
+    inout spi_cs  ,
+    inout spi_mosi,
+    inout spi_miso,
+
+    output dbg_led,
+    output [1:0] dbg_out,
+
+//    input mgt_ext_clk125_p,
+//    input mgt_ext_clk125_n,
+//    input mgt_clk125_p,
+//    input mgt_clk125_n,
+    input clk20_p,
+    input clk20_n,
+
+    input sysclk25
 );
 
 
@@ -42,6 +68,8 @@ wire sysrst;
 
 assign sysrst = 1'b1;
 
+assign eth_phy_mdio = 1'bz;
+assign eth_phy_mdc = 1'b0;
 
 assign mac_rx_cfg_vector[0]     = 1'b0;  //Receiver Reset
 assign mac_rx_cfg_vector[1]     = 1'b1;  //Receiver Enable
@@ -87,6 +115,46 @@ firmware_rev revision (
    .firmware_time(firmware_time)
 );
 
+
+wire [13:0] usr_lvds_i;
+genvar i;
+generate
+    for (i=0; i < 14; i=i+1) begin
+        IBUFDS usr_lvds_ibuf_diff (
+            .I (usr_lvds_i_p[i]), .IB(usr_lvds_i_n[i]), .O(usr_lvds_i[i])
+        );
+    end
+endgenerate
+
+
+wire clk20_i;
+wire clk20_g;
+IBUFDS clk20_ibuf_diff (
+    .I (clk20_p), .IB(clk20_n), .O(clk20_i)
+);
+BUFG clk20_bufg (
+    .I(clk20_i), .O(clk20_g)
+);
+
+
+wire sysclk25_g;
+BUFG sysclk25_bufg (
+    .I(sysclk25), .O(sysclk25_g)
+);
+
+
+
+assign uart_tx = uart_rx;
+
+//assign  spi_clk  = 1'bz;
+assign  spi_cs   = 1'bz;
+assign  spi_mosi = 1'bz;
+assign  spi_miso = 1'bz;
+
+
+assign mgt_pwr_en = 1'b1;
+
+assign eth_phy_rst[0:0] = 1'b0;
 
 eth_mac mac0 (
   .rx_statistics_vector(), // output wire [27 : 0] rx_statistics_vector
@@ -136,12 +204,31 @@ eth_mac mac0 (
   .rx_configuration_vector(mac_rx_cfg_vector),  // input wire [79 : 0] rx_configuration_vector
   .tx_configuration_vector(mac_tx_cfg_vector),  // input wire [79 : 0] tx_configuration_vector
 
-  .gtx_clk  (gtx_clk),      // input wire gtx_clk
-  .gtx_clk90(gtx_clk90),    // input wire gtx_clk90
+  .gtx_clk  (sysclk25_g),//(gtx_clk),      // input wire gtx_clk
+  .gtx_clk90(sysclk25_g),//(gtx_clk90),    // input wire gtx_clk90
   .glbl_rstn(sysrst)        // input wire glbl_rstn
 );
 
 
+//----------------------------------
+//DEBUG
+//----------------------------------
+reg clk20_div = 1'b0;
+always @(posedge clk20_g) begin
+    clk20_div <= ~clk20_div;
+end
+
+reg sysclk25_div = 1'b0;
+always @(posedge sysclk25_g) begin
+    sysclk25_div <= ~sysclk25_div;
+end
+
+assign dbg_out[0] = |usr_lvds_i;
+assign dbg_out[1] = |firmware_date &
+                    |firmware_time &
+                    clk20_div | sysclk25_div;
+
+assign dbg_led = 1'b0;
 
 
 endmodule
