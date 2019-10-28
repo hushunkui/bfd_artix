@@ -5,7 +5,7 @@
 `timescale 1ns / 1ps
 
 module main #(
-    parameter ETHCOUNT = 1,
+    parameter ETHCOUNT = 1, //max 4
     parameter SIM = 0
 ) (
     output mgt_pwr_en,
