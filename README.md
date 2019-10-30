@@ -18,5 +18,5 @@
 
 ## Полезные орции Xilinx Vivado
 * `pwd`
-* `cd d:/Work/Period/BFD/artix`
+* `cd d://BFD/artix`
 * `write_bd_tcl -force -no_ip_version ./prj_create.tcl`
