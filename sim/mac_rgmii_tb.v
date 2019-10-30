@@ -449,7 +449,7 @@ mac_rgmii mac(
     .phy_tx_ctrl(tx_ctrl),
     .phy_txd    (txd),
 
-    .mac_tx_clk  (1'b0),
+    .mac_tx_clk  (),
     .mac_tx_sof  (1'b0),
     .mac_tx_eof  (1'b0),
     .mac_tx_valid(1'b0)

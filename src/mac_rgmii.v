@@ -100,10 +100,11 @@ BUFIO BUFIO_rxclk (.I(phy_rx_clk_ibuf), .O(phy_rx_clk_bufio));
 BUFR BUFR_rxclk (.I(phy_rx_clk_ibuf), .O(mac_rx_clk), .CE(1'b1), .CLR(0));
 
 IBUF IBUF_rxctl (.I(phy_rx_ctrl), .O(phy_rx_ctrl_ibuf));
-IBUF IBUF_rxd0 (.I(phy_rxd[0]), .O(phy_rxd_ibuf[0]));
-IBUF IBUF_rxd1 (.I(phy_rxd[1]), .O(phy_rxd_ibuf[1]));
-IBUF IBUF_rxd2 (.I(phy_rxd[2]), .O(phy_rxd_ibuf[2]));
-IBUF IBUF_rxd3 (.I(phy_rxd[3]), .O(phy_rxd_ibuf[3]));
+genvar a;
+generate for (a=0; a<4; a=a+1) begin
+        IBUF IBUF_rxd (.I(phy_rxd[a]), .O(phy_rxd_ibuf[a]));
+    end
+endgenerate
 
 // ------------------------------------------------------------------------------------------
 // rx channel IDELAYE2 for data and ctl inputs
@@ -143,66 +144,24 @@ IDELAYE2 #(
 );
 
 
-(* IODELAY_GROUP = "IDELAYE2_mac_rx" *)
-IDELAYE2 #(
-    .CINVCTRL_SEL("FALSE"),          // Enable dynamic clock inversion (FALSE, TRUE)
-    .DELAY_SRC("IDATAIN"),           // Delay input (IDATAIN, DATAIN)
-    .HIGH_PERFORMANCE_MODE("TRUE"),  // Reduced jitter ("TRUE"), Reduced power ("FALSE")
-    .IDELAY_TYPE("FIXED"),           // FIXED, VARIABLE, VAR_LOAD, VAR_LOAD_PIPE
-    .IDELAY_VALUE(RX_DATA_DELAY),    // Input delay tap setting (0-31) 78 ps resolution
-    .PIPE_SEL("FALSE"),              // Select pipelined mode, FALSE, TRUE
-    .REFCLK_FREQUENCY(200.0),        // IDELAYCTRL clock input frequency in MHz (190.0-210.0, 290.0-310.0).
-    .SIGNAL_PATTERN("DATA")          // DATA, CLOCK input signal
-) IDELAYE2_rxd0 (
-    .IDATAIN(phy_rxd_ibuf[0]),
-    .DATAOUT(phy_rxd_delay[0])
-);
-
-
-(* IODELAY_GROUP = "IDELAYE2_mac_rx" *)
-IDELAYE2 #(
-    .CINVCTRL_SEL("FALSE"),          // Enable dynamic clock inversion (FALSE, TRUE)
-    .DELAY_SRC("IDATAIN"),           // Delay input (IDATAIN, DATAIN)
-    .HIGH_PERFORMANCE_MODE("TRUE"),  // Reduced jitter ("TRUE"), Reduced power ("FALSE")
-    .IDELAY_TYPE("FIXED"),           // FIXED, VARIABLE, VAR_LOAD, VAR_LOAD_PIPE
-    .IDELAY_VALUE(RX_DATA_DELAY),    // Input delay tap setting (0-31) 78 ps resolution
-    .PIPE_SEL("FALSE"),              // Select pipelined mode, FALSE, TRUE
-    .REFCLK_FREQUENCY(200.0),        // IDELAYCTRL clock input frequency in MHz (190.0-210.0, 290.0-310.0).
-    .SIGNAL_PATTERN("DATA")          // DATA, CLOCK input signal
-) IDELAYE2_rxd1 (
-    .IDATAIN(phy_rxd_ibuf[1]),
-    .DATAOUT(phy_rxd_delay[1])
-);
-
-(* IODELAY_GROUP = "IDELAYE2_mac_rx" *)
-IDELAYE2 #(
-    .CINVCTRL_SEL("FALSE"),          // Enable dynamic clock inversion (FALSE, TRUE)
-    .DELAY_SRC("IDATAIN"),           // Delay input (IDATAIN, DATAIN)
-    .HIGH_PERFORMANCE_MODE("TRUE"),  // Reduced jitter ("TRUE"), Reduced power ("FALSE")
-    .IDELAY_TYPE("FIXED"),           // FIXED, VARIABLE, VAR_LOAD, VAR_LOAD_PIPE
-    .IDELAY_VALUE(RX_DATA_DELAY),    // Input delay tap setting (0-31) 78 ps resolution
-    .PIPE_SEL("FALSE"),              // Select pipelined mode, FALSE, TRUE
-    .REFCLK_FREQUENCY(200.0),        // IDELAYCTRL clock input frequency in MHz (190.0-210.0, 290.0-310.0).
-    .SIGNAL_PATTERN("DATA")          // DATA, CLOCK input signal
-) IDELAYE2_rxd2 (
-    .IDATAIN(phy_rxd_ibuf[2]),
-    .DATAOUT(phy_rxd_delay[2])
-);
-
-(* IODELAY_GROUP = "IDELAYE2_mac_rx" *)
-IDELAYE2 #(
-    .CINVCTRL_SEL("FALSE"),          // Enable dynamic clock inversion (FALSE, TRUE)
-    .DELAY_SRC("IDATAIN"),           // Delay input (IDATAIN, DATAIN)
-    .HIGH_PERFORMANCE_MODE("TRUE"),  // Reduced jitter ("TRUE"), Reduced power ("FALSE")
-    .IDELAY_TYPE("FIXED"),           // FIXED, VARIABLE, VAR_LOAD, VAR_LOAD_PIPE
-    .IDELAY_VALUE(RX_DATA_DELAY),    // Input delay tap setting (0-31) 78 ps resolution
-    .PIPE_SEL("FALSE"),              // Select pipelined mode, FALSE, TRUE
-    .REFCLK_FREQUENCY(200.0),        // IDELAYCTRL clock input frequency in MHz (190.0-210.0, 290.0-310.0).
-    .SIGNAL_PATTERN("DATA")          // DATA, CLOCK input signal
-) IDELAYE2_rxd3 (
-    .IDATAIN(phy_rxd_ibuf[3]),
-    .DATAOUT(phy_rxd_delay[3])
-);
+genvar b;
+generate for (b=0; b<4; b=b+1) begin
+        (* IODELAY_GROUP = "IDELAYE2_mac_rx" *)
+        IDELAYE2 #(
+            .CINVCTRL_SEL("FALSE"),          // Enable dynamic clock inversion (FALSE, TRUE)
+            .DELAY_SRC("IDATAIN"),           // Delay input (IDATAIN, DATAIN)
+            .HIGH_PERFORMANCE_MODE("TRUE"),  // Reduced jitter ("TRUE"), Reduced power ("FALSE")
+            .IDELAY_TYPE("FIXED"),           // FIXED, VARIABLE, VAR_LOAD, VAR_LOAD_PIPE
+            .IDELAY_VALUE(RX_DATA_DELAY),    // Input delay tap setting (0-31) 78 ps resolution
+            .PIPE_SEL("FALSE"),              // Select pipelined mode, FALSE, TRUE
+            .REFCLK_FREQUENCY(200.0),        // IDELAYCTRL clock input frequency in MHz (190.0-210.0, 290.0-310.0).
+            .SIGNAL_PATTERN("DATA")          // DATA, CLOCK input signal
+        ) IDELAYE2_rxd (
+            .IDATAIN(phy_rxd_ibuf[b]),
+            .DATAOUT(phy_rxd_delay[b])
+        );
+    end
+endgenerate
 
 
 // ------------------------------------------------------------------------------------------
@@ -225,45 +184,20 @@ IDDR #(.DDR_CLK_EDGE(IDDR_MODE)) iddr_rx_ctrl (
     .CE(1'b1), .R(0), .S(0)
 );
 
-IDDR #(.DDR_CLK_EDGE(IDDR_MODE)) iddr_rxd3 (
-    .C(phy_rx_clk_bufio),
-    .D(phy_rxd_delay[3]),
+genvar c;
+generate for (c=0; c<4; c=c+1) begin
+        IDDR #(.DDR_CLK_EDGE(IDDR_MODE)) iddr_rxd (
+            .C(phy_rx_clk_bufio),
+            .D(phy_rxd_delay[c]),
 
-    .Q1(rx_data[3]),
-    .Q2(rx_data[7]),
+            .Q1(rx_data[c]),
+            .Q2(rx_data[c+4]),
 
-    .CE(1'b1), .R(0), .S(0)
-);
+            .CE(1'b1), .R(0), .S(0)
+        );
+    end
+endgenerate
 
-IDDR #(.DDR_CLK_EDGE(IDDR_MODE)) iddr_rxd2 (
-    .C(phy_rx_clk_bufio),
-    .D(phy_rxd_delay[2]),
-
-    .Q1(rx_data[2]),
-    .Q2(rx_data[6]),
-
-    .CE(1'b1), .R(0), .S(0)
-);
-
-IDDR #(.DDR_CLK_EDGE(IDDR_MODE)) iddr_rxd1 (
-    .C(phy_rx_clk_bufio),
-    .D(phy_rxd_delay[1]),
-
-    .Q1(rx_data[1]),
-    .Q2(rx_data[5]),
-
-    .CE(1'b1), .R(0), .S(0)
-);
-
-IDDR #(.DDR_CLK_EDGE(IDDR_MODE)) iddr_rxd0 (
-    .C(phy_rx_clk_bufio),
-    .D(phy_rxd_delay[0]),
-
-    .Q1(rx_data[0]),
-    .Q2(rx_data[4]),
-
-    .CE(1'b1), .R(0), .S(0)
-);
 
 
 // ------------------------------------------------------------------------------------------
@@ -458,45 +392,19 @@ ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) ODDR_txctl (
     .Q             (phy_tx_ctrl_obuf)
 );
 
-ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) ODDR_txd3 (
-    .C             (mac_tx_clk),
-    .D1            (tx_data[3]),
-    .D2            (tx_data[7]),
-    .CE            (1'b1),
-    .R             (0),
-    .S             (0),
-    .Q             (phy_txd_obuf[3])
-);
-
-ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) ODDR_txd2 (
-    .C             (mac_tx_clk),
-    .D1            (tx_data[2]),
-    .D2            (tx_data[6]),
-    .CE            (1'b1),
-    .R             (0),
-    .S             (0),
-    .Q             (phy_txd_obuf[2])
-);
-
-ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) ODDR_txd1 (
-    .C             (mac_tx_clk),
-    .D1            (tx_data[1]),
-    .D2            (tx_data[5]),
-    .CE            (1'b1),
-    .R             (0),
-    .S             (0),
-    .Q             (phy_txd_obuf[1])
-);
-
-ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) ODDR_txd0 (
-    .C             (mac_tx_clk),
-    .D1            (tx_data[0]),
-    .D2            (tx_data[4]),
-    .CE            (1'b1),
-    .R             (0),
-    .S             (0),
-    .Q             (phy_txd_obuf[0])
-);
+genvar d;
+generate for (d=0; d<4; d=d+1) begin
+        ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) ODDR_txd (
+            .C  (mac_tx_clk),
+            .D1 (tx_data[d]),
+            .D2 (tx_data[d+4]),
+            .CE (1'b1),
+            .R  (0),
+            .S  (0),
+            .Q  (phy_txd_obuf[d])
+        );
+    end
+endgenerate
 
 
 // ------------------------------------------------------------------------------------------
@@ -505,9 +413,10 @@ ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) ODDR_txd0 (
 
 OBUF OBUF_txclk (.I(phy_tx_clk_obuf), .O(phy_tx_clk));
 OBUF OBUF_txctl (.I(phy_tx_ctrl_obuf), .O(phy_tx_ctrl));
-OBUF OBUF_txd3 (.I(phy_txd_obuf[3]), .O(phy_txd[3]));
-OBUF OBUF_txd2 (.I(phy_txd_obuf[2]), .O(phy_txd[2]));
-OBUF OBUF_txd1 (.I(phy_txd_obuf[1]), .O(phy_txd[1]));
-OBUF OBUF_txd0 (.I(phy_txd_obuf[0]), .O(phy_txd[0]));
+genvar e;
+generate for (e=0; e<4; e=e+1) begin
+        OBUF OBUF_txd (.I(phy_txd_obuf[e]), .O(phy_txd[e]));
+    end
+endgenerate
 
 endmodule
