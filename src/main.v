@@ -5,7 +5,7 @@
 `timescale 1ns / 1ps
 
 module main #(
-    parameter ETHCOUNT = 1, //max 4
+    parameter ETHCOUNT = 4, //max 4
     parameter SIM = 0
 ) (
     output mgt_pwr_en,
@@ -55,10 +55,10 @@ wire [ETHCOUNT-1:0]     mac_rx_aclk;
 wire [ETHCOUNT-1:0]     mac_rx_reset;
 wire [79:0]             mac_rx_cfg_vector;
 
-wire [(ETHCOUNT*8)-1:0] mac_tx_axis_tdata ;
-wire [ETHCOUNT-1:0]     mac_tx_axis_tvalid;
-wire [ETHCOUNT-1:0]     mac_tx_axis_tlast ;
-wire [ETHCOUNT-1:0]     mac_tx_axis_tuser ;
+reg [(ETHCOUNT*8)-1:0] mac_tx_axis_tdata  = 0;
+reg [ETHCOUNT-1:0]     mac_tx_axis_tvalid = 0;
+reg [ETHCOUNT-1:0]     mac_tx_axis_tlast  = 0;
+reg [ETHCOUNT-1:0]     mac_tx_axis_tuser  = 0;
 wire [ETHCOUNT-1:0]     mac_tx_axis_tready;
 wire [ETHCOUNT-1:0]     mac_tx_aclk;
 wire [ETHCOUNT-1:0]     mac_tx_reset;
@@ -147,11 +147,13 @@ BUFG sysclk25_bufg (
 
 
 wire pll0_locked;
+wire clk200M;
 clk25_wiz0 pll0(
     // Clock out ports
     .clk_out1(mac_gtx_clk),
     .clk_out2(mac_gtx_clk90),
     .clk_out3(),
+    .clk_out4(clk200M),
     // Status and control signals
     .reset(sysrst), // input reset
     .locked(pll0_locked),       // output locked
@@ -174,7 +176,7 @@ assign  spi_miso = 1'bz;
 //(* IODELAY_GROUP = <iodelay_group_name> *) // Specifies group name for associated IDELAYs/ODELAYs and IDELAYCTRL
 IDELAYCTRL idelayctrl (
     .RDY(),
-    .REFCLK(mac_gtx_clk),
+    .REFCLK(clk200M),
     .RST(pll0_locked)
 );
 
@@ -183,58 +185,93 @@ generate
     for (x=0; x < ETHCOUNT; x=x+1) begin : eth
         assign eth_phy_rst[x] = 1'b0;
 
-        eth_mac rgmii (
-          .rx_statistics_vector(), // output wire [27 : 0] rx_statistics_vector
-          .rx_statistics_valid (), // output wire rx_statistics_valid
+        // eth_mac rgmii (
+        //   .rx_statistics_vector(), // output wire [27 : 0] rx_statistics_vector
+        //   .rx_statistics_valid (), // output wire rx_statistics_valid
 
-          .rx_axis_mac_tdata (mac_rx_axis_tdata [(x*8) +: 8]), // output wire [7 : 0] rx_axis_mac_tdata
-          .rx_axis_mac_tvalid(mac_rx_axis_tvalid[x]         ), // output wire rx_axis_mac_tvalid
-          .rx_axis_mac_tlast (mac_rx_axis_tlast [x]         ), // output wire rx_axis_mac_tlast
-          .rx_axis_mac_tuser (mac_rx_axis_tuser [x]         ), // output wire rx_axis_mac_tuser
+        //   .rx_axis_mac_tdata (mac_rx_axis_tdata [(x*8) +: 8]), // output wire [7 : 0] rx_axis_mac_tdata
+        //   .rx_axis_mac_tvalid(mac_rx_axis_tvalid[x]         ), // output wire rx_axis_mac_tvalid
+        //   .rx_axis_mac_tlast (mac_rx_axis_tlast [x]         ), // output wire rx_axis_mac_tlast
+        //   .rx_axis_mac_tuser (mac_rx_axis_tuser [x]         ), // output wire rx_axis_mac_tuser
 
-          .rx_mac_aclk(mac_rx_aclk[x]),  // output wire rx_mac_aclk
-          .rx_reset   (mac_rx_reset[x]), // output wire rx_reset
-          .rx_axi_rstn(1'b1),              // input wire rx_axi_rstn
+        //   .rx_mac_aclk(mac_rx_aclk[x]),  // output wire rx_mac_aclk
+        //   .rx_reset   (mac_rx_reset[x]), // output wire rx_reset
+        //   .rx_axi_rstn(1'b1),              // input wire rx_axi_rstn
 
-          .tx_ifg_delay(0),        // input wire [7 : 0] tx_ifg_delay
-          .tx_statistics_vector(), // output wire [31 : 0] tx_statistics_vector
-          .tx_statistics_valid (), // output wire tx_statistics_valid
+        //   .tx_ifg_delay(0),        // input wire [7 : 0] tx_ifg_delay
+        //   .tx_statistics_vector(), // output wire [31 : 0] tx_statistics_vector
+        //   .tx_statistics_valid (), // output wire tx_statistics_valid
 
-          .tx_axis_mac_tready(mac_tx_axis_tready[x]         ), // output wire tx_axis_mac_tready
-          .tx_axis_mac_tdata (mac_tx_axis_tdata [(x*8) +: 8]), // input wire [7 : 0] tx_axis_mac_tdata
-          .tx_axis_mac_tvalid(mac_tx_axis_tvalid[x]         ), // input wire tx_axis_mac_tvalid
-          .tx_axis_mac_tlast (mac_tx_axis_tlast [x]         ), // input wire tx_axis_mac_tlast
-          .tx_axis_mac_tuser (mac_tx_axis_tuser [x]         ), // input wire [0 : 0] tx_axis_mac_tuser
+        //   .tx_axis_mac_tready(mac_tx_axis_tready[x]         ), // output wire tx_axis_mac_tready
+        //   .tx_axis_mac_tdata (mac_tx_axis_tdata [(x*8) +: 8]), // input wire [7 : 0] tx_axis_mac_tdata
+        //   .tx_axis_mac_tvalid(mac_tx_axis_tvalid[x]         ), // input wire tx_axis_mac_tvalid
+        //   .tx_axis_mac_tlast (mac_tx_axis_tlast [x]         ), // input wire tx_axis_mac_tlast
+        //   .tx_axis_mac_tuser (mac_tx_axis_tuser [x]         ), // input wire [0 : 0] tx_axis_mac_tuser
 
-          .tx_mac_aclk(mac_tx_aclk[x]), // output wire tx_mac_aclk
-          .tx_reset(mac_tx_reset[x]),   // output wire tx_reset
-          .tx_axi_rstn(1'b1),             // input wire tx_axi_rstn
+        //   .tx_mac_aclk(mac_tx_aclk[x]), // output wire tx_mac_aclk
+        //   .tx_reset(mac_tx_reset[x]),   // output wire tx_reset
+        //   .tx_axi_rstn(1'b1),             // input wire tx_axi_rstn
 
-          .pause_req(1'b0),        // input wire pause_req
-          .pause_val(0),           // input wire [15 : 0] pause_val
+        //   .pause_req(1'b0),        // input wire pause_req
+        //   .pause_val(0),           // input wire [15 : 0] pause_val
 
-          .rgmii_txd   (rgmii_txd   [(x*4) +: 4]), // output wire [3 : 0] rgmii_txd
-          .rgmii_tx_ctl(rgmii_tx_ctl[x]         ), // output wire rgmii_tx_ctl
-          .rgmii_txc   (rgmii_txc   [x]         ), // output wire rgmii_txc
+        //   .rgmii_txd   (rgmii_txd   [(x*4) +: 4]), // output wire [3 : 0] rgmii_txd
+        //   .rgmii_tx_ctl(rgmii_tx_ctl[x]         ), // output wire rgmii_tx_ctl
+        //   .rgmii_txc   (rgmii_txc   [x]         ), // output wire rgmii_txc
 
-          .rgmii_rxd   (rgmii_rxd   [(x*4) +: 4]), // input wire [3 : 0] rgmii_rxd
-          .rgmii_rx_ctl(rgmii_rx_ctl[x]         ), // input wire rgmii_rx_ctl
-          .rgmii_rxc   (rgmii_rxc   [x]         ), // input wire rgmii_rxc
+        //   .rgmii_rxd   (rgmii_rxd   [(x*4) +: 4]), // input wire [3 : 0] rgmii_rxd
+        //   .rgmii_rx_ctl(rgmii_rx_ctl[x]         ), // input wire rgmii_rx_ctl
+        //   .rgmii_rxc   (rgmii_rxc   [x]         ), // input wire rgmii_rxc
 
-          .inband_link_status  (),     // output wire inband_link_status
-          .inband_clock_speed  (),     // output wire [1 : 0] inband_clock_speed
-          .inband_duplex_status(),     // output wire inband_duplex_status
+        //   .inband_link_status  (),     // output wire inband_link_status
+        //   .inband_clock_speed  (),     // output wire [1 : 0] inband_clock_speed
+        //   .inband_duplex_status(),     // output wire inband_duplex_status
 
-          .speedis100  (),             // output wire speedis100
-          .speedis10100(),             // output wire speedis10100
+        //   .speedis100  (),             // output wire speedis100
+        //   .speedis10100(),             // output wire speedis10100
 
-          .rx_configuration_vector(mac_rx_cfg_vector),  // input wire [79 : 0] rx_configuration_vector
-          .tx_configuration_vector(mac_tx_cfg_vector),  // input wire [79 : 0] tx_configuration_vector
+        //   .rx_configuration_vector(mac_rx_cfg_vector),  // input wire [79 : 0] rx_configuration_vector
+        //   .tx_configuration_vector(mac_tx_cfg_vector),  // input wire [79 : 0] tx_configuration_vector
 
-          .gtx_clk  (mac_gtx_clk),      // input wire gtx_clk   //(sysclk25_g),//
-          .gtx_clk90(mac_gtx_clk90),    // input wire gtx_clk90 //(sysclk25_g),//
-          .glbl_rstn(sysrst)        // input wire glbl_rstn
+        //   .gtx_clk  (mac_gtx_clk),      // input wire gtx_clk   //(sysclk25_g),//
+        //   .gtx_clk90(mac_gtx_clk90),    // input wire gtx_clk90 //(sysclk25_g),//
+        //   .glbl_rstn(sysrst)        // input wire glbl_rstn
+        // );
+
+        mac_rgmii rgmii (
+        //    output [3:0] dbg,
+            .eth_status_o(),
+            // receive channel, phy side (RGMII)
+            .phy_rxd    (rgmii_rxd   [(x*4) +: 4]),
+            .phy_rx_ctrl(rgmii_rx_ctl[x]         ),
+            .phy_rx_clk (rgmii_rxc   [x]         ),
+            // receive channel, logic side
+            .mac_rx_clk_o  (mac_rx_aclk[x]),      // global clock
+            .mac_rx_sof_o  (mac_rx_axis_tuser [x]         ),
+            .mac_rx_eof_o  (mac_rx_axis_tlast [x]         ),  // generated only if CRC is valid
+            .mac_rx_valid_o(mac_rx_axis_tvalid[x]         ),
+            .mac_rx_data_o (mac_rx_axis_tdata [(x*8) +: 8]),
+
+            // transmit channel, phy side (RGMII)
+            .phy_txd    (rgmii_txd   [(x*4) +: 4]),
+            .phy_tx_ctrl(rgmii_tx_ctl[x]         ),
+            .phy_tx_clk (rgmii_txc   [x]         ),
+            // transmit channel, logic side
+            .mac_tx_clk_90(mac_gtx_clk90),
+            .mac_tx_clk   (mac_gtx_clk),
+            .mac_tx_sof   (mac_tx_axis_tuser [x]         ),
+            .mac_tx_eof   (mac_tx_axis_tlast [x]         ),
+            .mac_tx_valid (mac_tx_axis_tvalid[x]         ),
+            .mac_tx_data  (mac_tx_axis_tdata [(x*8) +: 8])
         );
+
+        always @(posedge mac_gtx_clk) begin
+            mac_tx_axis_tuser [x]         <= mac_rx_axis_tuser [x]         ;
+            mac_tx_axis_tlast [x]         <= mac_rx_axis_tlast [x]         ;
+            mac_tx_axis_tvalid[x]         <= mac_rx_axis_tvalid[x]         ;
+            mac_tx_axis_tdata [(x*8) +: 8]<= mac_rx_axis_tdata [(x*8) +: 8];
+        end
+
     end
 endgenerate
 
@@ -272,10 +309,10 @@ assign dbg_led = 1'b0;
 
 
 
-assign mac_tx_axis_tdata  = 0;;
-assign mac_tx_axis_tvalid = 0;;
-assign mac_tx_axis_tlast  = 0;;
-assign mac_tx_axis_tuser  = 0;;
+// assign mac_tx_axis_tdata  = 0;;
+// assign mac_tx_axis_tvalid = 0;;
+// assign mac_tx_axis_tlast  = 0;;
+// assign mac_tx_axis_tuser  = 0;;
 
 
 endmodule
