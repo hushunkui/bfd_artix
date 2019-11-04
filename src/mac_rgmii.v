@@ -66,8 +66,6 @@ reg       mac_rx_eof = 1'b0;
 reg       mac_rx_valid = 1'b0;
 reg [3:0] eth_status = 0;
 
-localparam RX_DATA_DELAY = 12; // 13 - 0.085 setup
-
 wire phy_rx_ctrl_delay;
 wire [3:0] phy_rxd_delay;
 
@@ -106,34 +104,22 @@ wire [3:0] phy_txd_obuf;
 // ------------------------------------------------------------------------------------------
 // rx channel IBUFs
 // ------------------------------------------------------------------------------------------
-IBUF IBUF_rxc (.I(phy_rx_clk), .O(phy_rx_clk_ibuf));
-BUFG BUFIO_rxclk (.I(phy_rx_clk_ibuf), .O(phy_rx_clk_bufio));
-BUFG BUFR_rxclk (.I(phy_rx_clk_ibuf), .O(mac_rx_clk)); //, .CE(1'b1), .CLR(0));
+IBUF ibuf_rxc (.I(phy_rx_clk), .O(phy_rx_clk_ibuf));
+BUFG bufio_rxclk (.I(phy_rx_clk_ibuf), .O(phy_rx_clk_bufio));
+BUFG bufr_rxclk (.I(phy_rx_clk_ibuf), .O(mac_rx_clk)); //, .CE(1'b1), .CLR(0));
 
-IBUF IBUF_rxctl (.I(phy_rx_ctrl), .O(phy_rx_ctrl_ibuf));
+IBUF ibuf_rxctl (.I(phy_rx_ctrl), .O(phy_rx_ctrl_ibuf));
 genvar a;
-generate for (a=0; a<4; a=a+1) begin
-        IBUF IBUF_rxd (.I(phy_rxd[a]), .O(phy_rxd_ibuf[a]));
+generate for (a=0; a<4; a=a+1) begin : ibuf_rxd
+        IBUF inst (.I(phy_rxd[a]), .O(phy_rxd_ibuf[a]));
     end
 endgenerate
 
 // ------------------------------------------------------------------------------------------
 // rx channel IDELAYE2 for data and ctl inputs
 // ------------------------------------------------------------------------------------------
-// reg idelay_rst = 1;
-// reg [7:0] idelay_rst_cntr = 0;
-// always @(posedge refclk) begin
-//     idelay_rst_cntr <=  idelay_rst_cntr + 1'b1;
-//     if (idelay_rst_cntr == 255) idelay_rst <= 0;
-// end
+localparam RX_DATA_DELAY = 12; // 13 - 0.085 setup
 
-// (* IODELAY_GROUP = "IDELAYE2_mac_rx" *)
-// IDELAYCTRL IDELAYCTRL_rx (
-//     .REFCLK(refclk),
-//     .RST(idelay_rst)
-// );
-
-// (* IODELAY_GROUP = "IDELAYE2_mac_rx" *)
 IDELAYE2 #(
     .CINVCTRL_SEL("FALSE"),          // Enable dynamic clock inversion (FALSE, TRUE)
     .DELAY_SRC("IDATAIN"),           // Delay input (IDATAIN, DATAIN)
@@ -143,15 +129,24 @@ IDELAYE2 #(
     .PIPE_SEL("FALSE"),              // Select pipelined mode, FALSE, TRUE
     .REFCLK_FREQUENCY(200.0),        // IDELAYCTRL clock input frequency in MHz (190.0-210.0, 290.0-310.0).
     .SIGNAL_PATTERN("DATA")          // DATA, CLOCK input signal
-) IDELAYE2_rxctl (
-    .IDATAIN(phy_rx_ctrl_ibuf),
-    .DATAOUT(phy_rx_ctrl_delay)
+) idelay_rxctl (
+    .CNTVALUEOUT(),                 // 5-bit output: Counter value output
+    .DATAOUT    (phy_rx_ctrl_delay),// 1-bit output: Delayed data output
+    .C          (1'b0),             // 1-bit input: Clock input
+    .CE         (1'b0),             // 1-bit input: Active high enable increment/decrement input
+    .CINVCTRL   (1'b0),             // 1-bit input: Dynamic clock inversion input
+    .CNTVALUEIN (0),                // 5-bit input: Counter value input
+    .DATAIN     (1'b0),             // 1-bit input: Internal delay data input
+    .IDATAIN    (phy_rx_ctrl_ibuf), // 1-bit input: Data input from the I/O
+    .INC        (1'b0),             // 1-bit input: Increment / Decrement tap delay input
+    .LD         (1'b0),             // 1-bit input: Load IDELAY_VALUE input
+    .LDPIPEEN   (1'b0),             // 1-bit input: Enable PIPELINE register to load data input
+    .REGRST     (1'b0)              // 1-bit input: Active-high reset tap-delay input
 );
 
 
 genvar b;
-generate for (b=0; b<4; b=b+1) begin
-        // (* IODELAY_GROUP = "IDELAYE2_mac_rx" *)
+generate for (b=0; b<4; b=b+1) begin : idelay_rxd
         IDELAYE2 #(
             .CINVCTRL_SEL("FALSE"),          // Enable dynamic clock inversion (FALSE, TRUE)
             .DELAY_SRC("IDATAIN"),           // Delay input (IDATAIN, DATAIN)
@@ -161,9 +156,19 @@ generate for (b=0; b<4; b=b+1) begin
             .PIPE_SEL("FALSE"),              // Select pipelined mode, FALSE, TRUE
             .REFCLK_FREQUENCY(200.0),        // IDELAYCTRL clock input frequency in MHz (190.0-210.0, 290.0-310.0).
             .SIGNAL_PATTERN("DATA")          // DATA, CLOCK input signal
-        ) IDELAYE2_rxd (
-            .IDATAIN(phy_rxd_ibuf[b]),
-            .DATAOUT(phy_rxd_delay[b])
+        ) inst (
+            .CNTVALUEOUT(),                 // 5-bit output: Counter value output
+            .DATAOUT    (phy_rxd_delay[b]), // 1-bit output: Delayed data output
+            .C          (1'b0),             // 1-bit input: Clock input
+            .CE         (1'b0),             // 1-bit input: Active high enable increment/decrement input
+            .CINVCTRL   (1'b0),             // 1-bit input: Dynamic clock inversion input
+            .CNTVALUEIN (0),                // 5-bit input: Counter value input
+            .DATAIN     (1'b0),             // 1-bit input: Internal delay data input
+            .IDATAIN    (phy_rxd_ibuf[b]),  // 1-bit input: Data input from the I/O
+            .INC        (1'b0),             // 1-bit input: Increment / Decrement tap delay input
+            .LD         (1'b0),             // 1-bit input: Load IDELAY_VALUE input
+            .LDPIPEEN   (1'b0),             // 1-bit input: Enable PIPELINE register to load data input
+            .REGRST     (1'b0)              // 1-bit input: Active-high reset tap-delay input
         );
     end
 endgenerate
@@ -177,25 +182,23 @@ wire rx_err; // TODO: analyse rxerr
 wire [7:0] rx_data;
 
 IDDR #(.DDR_CLK_EDGE(IDDR_MODE)) iddr_rx_ctrl (
-    .C(phy_rx_clk_bufio),
     .D(phy_rx_ctrl_delay),
-
     .Q1(rx_dv),
     .Q2(rx_err),
 
-    .CE(1'b1), .R(0), .S(0)
+    .CE(1'b1), .R(0), .S(0),
+    .C(phy_rx_clk_bufio)
 );
 
 genvar c;
-generate for (c=0; c<4; c=c+1) begin
-        IDDR #(.DDR_CLK_EDGE(IDDR_MODE)) iddr_rxd (
-            .C(phy_rx_clk_bufio),
+generate for (c=0; c<4; c=c+1) begin : iddr_rxd
+        IDDR #(.DDR_CLK_EDGE(IDDR_MODE)) inst (
             .D(phy_rxd_delay[c]),
-
             .Q1(rx_data[c]),
             .Q2(rx_data[c+4]),
 
-            .CE(1'b1), .R(0), .S(0)
+            .CE(1'b1), .R(0), .S(0),
+            .C(phy_rx_clk_bufio)
         );
     end
 endgenerate
@@ -288,43 +291,6 @@ end
 
 
 // ------------------------------------------------------------------------------------------
-// tx channel, make tx clocks out of rx clock
-// ------------------------------------------------------------------------------------------
-
-// wire mac_txclk;
-// wire mac_txclk_90;
-// wire mac_fbclko;
-// wire mac_fbclki;
-
-// MMCME2_BASE #(
-//     .BANDWIDTH("OPTIMIZED"),   // Jitter programming (OPTIMIZED, HIGH, LOW)
-//     .CLKFBOUT_MULT_F(5.0),     // Multiply value for all CLKOUT (2.000-64.000).
-//     .CLKIN1_PERIOD(8.0),       // Input clock period in ns to ps resolution (i.e. 33.333 is 30 MHz).
-//     .CLKOUT0_DIVIDE_F(5.0),    // Divide amount for CLKOUT0 (1.000-128.000).
-//     .CLKOUT1_DIVIDE(5),
-//     .CLKOUT0_DUTY_CYCLE(0.5),
-//     .CLKOUT1_DUTY_CYCLE(0.5),
-//     .CLKOUT0_PHASE(0.0),
-//     .CLKOUT1_PHASE(90.0),
-//     .REF_JITTER1(0.0)         // Reference input jitter in UI (0.000-0.999).
-// ) MMCME2_BASE_clk (
-//     .CLKIN1(mac_rx_clk),
-
-//     .CLKOUT0(mac_txclk),
-//     .CLKOUT1(mac_txclk_90),
-
-//     .CLKFBOUT(mac_fbclko),
-//     .CLKFBIN(mac_fbclki),
-
-//     .LOCKED (),
-
-//     .PWRDWN(0),
-//     .RST(0)
-// );
-
-// BUFG BUFG_mmcm_clko_90 (.I(mac_txclk_90), .O(mac_tx_clk_90));
-
-// ------------------------------------------------------------------------------------------
 // tx channel, make preamble and CRC
 // ------------------------------------------------------------------------------------------
 assign tx_crc_corrected = BitReverse(~tx_crc_out);
@@ -370,36 +336,33 @@ mac_crc tx_crc(
 // ------------------------------------------------------------------------------------------
 // tx channel, make DDR from 8 bit data
 // ------------------------------------------------------------------------------------------
-ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) ODDR_txclk (
-    .C  (mac_tx_clk_90),
+ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) oddr_txclk (
     .D1 (1'b1),
     .D2 (1'b0),
-    .CE (1'b1),
-    .R  (0),
-    .S  (0),
-    .Q  (phy_tx_clk_obuf)
+    .Q  (phy_tx_clk_obuf),
+
+    .CE (1'b1), .R(0), .S(0),
+    .C  (mac_tx_clk_90)
 );
 
-ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) ODDR_txctl (
-    .C  (mac_tx_clk),
+ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) oddr_txctl (
     .D1 (tx_dv),
     .D2 (tx_dv),
-    .CE (1'b1),
-    .R  (0),
-    .S  (0),
-    .Q  (phy_tx_ctrl_obuf)
+    .Q  (phy_tx_ctrl_obuf),
+
+    .CE (1'b1), .R(0), .S(0),
+    .C  (mac_tx_clk)
 );
 
 genvar d;
-generate for (d=0; d<4; d=d+1) begin
-        ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) ODDR_txd (
-            .C  (mac_tx_clk),
+generate for (d=0; d<4; d=d+1) begin : oddr_txd
+        ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) inst (
             .D1 (tx_data[d]),
             .D2 (tx_data[d+4]),
-            .CE (1'b1),
-            .R  (0),
-            .S  (0),
-            .Q  (phy_txd_obuf[d])
+            .Q  (phy_txd_obuf[d]),
+
+            .CE (1'b1), .R(0), .S(0),
+            .C  (mac_tx_clk)
         );
     end
 endgenerate
@@ -408,11 +371,11 @@ endgenerate
 // ------------------------------------------------------------------------------------------
 // tx channel, rgmii OBUF
 // ------------------------------------------------------------------------------------------
-OBUF OBUF_txclk (.I(phy_tx_clk_obuf), .O(phy_tx_clk));
-OBUF OBUF_txctl (.I(phy_tx_ctrl_obuf), .O(phy_tx_ctrl));
+OBUF obuf_txclk (.I(phy_tx_clk_obuf), .O(phy_tx_clk));
+OBUF obuf_txctl (.I(phy_tx_ctrl_obuf), .O(phy_tx_ctrl));
 genvar e;
-generate for (e=0; e<4; e=e+1) begin
-        OBUF OBUF_txd (.I(phy_txd_obuf[e]), .O(phy_txd[e]));
+generate for (e=0; e<4; e=e+1) begin : obuf_txd
+        OBUF inst (.I(phy_txd_obuf[e]), .O(phy_txd[e]));
     end
 endgenerate
 

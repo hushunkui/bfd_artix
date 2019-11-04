@@ -76,6 +76,12 @@ set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rx_ctl[0]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxc[0]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {eth_phy_rst[0]}]
 
+set_property SLEW FAST [get_ports {rgmii_txd[0]}]
+set_property SLEW FAST [get_ports {rgmii_txd[1]}]
+set_property SLEW FAST [get_ports {rgmii_txd[2]}]
+set_property SLEW FAST [get_ports {rgmii_txd[3]}]
+set_property SLEW FAST [get_ports {rgmii_tx_ctl[0]}]
+set_property SLEW FAST [get_ports {rgmii_txc[0]}]
 
 #ETH1 (POARTB)
 set_property PACKAGE_PIN C14 [get_ports {rgmii_txd[4]}]
@@ -106,6 +112,13 @@ set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rx_ctl[1]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxc[1]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {eth_phy_rst[1]}]
 
+set_property SLEW FAST [get_ports {rgmii_txd[4]}]
+set_property SLEW FAST [get_ports {rgmii_txd[5]}]
+set_property SLEW FAST [get_ports {rgmii_txd[6]}]
+set_property SLEW FAST [get_ports {rgmii_txd[7]}]
+set_property SLEW FAST [get_ports {rgmii_tx_ctl[1]}]
+set_property SLEW FAST [get_ports {rgmii_txc[1]}]
+
 #ETH2 (POARTC)
 set_property PACKAGE_PIN E18 [get_ports {rgmii_txd[8]}]
 set_property PACKAGE_PIN F17 [get_ports {rgmii_txd[9]}]
@@ -134,6 +147,13 @@ set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[11]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rx_ctl[2]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxc[2]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {eth_phy_rst[2]}]
+
+set_property SLEW FAST [get_ports {rgmii_txd[8]}]
+set_property SLEW FAST [get_ports {rgmii_txd[9]}]
+set_property SLEW FAST [get_ports {rgmii_txd[10]}]
+set_property SLEW FAST [get_ports {rgmii_txd[11]}]
+set_property SLEW FAST [get_ports {rgmii_tx_ctl[2]}]
+set_property SLEW FAST [get_ports {rgmii_txc[2]}]
 
 #ETH3 (POARTD)
 set_property PACKAGE_PIN M16 [get_ports {rgmii_txd[12]}]
@@ -164,6 +184,12 @@ set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rx_ctl[3]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxc[3]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {eth_phy_rst[3]}]
 
+set_property SLEW FAST [get_ports {rgmii_txd[12]}]
+set_property SLEW FAST [get_ports {rgmii_txd[13]}]
+set_property SLEW FAST [get_ports {rgmii_txd[14]}]
+set_property SLEW FAST [get_ports {rgmii_txd[15]}]
+set_property SLEW FAST [get_ports {rgmii_tx_ctl[3]}]
+set_property SLEW FAST [get_ports {rgmii_txc[3]}]
 
 #user lvds
 set_property PACKAGE_PIN L4 [get_ports {usr_lvds_p[0]}]
@@ -206,6 +232,8 @@ set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[2].rgmii/phy_rx_clk_ibuf
 set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[3].rgmii/phy_rx_clk_ibuf}]
 
 
+## Group IODELAY components
+#set_property IODELAY_GROUP iodelay_grp_eth [get_cells *idelay*]
 
 ###############################################################################
 #Configutarion params
