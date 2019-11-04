@@ -43,7 +43,7 @@ function[31:0]  NextCRC;
     input[31:0]     C;
     reg[31:0]       NewCRC;
     begin
-    NewCRC[0]=C[24]^C[30]^D[1]^D[7];
+    NewCRC[0]=C[24]^C[30]^D[1]^D[7];//^D[3];//
     NewCRC[1]=C[25]^C[31]^D[0]^D[6]^C[24]^C[30]^D[1]^D[7];
     NewCRC[2]=C[26]^D[5]^C[25]^C[31]^D[0]^D[6]^C[24]^C[30]^D[1]^D[7];
     NewCRC[3]=C[27]^D[4]^C[26]^D[5]^C[25]^C[31]^D[0]^D[6];
@@ -82,12 +82,14 @@ endfunction
 
 task SendByte;
     input [7:0] byte;
+    input dbg;
     begin
         @(negedge rxc);
         #2;
-        rx_ctl = 1;
+        rx_ctl = 1'b1;
         rxd = byte[3:0];
         #4;
+        rx_ctl = dbg;
         rxd = byte[7:4];
         tx_crc = NextCRC(byte, tx_crc);
     end
@@ -95,14 +97,14 @@ endtask
 
 task SendPreamble;
     begin
-        SendByte(8'h55);
-        SendByte(8'h55);
-        SendByte(8'h55);
-        SendByte(8'h55);
-        SendByte(8'h55);
-        SendByte(8'h55);
-        SendByte(8'h55);
-        SendByte(8'hD5);
+        SendByte(8'h55, 1'b1);
+        SendByte(8'h55, 1'b1);
+        SendByte(8'h55, 1'b1);
+        SendByte(8'h55, 1'b1);
+        SendByte(8'h55, 1'b1);
+        SendByte(8'h55, 1'b1);
+        SendByte(8'h55, 1'b1);
+        SendByte(8'hD5, 1'b1);
         tx_crc = -1;
     end
 endtask
@@ -113,42 +115,43 @@ task SendString;
     begin
         for (i = 0; i < 128; i = i + 1)
             if (str[(127 - i)*8 +: 8] != 0)
-                SendByte(str[(127 - i)*8 +: 8]);
+                SendByte(str[(127 - i)*8 +: 8], 1'b1);
     end
 endtask
 
 task SendWord;
     input [31:0] word;
     begin
-        SendByte(word[24 +: 8]);
-        SendByte(word[16 +: 8]);
-        SendByte(word[8  +: 8]);
-        SendByte(word[0  +: 8]);
+        SendByte(word[24 +: 8], 1'b1);
+        SendByte(word[16 +: 8], 1'b1);
+        SendByte(word[8  +: 8], 1'b1);
+        SendByte(word[0  +: 8], 1'b1);
     end
 endtask
 
 task SendMAC;
     input [47:0] mac;
     begin
-        SendByte(mac[40 +: 8]);
-        SendByte(mac[32 +: 8]);
-        SendByte(mac[24 +: 8]);
-        SendByte(mac[16 +: 8]);
-        SendByte(mac[8  +: 8]);
-        SendByte(mac[0  +: 8]);
+        SendByte(mac[40 +: 8], 1'b1);
+        SendByte(mac[32 +: 8], 1'b1);
+        SendByte(mac[24 +: 8], 1'b1);
+        SendByte(mac[16 +: 8], 1'b1);
+        SendByte(mac[8  +: 8], 1'b1);
+        SendByte(mac[0  +: 8], 1'b1);
     end
 endtask
 
 
 task SendCRC;
+    input dbg;
     reg [31:0] crc;
     begin
         #0.1;
-        crc = tx_crc_corr;
-        SendByte(crc[0  +: 8]);
-        SendByte(crc[8  +: 8]);
-        SendByte(crc[16 +: 8]);
-        SendByte(crc[24 +: 8]);
+        crc = tx_crc_corr + dbg;
+        SendByte(crc[0  +: 8], 1'b1);
+        SendByte(crc[8  +: 8], 1'b1);
+        SendByte(crc[16 +: 8], 1'b1);
+        SendByte(crc[24 +: 8], 1'b1);
         @(posedge rxc);
         rx_ctl = 0;
         rxd = 4'hD;
@@ -161,8 +164,8 @@ task SendTestCRC;
         SendPreamble();
         SendMAC(48'hFFFF_FFFF_FFFF);
         SendMAC(48'h0102_0304_0506);
-        SendByte(8'h08);
-        SendByte(8'h00);
+        SendByte(8'h08, 1'b1);
+        SendByte(8'h00, 1'b1);
         // IPv4 header
         SendWord(32'h4500_0000);
         SendWord(32'h0000_0000);
@@ -181,9 +184,9 @@ task SendTestCRC;
         // packet_id32
         SendWord(32'h00000001);
         // payload
-        SendByte(8'h11);
+        SendByte(8'h11, 1'b1);
         // CRC32
-        SendCRC();
+        SendCRC(1'b0);
     end
 endtask
 
@@ -197,28 +200,28 @@ task SendARPPacket;
         SendMAC(mac_dst);
         SendMAC(mac_src);
         // Ethertype ARP
-        SendByte(8'h08);
-        SendByte(8'h06);
+        SendByte(8'h08, 1'b1);
+        SendByte(8'h06, 1'b1);
         // HTYPE 1
-        SendByte(8'h00);
-        SendByte(8'h01);
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h01, 1'b1);
         // PTYPE 0x0800
-        SendByte(8'h08);
-        SendByte(8'h00);
+        SendByte(8'h08, 1'b1);
+        SendByte(8'h00, 1'b1);
         // HLEN 6
-        SendByte(8'h06);
+        SendByte(8'h06, 1'b1);
         // PLEN 4
-        SendByte(8'h04);
+        SendByte(8'h04, 1'b1);
         // OPER 0x0001 (request)
-        SendByte(8'h00);
-        SendByte(8'h01);
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h01, 1'b1);
         SendMAC(mac_src); // Sender hardware address
         SendWord(ip_src); // Sender protocol address
         SendMAC(48'h0) ;// Target hardware address
         SendWord(ip_tgt); // Target protocol address
         // 18 bytes padding
-        repeat (18) SendByte(8'h00);
-        SendCRC();
+        repeat (18) SendByte(8'h00, 1'b1);
+        SendCRC(1'b0);
     end
 endtask
 
@@ -232,13 +235,13 @@ task SendTestPacket;
         SendMAC(mac_dst);
         SendMAC(mac_src);
         // Ethertype
-        SendByte(8'h08);
-        SendByte(8'h00);
+        SendByte(8'h08, 1'b1);
+        SendByte(8'h00, 1'b1);
         // payload
-        repeat (28) SendByte(8'h00);
+        repeat (28) SendByte(8'h00, 1'b1);
         // zero padding
-        repeat (18) SendByte(8'h00);
-        SendCRC();
+        repeat (18) SendByte(8'h00, 1'b1);
+        SendCRC(1'b0);
     end
 endtask
 
@@ -249,8 +252,8 @@ task SendGVCP_Ack;
         SendMAC(48'h0012_3456_7890);
         SendMAC(48'h001D_BA17_1DE7);
         // Ethertype
-        SendByte(8'h08);
-        SendByte(8'h00);
+        SendByte(8'h08, 1'b1);
+        SendByte(8'h00, 1'b1);
         // IPv4 header
         SendWord(32'h4500_0000);
         SendWord(32'h0000_0000);
@@ -265,9 +268,9 @@ task SendGVCP_Ack;
         SendWord(32'h0004AAAA); // length, request id
         SendWord(32'h00000990); // returned value
         // padding
-        SendByte(0);  SendByte(0); SendByte(0);
-        SendByte(0);  SendByte(0); SendByte(0);
-        SendCRC();
+        SendByte(0, 1'b1);  SendByte(0, 1'b1); SendByte(0, 1'b1);
+        SendByte(0, 1'b1);  SendByte(0, 1'b1); SendByte(0, 1'b1);
+        SendCRC(1'b0);
     end
 endtask
 
@@ -278,8 +281,8 @@ task SendGVSP_ImagePayload;
         SendMAC(48'h0012_3456_7890);
         SendMAC(48'h001D_BA17_1DE7);
         // Ethertype
-        SendByte(8'h08);
-        SendByte(8'h00);
+        SendByte(8'h08, 1'b1);
+        SendByte(8'h00, 1'b1);
         // IPv4 header
         SendWord(32'h4500_0000);
         SendWord(32'h0000_0000);
@@ -293,7 +296,7 @@ task SendGVSP_ImagePayload;
         SendWord(32'h0000AABB); // block id
         SendWord(32'h03000001); // packet format = payload, packet_id=1
         SendString("01234567890123456789"); // payload
-        SendCRC();
+        SendCRC(1'b0);
     end
 endtask
 
@@ -304,8 +307,8 @@ task SendGVSP_ImagePayloadEI;
         SendMAC(48'h0012_3456_7890);
         SendMAC(48'h001D_BA17_1DE7);
         // Ethertype
-        SendByte(8'h08);
-        SendByte(8'h00);
+        SendByte(8'h08, 1'b1);
+        SendByte(8'h00, 1'b1);
         // IPv4 header
         SendWord(32'h4500_0000);
         SendWord(32'h0000_0000);
@@ -324,7 +327,7 @@ task SendGVSP_ImagePayloadEI;
         // packet_id32
         SendWord(32'h0000_0001);
         SendString("01234567890123456789"); // payload
-        SendCRC();
+        SendCRC(1'b0);
     end
 endtask
 
@@ -335,8 +338,8 @@ task SendGVSP_ImagePayloadEI_1byte;
         SendMAC(48'h0012_3456_7890);
         SendMAC(48'h001D_BA17_1DE7);
         // Ethertype
-        SendByte(8'h08);
-        SendByte(8'h00);
+        SendByte(8'h08, 1'b1);
+        SendByte(8'h00, 1'b1);
         // IPv4 header
         SendWord(32'h4500_0000);
         SendWord(32'h0000_0000);
@@ -355,7 +358,7 @@ task SendGVSP_ImagePayloadEI_1byte;
         // packet_id32
         SendWord(32'h0000_0001);
         SendString("0"); // payload 1 byte
-        SendCRC();
+        SendCRC(1'b0);
     end
 endtask
 

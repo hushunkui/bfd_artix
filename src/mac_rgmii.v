@@ -27,7 +27,8 @@ module mac_rgmii(
     output reg [7:0] mac_rx_data_o = 0,
     output reg       mac_rx_valid_o = 0,
     output reg       mac_rx_sof_o = 0,
-    output reg       mac_rx_eof_o = 0,  // generated only if CRC is valid
+    output reg       mac_rx_eof_o = 0,
+    // output reg       mac_rx_crc_good_o = 0,  // generated only if CRC is valid
     output           mac_rx_clk_o,      // global clock
 
     // transmit channel, phy side (RGMII)
@@ -62,9 +63,10 @@ wire [3:0] phy_rxd_ibuf;
 wire mac_rx_clk;
 
 reg [7:0] mac_rx_data = 0;
+reg       mac_rx_valid = 1'b0;
 reg       mac_rx_sof = 1'b0;
 reg       mac_rx_eof = 1'b0;
-reg       mac_rx_valid = 1'b0;
+reg       mac_rx_fr_err = 1'b0;
 reg [3:0] eth_status = 0;
 
 wire phy_rx_ctl_delay;
@@ -72,8 +74,7 @@ wire [3:0] phy_rxd_delay;
 
 reg [7:0] rx_data_d;
 reg rx_dv_d;
-reg rx_dv_dd;
-reg rx_dv_ddd;
+reg [1:0] sr_rx_dv_d = 0;
 reg rx_err_d;
 
 // localparam IDDR_MODE = "OPPOSITE_EDGE";
@@ -212,13 +213,16 @@ endgenerate
 always @(posedge mac_rx_clk) begin
     rx_data_d <= rx_data;
     rx_dv_d <= rx_dv;
-    rx_dv_dd <= rx_dv_d;
-    rx_dv_ddd <= rx_dv_dd;
     rx_err_d <= rx_err;
 end
 
+always @(posedge mac_rx_clk) begin
+    sr_rx_dv_d[0] <= rx_dv_d;
+    sr_rx_dv_d[1] <= sr_rx_dv_d[0];
+end
+
 // ------------------------------------------------------------------------------------------
-// rx channel, get status
+// rx channel, status registers during Interframe Gap
 // ------------------------------------------------------------------------------------------
 always @(posedge mac_rx_clk) begin
     if ((rx_dv_d == 1'b0) && (rx_err_d == 1'b0)) begin
@@ -226,20 +230,24 @@ always @(posedge mac_rx_clk) begin
     end
 end
 
-//assign dbg[0] = rx_data_d[0];
-//assign dbg[1] = rx_data_d[1];
-//assign dbg[2] = rx_dv_d;
-//assign dbg[3] = rx_err_d;
-
 // ------------------------------------------------------------------------------------------
 // rx channel, CRC calculation
 // ------------------------------------------------------------------------------------------
 always @(posedge mac_rx_clk) begin
-    rx_cnt <= rx_cnt + 1'b1;
-    if (rx_dv_d == 1'b0) rx_cnt <= 0;
+    if (rx_dv_d == 1'b0) begin  
+        rx_cnt <= 0;
+    end else begin
+        rx_cnt <= rx_cnt + 1'b1;
+    end
+end
+
+always @(posedge mac_rx_clk) begin
     rx_crc_rst <= (rx_cnt == 5);
-    if (rx_dv_d == 1'b0) rx_crc_en <= 0;
-    if (rx_cnt == 7) rx_crc_en <= 1;
+    if (rx_dv_d == 1'b0) begin 
+        rx_crc_en <= 0;
+    end else if (rx_cnt == 7) begin 
+        rx_crc_en <= 1;
+    end
 end
 
 mac_crc rx_crc(
@@ -254,39 +262,47 @@ mac_crc rx_crc(
 // ------------------------------------------------------------------------------------------
 // rx channel, output stream generation
 // ------------------------------------------------------------------------------------------
+reg mac_rx_crc_good = 1'b0;
 always @(posedge mac_rx_clk) begin
-    mac_rx_eof <= (rx_crc_out == 32'hC704DD7B); // CRC32 residue detection
+    if (rx_cnt == 9) begin 
+        mac_rx_valid <= 1;
+    end else if (mac_rx_eof) begin // || !sr_rx_dv_d[1]) begin
+        mac_rx_valid <= 0;
+    end
     mac_rx_sof <= (rx_cnt == 9);
-    if (rx_cnt == 9) mac_rx_valid <= 1;
-    if (mac_rx_eof) mac_rx_valid <= 0;
-    if (rx_dv_ddd == 1'b0) mac_rx_valid <= 0;
+    mac_rx_eof <= (rx_dv_d & !rx_dv);
+    mac_rx_crc_good <= (rx_crc_out == 32'hC704DD7B); // CRC32 residue detection
+    mac_rx_fr_err <= !(rx_dv_d & !rx_dv) & (rx_dv_d & !rx_err_d);
+
     rx_data_dd <= rx_data_d;
     mac_rx_data <= rx_data_dd;
 end
-
 
 // ------------------------------------------------------------------------------------------
 // rx channel output buffering
 // ------------------------------------------------------------------------------------------
 (* ASYNC_REG = "TRUE" *) reg [7:0] sr_mac_rx_data = 0;
+(* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_valid = 1'b0;
 (* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_sof = 1'b0;
 (* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_eof = 1'b0;
-(* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_valid = 1'b0;
+(* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_crc_good = 1'b0;
 (* ASYNC_REG = "TRUE" *) reg [3:0] sr_eth_status = 0;
 
 assign mac_rx_clk_o = mac_rx_clk;
 
 always @(posedge mac_rx_clk) begin
     sr_mac_rx_data  <= mac_rx_data ;
+    sr_mac_rx_valid <= mac_rx_valid;
     sr_mac_rx_sof   <= mac_rx_sof  ;
     sr_mac_rx_eof   <= mac_rx_eof  ;
-    sr_mac_rx_valid <= mac_rx_valid;
+    sr_mac_rx_crc_good <= mac_rx_crc_good;
     sr_eth_status   <= eth_status  ;
 
     mac_rx_data_o  <= sr_mac_rx_data  ;
+    mac_rx_valid_o <= sr_mac_rx_valid ;
     mac_rx_sof_o   <= sr_mac_rx_sof   ;
     mac_rx_eof_o   <= sr_mac_rx_eof   ;
-    mac_rx_valid_o <= sr_mac_rx_valid ;
+    // mac_rx_crc_good_o <= sr_mac_rx_crc_good;
     eth_status_o   <= sr_eth_status   ;
 end
 

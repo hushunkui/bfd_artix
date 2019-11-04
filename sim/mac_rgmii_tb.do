@@ -37,6 +37,6 @@ view wave
 config wave -timelineunits us
 view structure
 view signals
-run 100us
+run 3us
 
 #quit -force

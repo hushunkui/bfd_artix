@@ -3,9 +3,17 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate /mac_rgmii_tb/mac/phy_rxd
 add wave -noupdate /mac_rgmii_tb/mac/phy_rx_ctl
 add wave -noupdate /mac_rgmii_tb/mac/phy_rxc
+add wave -noupdate -radix hexadecimal /mac_rgmii_tb/mac/rx_data_d
 add wave -noupdate /mac_rgmii_tb/mac/rx_dv_d
 add wave -noupdate /mac_rgmii_tb/mac/rx_err_d
 add wave -noupdate -radix unsigned /mac_rgmii_tb/mac/rx_cnt
+add wave -noupdate /mac_rgmii_tb/mac/rx_crc_rst
+add wave -noupdate {/mac_rgmii_tb/mac/sr_rx_dv_d[0]}
+add wave -noupdate {/mac_rgmii_tb/mac/sr_rx_dv_d[1]}
+add wave -noupdate /mac_rgmii_tb/mac/mac_rx_data
+add wave -noupdate /mac_rgmii_tb/mac/mac_rx_valid
+add wave -noupdate /mac_rgmii_tb/mac/mac_rx_sof
+add wave -noupdate /mac_rgmii_tb/mac/mac_rx_eof
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_data_o
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_valid_o
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_sof_o
@@ -36,4 +44,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {2005249 ps} {2106043 ps}
+WaveRestoreZoom {2558891 ps} {2675311 ps}
