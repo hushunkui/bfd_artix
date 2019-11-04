@@ -242,27 +242,29 @@ generate
         //    output [3:0] dbg,
             .eth_status_o(),
             // receive channel, phy side (RGMII)
-            .phy_rxd    (rgmii_rxd   [(x*4) +: 4]),
-            .phy_rx_ctrl(rgmii_rx_ctl[x]         ),
-            .phy_rx_clk (rgmii_rxc   [x]         ),
+            .phy_rxd   (rgmii_rxd   [(x*4) +: 4]),
+            .phy_rx_ctl(rgmii_rx_ctl[x]         ),
+            .phy_rxc   (rgmii_rxc   [x]         ),
+
             // receive channel, logic side
-            .mac_rx_clk_o  (mac_rx_aclk[x]),      // global clock
+            .mac_rx_data_o (mac_rx_axis_tdata [(x*8) +: 8]),
+            .mac_rx_valid_o(mac_rx_axis_tvalid[x]         ),
             .mac_rx_sof_o  (mac_rx_axis_tuser [x]         ),
             .mac_rx_eof_o  (mac_rx_axis_tlast [x]         ),  // generated only if CRC is valid
-            .mac_rx_valid_o(mac_rx_axis_tvalid[x]         ),
-            .mac_rx_data_o (mac_rx_axis_tdata [(x*8) +: 8]),
+            .mac_rx_clk_o  (mac_rx_aclk[x]),      // global clock
 
             // transmit channel, phy side (RGMII)
-            .phy_txd    (rgmii_txd   [(x*4) +: 4]),
-            .phy_tx_ctrl(rgmii_tx_ctl[x]         ),
-            .phy_tx_clk (rgmii_txc   [x]         ),
+            .phy_txd   (rgmii_txd   [(x*4) +: 4]),
+            .phy_tx_ctl(rgmii_tx_ctl[x]         ),
+            .phy_txc   (rgmii_txc   [x]         ),
+            
             // transmit channel, logic side
-            .mac_tx_clk_90(mac_gtx_clk90),
-            .mac_tx_clk   (mac_gtx_clk),
+            .mac_tx_data  (mac_tx_axis_tdata [(x*8) +: 8]),
+            .mac_tx_valid (mac_tx_axis_tvalid[x]         ),
             .mac_tx_sof   (mac_tx_axis_tuser [x]         ),
             .mac_tx_eof   (mac_tx_axis_tlast [x]         ),
-            .mac_tx_valid (mac_tx_axis_tvalid[x]         ),
-            .mac_tx_data  (mac_tx_axis_tdata [(x*8) +: 8])
+            .mac_tx_clk_90(mac_gtx_clk90),
+            .mac_tx_clk   (mac_gtx_clk)
         );
 
         always @(posedge mac_gtx_clk) begin

@@ -5,11 +5,11 @@ reg sysclk_p = 1;
 always #2.5 sysclk_p = ~sysclk_p;
 wire sysclk_n = ~sysclk_p;
 
-reg rx_clk = 1;
-always #4 rx_clk = ~rx_clk;
+reg rxc = 1;
+always #4 rxc = ~rxc;
 task tick;
     begin
-        @(posedge rx_clk);#0;
+        @(posedge rxc);#0;
     end
 endtask
 
@@ -20,7 +20,7 @@ initial begin
     end
 end
 
-reg rx_ctrl = 0;
+reg rx_ctl = 0;
 reg [3:0] rxd = 4'hD;
 
 
@@ -83,9 +83,9 @@ endfunction
 task SendByte;
     input [7:0] byte;
     begin
-        @(negedge rx_clk);
+        @(negedge rxc);
         #2;
-        rx_ctrl = 1;
+        rx_ctl = 1;
         rxd = byte[3:0];
         #4;
         rxd = byte[7:4];
@@ -149,8 +149,8 @@ task SendCRC;
         SendByte(crc[8  +: 8]);
         SendByte(crc[16 +: 8]);
         SendByte(crc[24 +: 8]);
-        @(posedge rx_clk);
-        rx_ctrl = 0;
+        @(posedge rxc);
+        rx_ctl = 0;
         rxd = 4'hD;
     end
 endtask
@@ -427,32 +427,33 @@ initial begin
     $finish;
 end
 
-wire tx_clk;
-wire tx_ctrl;
+wire txc;
+wire tx_ctl;
 wire [3:0] txd;
 
 mac_rgmii mac(
     .eth_status_o(),
-    .refclk(sysclk_p),
 
-    .phy_rx_clk (rx_clk ),
-    .phy_rx_ctrl(rx_ctrl),
-    .phy_rxd    (rxd    ),
+    .phy_rxd   (rxd   ),
+    .phy_rx_ctl(rx_ctl),
+    .phy_rxc   (rxc   ),
 
-    .mac_rx_clk_o  (),
+    .mac_rx_data_o (),
+    .mac_rx_valid_o(),
     .mac_rx_sof_o  (),
     .mac_rx_eof_o  (),
-    .mac_rx_valid_o(),
-    .mac_rx_data_o (),
+    .mac_rx_clk_o  (),
 
-    .phy_tx_clk (tx_clk),
-    .phy_tx_ctrl(tx_ctrl),
-    .phy_txd    (txd),
+    .phy_txd   (txd   ),
+    .phy_tx_ctl(tx_ctl),
+    .phy_txc   (txc   ),
 
-    .mac_tx_clk  (),
+    .mac_tx_data (8'd0),
+    .mac_tx_valid(1'b0),
     .mac_tx_sof  (1'b0),
     .mac_tx_eof  (1'b0),
-    .mac_tx_valid(1'b0)
+    .mac_tx_clk_90(1'b0),
+    .mac_tx_clk  (1'b0)
 );
 
 endmodule

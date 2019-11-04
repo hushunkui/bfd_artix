@@ -11,36 +11,37 @@
 module mac_rgmii(
 //    output [3:0] dbg,
     output reg [3:0] eth_status_o = 0, /** [0] - link up/down = 1/0
-                                      *  [2:1] - phy_rx_clk speed:
+                                      *  [2:1] - phy_rxc speed:
                                                  00 - 2.5MHz (Eth:10Mb)
                                                  01 - 25MHz  (Eth:100Mb)
                                                  10 - 125MHz (Eth:1Gb)
                                          [3] - duplex full/half = 1/0
                                       */
-    input refclk,
 
     // receive channel, phy side (RGMII)
-    input       phy_rx_clk ,
-    input       phy_rx_ctrl,
-    input [3:0] phy_rxd    ,
+    input [3:0] phy_rxd   ,
+    input       phy_rx_ctl,
+    input       phy_rxc   ,
+
     // receive channel, logic side
-    output           mac_rx_clk_o,      // global clock
+    output reg [7:0] mac_rx_data_o = 0,
+    output reg       mac_rx_valid_o = 0,
     output reg       mac_rx_sof_o = 0,
     output reg       mac_rx_eof_o = 0,  // generated only if CRC is valid
-    output reg       mac_rx_valid_o = 0,
-    output reg [7:0] mac_rx_data_o = 0,
+    output           mac_rx_clk_o,      // global clock
 
     // transmit channel, phy side (RGMII)
-    output       phy_tx_clk ,
-    output       phy_tx_ctrl,
-    output [3:0] phy_txd    ,
+    output [3:0] phy_txd   ,
+    output       phy_tx_ctl,
+    output       phy_txc   ,
     // transmit channel, logic side
-    input       mac_tx_clk_90,
-    input       mac_tx_clk,
+    input [7:0] mac_tx_data,
+    input       mac_tx_valid,
     input       mac_tx_sof,
     input       mac_tx_eof,
-    input       mac_tx_valid,
-    input [7:0] mac_tx_data
+    input       mac_tx_clk_90,
+    input       mac_tx_clk
+
 );
 
 function [31:0] BitReverse;
@@ -54,9 +55,9 @@ function [31:0] BitReverse;
     end
 endfunction
 
-wire phy_rx_clk_ibuf;
-wire phy_rx_clk_bufio;
-wire phy_rx_ctrl_ibuf;
+wire phy_rxc_ibuf;
+wire phy_rxc_bufio;
+wire phy_rx_ctl_ibuf;
 wire [3:0] phy_rxd_ibuf;
 wire mac_rx_clk;
 
@@ -66,7 +67,7 @@ reg       mac_rx_eof = 1'b0;
 reg       mac_rx_valid = 1'b0;
 reg [3:0] eth_status = 0;
 
-wire phy_rx_ctrl_delay;
+wire phy_rx_ctl_delay;
 wire [3:0] phy_rxd_delay;
 
 reg [7:0] rx_data_d;
@@ -96,19 +97,19 @@ wire [31:0] tx_crc_corrected;
 
 wire [31:0] tx_crc_out;
 
-wire phy_tx_clk_obuf;
-wire phy_tx_ctrl_obuf;
+wire phy_txc_obuf;
+wire phy_tx_ctl_obuf;
 wire [3:0] phy_txd_obuf;
 
 
 // ------------------------------------------------------------------------------------------
 // rx channel IBUFs
 // ------------------------------------------------------------------------------------------
-IBUF ibuf_rxc (.I(phy_rx_clk), .O(phy_rx_clk_ibuf));
-BUFG bufio_rxclk (.I(phy_rx_clk_ibuf), .O(phy_rx_clk_bufio));
-BUFG bufr_rxclk (.I(phy_rx_clk_ibuf), .O(mac_rx_clk)); //, .CE(1'b1), .CLR(0));
+IBUF ibuf_rxclk (.I(phy_rxc), .O(phy_rxc_ibuf));
+BUFG bufio_rxclk (.I(phy_rxc_ibuf), .O(phy_rxc_bufio));
+BUFG bufr_rxclk (.I(phy_rxc_ibuf), .O(mac_rx_clk)); //, .CE(1'b1), .CLR(0));
 
-IBUF ibuf_rxctl (.I(phy_rx_ctrl), .O(phy_rx_ctrl_ibuf));
+IBUF ibuf_rxctl (.I(phy_rx_ctl), .O(phy_rx_ctl_ibuf));
 genvar a;
 generate for (a=0; a<4; a=a+1) begin : ibuf_rxd
         IBUF inst (.I(phy_rxd[a]), .O(phy_rxd_ibuf[a]));
@@ -131,13 +132,13 @@ IDELAYE2 #(
     .SIGNAL_PATTERN("DATA")          // DATA, CLOCK input signal
 ) idelay_rxctl (
     .CNTVALUEOUT(),                 // 5-bit output: Counter value output
-    .DATAOUT    (phy_rx_ctrl_delay),// 1-bit output: Delayed data output
+    .DATAOUT    (phy_rx_ctl_delay),// 1-bit output: Delayed data output
     .C          (1'b0),             // 1-bit input: Clock input
     .CE         (1'b0),             // 1-bit input: Active high enable increment/decrement input
     .CINVCTRL   (1'b0),             // 1-bit input: Dynamic clock inversion input
-    .CNTVALUEIN (0),                // 5-bit input: Counter value input
+    .CNTVALUEIN (5'd0),             // 5-bit input: Counter value input
     .DATAIN     (1'b0),             // 1-bit input: Internal delay data input
-    .IDATAIN    (phy_rx_ctrl_ibuf), // 1-bit input: Data input from the I/O
+    .IDATAIN    (phy_rx_ctl_ibuf), // 1-bit input: Data input from the I/O
     .INC        (1'b0),             // 1-bit input: Increment / Decrement tap delay input
     .LD         (1'b0),             // 1-bit input: Load IDELAY_VALUE input
     .LDPIPEEN   (1'b0),             // 1-bit input: Enable PIPELINE register to load data input
@@ -162,7 +163,7 @@ generate for (b=0; b<4; b=b+1) begin : idelay_rxd
             .C          (1'b0),             // 1-bit input: Clock input
             .CE         (1'b0),             // 1-bit input: Active high enable increment/decrement input
             .CINVCTRL   (1'b0),             // 1-bit input: Dynamic clock inversion input
-            .CNTVALUEIN (0),                // 5-bit input: Counter value input
+            .CNTVALUEIN (5'd0),             // 5-bit input: Counter value input
             .DATAIN     (1'b0),             // 1-bit input: Internal delay data input
             .IDATAIN    (phy_rxd_ibuf[b]),  // 1-bit input: Data input from the I/O
             .INC        (1'b0),             // 1-bit input: Increment / Decrement tap delay input
@@ -182,12 +183,12 @@ wire rx_err; // TODO: analyse rxerr
 wire [7:0] rx_data;
 
 IDDR #(.DDR_CLK_EDGE(IDDR_MODE)) iddr_rx_ctrl (
-    .D(phy_rx_ctrl_delay),
+    .D(phy_rx_ctl_delay),
     .Q1(rx_dv),
     .Q2(rx_err),
 
-    .CE(1'b1), .R(0), .S(0),
-    .C(phy_rx_clk_bufio)
+    .CE(1'b1), .R(1'b0), .S(1'b0),
+    .C(phy_rxc_bufio)
 );
 
 genvar c;
@@ -197,8 +198,8 @@ generate for (c=0; c<4; c=c+1) begin : iddr_rxd
             .Q1(rx_data[c]),
             .Q2(rx_data[c+4]),
 
-            .CE(1'b1), .R(0), .S(0),
-            .C(phy_rx_clk_bufio)
+            .CE(1'b1), .R(1'b0), .S(1'b0),
+            .C(phy_rxc_bufio)
         );
     end
 endgenerate
@@ -339,18 +340,18 @@ mac_crc tx_crc(
 ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) oddr_txclk (
     .D1 (1'b1),
     .D2 (1'b0),
-    .Q  (phy_tx_clk_obuf),
+    .Q  (phy_txc_obuf),
 
-    .CE (1'b1), .R(0), .S(0),
+    .CE (1'b1), .R(1'b0), .S(1'b0),
     .C  (mac_tx_clk_90)
 );
 
 ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) oddr_txctl (
     .D1 (tx_dv),
     .D2 (tx_dv),
-    .Q  (phy_tx_ctrl_obuf),
+    .Q  (phy_tx_ctl_obuf),
 
-    .CE (1'b1), .R(0), .S(0),
+    .CE (1'b1), .R(1'b0), .S(1'b0),
     .C  (mac_tx_clk)
 );
 
@@ -361,7 +362,7 @@ generate for (d=0; d<4; d=d+1) begin : oddr_txd
             .D2 (tx_data[d+4]),
             .Q  (phy_txd_obuf[d]),
 
-            .CE (1'b1), .R(0), .S(0),
+            .CE (1'b1), .R(1'b0), .S(1'b0),
             .C  (mac_tx_clk)
         );
     end
@@ -371,8 +372,8 @@ endgenerate
 // ------------------------------------------------------------------------------------------
 // tx channel, rgmii OBUF
 // ------------------------------------------------------------------------------------------
-OBUF obuf_txclk (.I(phy_tx_clk_obuf), .O(phy_tx_clk));
-OBUF obuf_txctl (.I(phy_tx_ctrl_obuf), .O(phy_tx_ctrl));
+OBUF obuf_txclk (.I(phy_txc_obuf), .O(phy_txc));
+OBUF obuf_txctl (.I(phy_tx_ctl_obuf), .O(phy_tx_ctl));
 genvar e;
 generate for (e=0; e<4; e=e+1) begin : obuf_txd
         OBUF inst (.I(phy_txd_obuf[e]), .O(phy_txd[e]));

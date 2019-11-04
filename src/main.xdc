@@ -227,9 +227,9 @@ set_property IOSTANDARD LVDS_25 [get_ports {usr_lvds_p[12]}]
 set_property IOSTANDARD LVDS_25 [get_ports {usr_lvds_p[13]}]
 
 
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[1].rgmii/phy_rx_clk_ibuf}]
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[2].rgmii/phy_rx_clk_ibuf}]
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[3].rgmii/phy_rx_clk_ibuf}]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[1].rgmii/phy_rxc_ibuf}]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[2].rgmii/phy_rxc_ibuf}]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[3].rgmii/phy_rxc_ibuf}]
 
 
 ## Group IODELAY components

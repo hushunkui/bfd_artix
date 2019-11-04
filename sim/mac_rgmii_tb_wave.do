@@ -1,8 +1,11 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /mac_rgmii_tb/mac/phy_rxd
-add wave -noupdate /mac_rgmii_tb/mac/phy_rx_ctrl
-add wave -noupdate /mac_rgmii_tb/mac/phy_rx_clk
+add wave -noupdate /mac_rgmii_tb/mac/phy_rx_ctl
+add wave -noupdate /mac_rgmii_tb/mac/phy_rxc
+add wave -noupdate /mac_rgmii_tb/mac/rx_dv_d
+add wave -noupdate /mac_rgmii_tb/mac/rx_err_d
+add wave -noupdate -radix unsigned /mac_rgmii_tb/mac/rx_cnt
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_data_o
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_valid_o
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_sof_o
@@ -14,8 +17,8 @@ add wave -noupdate /mac_rgmii_tb/mac/mac_tx_eof
 add wave -noupdate /mac_rgmii_tb/mac/mac_tx_sof
 add wave -noupdate /mac_rgmii_tb/mac/mac_tx_clk
 add wave -noupdate /mac_rgmii_tb/mac/phy_txd
-add wave -noupdate /mac_rgmii_tb/mac/phy_tx_ctrl
-add wave -noupdate /mac_rgmii_tb/mac/phy_tx_clk
+add wave -noupdate /mac_rgmii_tb/mac/phy_tx_ctl
+add wave -noupdate /mac_rgmii_tb/mac/phy_txc
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {0 ps} 0}
 quietly wave cursor active 0
@@ -33,4 +36,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {82387200 ps}
+WaveRestoreZoom {2005249 ps} {2106043 ps}
