@@ -4,6 +4,12 @@ add wave -noupdate /mac_rgmii_tb/mac/phy_rxd
 add wave -noupdate /mac_rgmii_tb/mac/phy_rx_ctl
 add wave -noupdate /mac_rgmii_tb/mac/phy_rxc
 add wave -noupdate -radix hexadecimal /mac_rgmii_tb/mac/rx_data_d
+add wave -noupdate /mac_rgmii_tb/mac/mac_rx_clk
+add wave -noupdate /mac_rgmii_tb/mac/rx_data
+add wave -noupdate /mac_rgmii_tb/mac/fifo_empty
+add wave -noupdate /mac_rgmii_tb/mac/fifo_0d
+add wave -noupdate /mac_rgmii_tb/mac/fifo_1d
+add wave -noupdate /mac_rgmii_tb/mac/fifo_2d
 add wave -noupdate /mac_rgmii_tb/mac/rx_dv_d
 add wave -noupdate /mac_rgmii_tb/mac/rx_err_d
 add wave -noupdate -radix unsigned /mac_rgmii_tb/mac/rx_cnt
@@ -28,8 +34,8 @@ add wave -noupdate /mac_rgmii_tb/mac/phy_txd
 add wave -noupdate /mac_rgmii_tb/mac/phy_tx_ctl
 add wave -noupdate /mac_rgmii_tb/mac/phy_txc
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {0 ps} 0}
-quietly wave cursor active 0
+WaveRestoreCursors {{Cursor 1} {5243450 ps} 0}
+quietly wave cursor active 1
 configure wave -namecolwidth 141
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
@@ -44,4 +50,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {2558891 ps} {2675311 ps}
+WaveRestoreZoom {0 ps} {84487200 ps}

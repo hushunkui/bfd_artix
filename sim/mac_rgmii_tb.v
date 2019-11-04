@@ -383,15 +383,20 @@ task SendUARTByte;
     end
 endtask
 
-
+reg rst = 1'b0;
 initial begin
-    $dumpfile("icarus/dump.fst");
-    $dumpvars;
+    // $dumpfile("icarus/dump.fst");
+    // $dumpvars;
     // $dumpvars(0, mac_top.udp_gvcp.rx_payload_buffer_byteA[0]);
     // $dumpvars(0, mac_top.udp_gvcp.rx_payload_buffer_byteB[0]);
     // $dumpvars(0, mac_top.udp_gvcp.rx_payload_buffer_byteC[0]);
     // $dumpvars(0, mac_top.udp_gvcp.rx_payload_buffer_byteD[0]);
-
+    rst = 1'b0;
+    #1_000;    
+    rst = 1'b1;
+    #1_000;    
+    rst = 1'b0;
+    
     #2_000;
     SendARPPacket(48'hFFFF_FFFF_FFFF, 48'hE091_F5B4_06B0, 32'hC0A80101, 32'hC0A80120);
     #1_000;
@@ -456,7 +461,9 @@ mac_rgmii mac(
     .mac_tx_sof  (1'b0),
     .mac_tx_eof  (1'b0),
     .mac_tx_clk_90(1'b0),
-    .mac_tx_clk  (1'b0)
+    .mac_tx_clk  (1'b0),
+
+    .rst()
 );
 
 endmodule
