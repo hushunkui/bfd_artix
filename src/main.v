@@ -256,7 +256,7 @@ generate
             .phy_txd   (rgmii_txd   [(x*4) +: 4]),
             .phy_tx_ctl(rgmii_tx_ctl[x]         ),
             .phy_txc   (rgmii_txc   [x]         ),
-            
+
             // transmit channel, logic side
             .mac_tx_data  (mac_tx_axis_tdata [(x*8) +: 8]),
             .mac_tx_valid (mac_tx_axis_tvalid[x]         ),
