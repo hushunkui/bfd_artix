@@ -145,7 +145,7 @@ IDELAYE2 #(
     .INC        (1'b0),             // 1-bit input: Increment / Decrement tap delay input
     .LD         (1'b0),             // 1-bit input: Load IDELAY_VALUE input
     .LDPIPEEN   (1'b0),             // 1-bit input: Enable PIPELINE register to load data input
-    .REGRST     (1'b0)              // 1-bit input: Active-high reset tap-delay input
+    .REGRST     (rst)               // 1-bit input: Active-high reset tap-delay input
 );
 
 
@@ -172,7 +172,7 @@ generate for (b=0; b<4; b=b+1) begin : idelay_rxd
             .INC        (1'b0),             // 1-bit input: Increment / Decrement tap delay input
             .LD         (1'b0),             // 1-bit input: Load IDELAY_VALUE input
             .LDPIPEEN   (1'b0),             // 1-bit input: Enable PIPELINE register to load data input
-            .REGRST     (1'b0)              // 1-bit input: Active-high reset tap-delay input
+            .REGRST     (rst)               // 1-bit input: Active-high reset tap-delay input
         );
     end
 endgenerate
@@ -190,7 +190,7 @@ IDDR #(.DDR_CLK_EDGE(IDDR_MODE)) iddr_rx_ctrl (
     .Q1(rx_dv),
     .Q2(rx_err),
 
-    .CE(1'b1), .R(1'b0), .S(1'b0),
+    .CE(1'b1), .R(rst), .S(1'b0),
     .C(phy_rxc_bufio)
 );
 
@@ -201,7 +201,7 @@ generate for (c=0; c<4; c=c+1) begin : iddr_rxd
             .Q1(rx_data[c]),
             .Q2(rx_data[c+4]),
 
-            .CE(1'b1), .R(1'b0), .S(1'b0),
+            .CE(1'b1), .R(rst), .S(1'b0),
             .C(phy_rxc_bufio)
         );
     end
@@ -414,7 +414,7 @@ ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) oddr_txclk (
     .D2 (1'b0),
     .Q  (phy_txc_obuf),
 
-    .CE (1'b1), .R(1'b0), .S(1'b0),
+    .CE (1'b1), .R(rst), .S(1'b0),
     .C  (mac_tx_clk_90)
 );
 
@@ -423,7 +423,7 @@ ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) oddr_txctl (
     .D2 (tx_dv),
     .Q  (phy_tx_ctl_obuf),
 
-    .CE (1'b1), .R(1'b0), .S(1'b0),
+    .CE (1'b1), .R(rst), .S(1'b0),
     .C  (mac_tx_clk)
 );
 
@@ -434,7 +434,7 @@ generate for (d=0; d<4; d=d+1) begin : oddr_txd
             .D2 (tx_data[d+4]),
             .Q  (phy_txd_obuf[d]),
 
-            .CE (1'b1), .R(1'b0), .S(1'b0),
+            .CE (1'b1), .R(rst), .S(1'b0),
             .C  (mac_tx_clk)
         );
     end

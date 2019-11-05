@@ -1,4 +1,6 @@
-// Build ID Verilog Module
+//
+// author: Golovachenko Viktor
+//
 //
 // Date:             04112019
 // Time:             211456

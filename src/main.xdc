@@ -1,5 +1,5 @@
 #
-#author: Golovachenko Victor
+#author: Golovachenko Viktor
 #
 
 #MODULE TE0714-02-35

@@ -1,6 +1,7 @@
 #
-# author: Golovachenko Victor
+#author: Golovachenko Viktor
 #
+
 proc generateFirmwareRevisionUpdate {} {
 
     # Get the timestamp (see: http://www.altera.com/support/examples/tcl/tcl-date-time-stamp.html)

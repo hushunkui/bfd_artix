@@ -1,5 +1,5 @@
 //
-// author: Golovachenko Victor
+// author: Golovachenko Viktor
 //
 
 `timescale 1ns / 1ps

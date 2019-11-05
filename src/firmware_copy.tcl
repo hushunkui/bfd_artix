@@ -1,5 +1,5 @@
 #
-# author: Golovachenko Victor
+#author: Golovachenko Viktor
 #
 
 set curDir [pwd]

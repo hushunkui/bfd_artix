@@ -1,3 +1,6 @@
+//
+//author: Romashko Dmitry
+//
 `timescale 1ns / 1ps
 module mac_rgmii_tb();
 
