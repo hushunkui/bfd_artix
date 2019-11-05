@@ -1,6 +1,5 @@
-//
-// author: Golovachenko Viktor
-//
+
+
 
 `timescale 1ns / 1ps
 
@@ -240,7 +239,7 @@ generate
 
         mac_rgmii rgmii (
         //    output [3:0] dbg,
-            .eth_status_o(),
+            .status_o(),
             // receive channel, phy side (RGMII)
             .phy_rxd   (rgmii_rxd   [(x*4) +: 4]),
             .phy_rx_ctl(rgmii_rx_ctl[x]         ),

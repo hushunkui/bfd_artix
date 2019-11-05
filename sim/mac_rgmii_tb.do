@@ -19,11 +19,11 @@ vlib work
 #$XILINX variable must be set
 vlog  $env(XILINX)/verilog/src/glbl.v
 
-vlog                        ../src/mac_crc.v
-vlog  -modelsimini $inifile ../src/mac_rgmii.v
-vlog                         ./mac_rgmii_tb.v
+vlog ../src/mac_crc.v
+vlog -modelsimini $inifile ../src/mac_rgmii.v
+vlog ./mac_rgmii_tb.v
 
-vsim  -modelsimini $inifile -t 1ps -novopt +notimingchecks -L unisims_ver -L secureip  -lib work mac_rgmii_tb glbl
+vsim -modelsimini $inifile -t 1ps -novopt +notimingchecks -L unisims_ver -L secureip  -lib work mac_rgmii_tb glbl
 
 
 #--------------------------

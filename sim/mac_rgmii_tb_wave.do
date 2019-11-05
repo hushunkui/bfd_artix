@@ -3,23 +3,23 @@ quietly WaveActivateNextPane {} 0
 add wave -noupdate /mac_rgmii_tb/mac/phy_rxd
 add wave -noupdate /mac_rgmii_tb/mac/phy_rx_ctl
 add wave -noupdate /mac_rgmii_tb/mac/phy_rxc
-add wave -noupdate -radix hexadecimal /mac_rgmii_tb/mac/rx_data_d
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_clk
+add wave -noupdate /mac_rgmii_tb/mac/rst
 add wave -noupdate /mac_rgmii_tb/mac/rx_data
-add wave -noupdate /mac_rgmii_tb/mac/fifo_empty
-add wave -noupdate /mac_rgmii_tb/mac/fifo_0d
-add wave -noupdate /mac_rgmii_tb/mac/fifo_1d
-add wave -noupdate /mac_rgmii_tb/mac/fifo_2d
+add wave -noupdate /mac_rgmii_tb/mac/rx_dv
+add wave -noupdate /mac_rgmii_tb/mac/rx_err
+add wave -noupdate -divider {New Divider}
+add wave -noupdate -radix hexadecimal /mac_rgmii_tb/mac/rx_data_d
 add wave -noupdate /mac_rgmii_tb/mac/rx_dv_d
 add wave -noupdate /mac_rgmii_tb/mac/rx_err_d
 add wave -noupdate -radix unsigned /mac_rgmii_tb/mac/rx_cnt
 add wave -noupdate /mac_rgmii_tb/mac/rx_crc_rst
-add wave -noupdate {/mac_rgmii_tb/mac/sr_rx_dv_d[0]}
-add wave -noupdate {/mac_rgmii_tb/mac/sr_rx_dv_d[1]}
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_data
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_valid
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_sof
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_eof
+add wave -noupdate /mac_rgmii_tb/mac/mac_rx_crc_good
+add wave -noupdate /mac_rgmii_tb/mac/mac_rx_fr_err
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_data_o
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_valid_o
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_sof_o
@@ -50,4 +50,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {84487200 ps}
+WaveRestoreZoom {2124202 ps} {2268395 ps}

@@ -155,8 +155,9 @@ task SendCRC;
         SendByte(crc[8  +: 8], 1'b1);
         SendByte(crc[16 +: 8], 1'b1);
         SendByte(crc[24 +: 8], 1'b1);
+        #4; rx_ctl = 0; $display("MAC_CRC: (%X)", crc); //add vicg
         @(posedge rxc);
-        rx_ctl = 0;
+        // rx_ctl = 0; //romashko
         rxd = 4'hD;
     end
 endtask
@@ -203,7 +204,7 @@ task SendARPPacket;
         SendMAC(mac_dst);
         SendMAC(mac_src);
         // Ethertype ARP
-        SendByte(8'h08, 1'b1);
+        SendByte(8'h08, 1'b0);
         SendByte(8'h06, 1'b1);
         // HTYPE 1
         SendByte(8'h00, 1'b1);
@@ -224,7 +225,7 @@ task SendARPPacket;
         SendWord(ip_tgt); // Target protocol address
         // 18 bytes padding
         repeat (18) SendByte(8'h00, 1'b1);
-        SendCRC(1'b0);
+        SendCRC(1'b1);
     end
 endtask
 
@@ -390,17 +391,14 @@ reg rst = 1'b0;
 initial begin
     // $dumpfile("icarus/dump.fst");
     // $dumpvars;
-    // $dumpvars(0, mac_top.udp_gvcp.rx_payload_buffer_byteA[0]);
-    // $dumpvars(0, mac_top.udp_gvcp.rx_payload_buffer_byteB[0]);
-    // $dumpvars(0, mac_top.udp_gvcp.rx_payload_buffer_byteC[0]);
-    // $dumpvars(0, mac_top.udp_gvcp.rx_payload_buffer_byteD[0]);
+
     rst = 1'b0;
-    #1_000;    
+    #500;
     rst = 1'b1;
-    #1_000;    
+    #100; 
     rst = 1'b0;
     
-    #2_000;
+    #1_000;
     SendARPPacket(48'hFFFF_FFFF_FFFF, 48'hE091_F5B4_06B0, 32'hC0A80101, 32'hC0A80120);
     #1_000;
 
@@ -408,21 +406,6 @@ initial begin
     #1_000;
     SendGVCP_Ack();
     #100;
-
-
-    // SendUARTByte(8'h0A);
-    // SendUARTByte(8'h15);
-    // SendUARTByte(8'h80);
-    // SendUARTByte(8'h90);
-
-    // SendUARTByte(8'h0C);
-    // SendUARTByte(8'h80);
-    // SendUARTByte(8'h98);
-
-    // SendUARTByte(8'hD0);
-    // SendUARTByte(8'hD1);
-    // SendUARTByte(8'hD2);
-    // SendUARTByte(8'hD3);
 
     #30_000;
     SendGVCP_Ack();
@@ -443,7 +426,7 @@ wire tx_ctl;
 wire [3:0] txd;
 
 mac_rgmii mac(
-    .eth_status_o(),
+    .status_o(),
 
     .phy_rxd   (rxd   ),
     .phy_rx_ctl(rx_ctl),
@@ -466,7 +449,7 @@ mac_rgmii mac(
     .mac_tx_clk_90(1'b0),
     .mac_tx_clk  (1'b0),
 
-    .rst()
+    .rst(rst)
 );
 
 endmodule
