@@ -249,7 +249,9 @@ generate
             .mac_rx_data_o (mac_rx_axis_tdata [(x*8) +: 8]),
             .mac_rx_valid_o(mac_rx_axis_tvalid[x]         ),
             .mac_rx_sof_o  (mac_rx_axis_tuser [x]         ),
-            .mac_rx_eof_o  (mac_rx_axis_tlast [x]         ),  // generated only if CRC is valid
+            .mac_rx_eof_o  (mac_rx_axis_tlast [x]         ),
+            .mac_rx_crc_good_o(),  // generated only if CRC is valid
+            .mac_rx_fr_err_o(),
             .mac_rx_clk_o  (mac_rx_aclk[x]),      // global clock
 
             // transmit channel, phy side (RGMII)

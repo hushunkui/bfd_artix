@@ -395,9 +395,9 @@ initial begin
     rst = 1'b0;
     #500;
     rst = 1'b1;
-    #100; 
+    #100;
     rst = 1'b0;
-    
+
     #1_000;
     SendARPPacket(48'hFFFF_FFFF_FFFF, 48'hE091_F5B4_06B0, 32'hC0A80101, 32'hC0A80120);
     #1_000;
@@ -436,6 +436,8 @@ mac_rgmii mac(
     .mac_rx_valid_o(),
     .mac_rx_sof_o  (),
     .mac_rx_eof_o  (),
+    .mac_rx_crc_good_o(),  // generated only if CRC is valid
+    .mac_rx_fr_err_o(),
     .mac_rx_clk_o  (),
 
     .phy_txd   (txd   ),

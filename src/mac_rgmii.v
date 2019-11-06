@@ -28,7 +28,8 @@ module mac_rgmii(
     output reg       mac_rx_valid_o = 0,
     output reg       mac_rx_sof_o = 0,
     output reg       mac_rx_eof_o = 0,
-    // output reg       mac_rx_crc_good_o = 0,  // generated only if CRC is valid
+    output reg       mac_rx_crc_good_o = 0,  // generated only if CRC is valid
+    output reg       mac_rx_fr_err_o = 0,
     output           mac_rx_clk_o,      // global clock
 
     // transmit channel, phy side (RGMII)
@@ -207,67 +208,67 @@ endgenerate
 // ------------------------------------------------------------------------------------------
 // rx channel, register data
 // ------------------------------------------------------------------------------------------
-// wire [7:0] fifo_do0;
-// wire [7:0] fifo_do1;
-// wire [7:0] fifo_do2;
-// wire fifo_empty;
-// IN_FIFO #(
-//     .ALMOST_EMPTY_VALUE(1),          // Almost empty offset (1-2)
-//     .ALMOST_FULL_VALUE(1),           // Almost full offset (1-2)
-//     .ARRAY_MODE("ARRAY_MODE_4_X_4"), // ARRAY_MODE_4_X_8, ARRAY_MODE_4_X_4
-//     .SYNCHRONOUS_MODE("FALSE")       // Clock synchronous (FALSE)
-// ) ififo (
-//     // D0-D9: 4-bit (each) input: FIFO inputs
-//     .D0(rx_data[3:0]),         // 4-bit input: Channel 0
-//     .D1(rx_data[7:4]),         // 4-bit input: Channel 1
-//     .D2({2'd0,rx_err,rx_dv}),  // 4-bit input: Channel 2
-//     .D3(4'd0),                 // 4-bit input: Channel 3
-//     .D4(4'd0),                 // 4-bit input: Channel 4
-//     .D5(8'd0),                 // 8-bit input: Channel 5
-//     .D6(8'd0),                 // 8-bit input: Channel 6
-//     .D7(4'd0),                 // 4-bit input: Channel 7
-//     .D8(4'd0),                 // 4-bit input: Channel 8
-//     .D9(4'd0),                 // 4-bit input: Channel 9
-//     .WREN(1'b1),               // 1-bit input: Write enable
-//     .WRCLK(mac_rx_clk),        // 1-bit input: Write clock
-//     // Q0-Q9: 8-bit (each) output: FIFO Outputs
-//     .Q0(fifo_do0),             // 8-bit output: Channel 0
-//     .Q1(fifo_do1),             // 8-bit output: Channel 1
-//     .Q2(fifo_do2),             // 8-bit output: Channel 2
-//     .Q3(),                     // 8-bit output: Channel 3
-//     .Q4(),                     // 8-bit output: Channel 4
-//     .Q5(),                     // 8-bit output: Channel 5
-//     .Q6(),                     // 8-bit output: Channel 6
-//     .Q7(),                     // 8-bit output: Channel 7
-//     .Q8(),                     // 8-bit output: Channel 8
-//     .Q9(),                     // 8-bit output: Channel 9
-//     .RDEN(1'b1),               // 1-bit input: Read enable
-//     .RDCLK(mac_rx_clk),        // 1-bit input: Read clock
-//     // FIFO Status Flags: 1-bit (each) output: Flags and other FIFO status outputs
-//     .ALMOSTEMPTY(),     // 1-bit output: Almost empty
-//     .ALMOSTFULL(),      // 1-bit output: Almost full
-//     .EMPTY(fifo_empty), // 1-bit output: Empty
-//     .FULL(),            // 1-bit output: Full
+wire [7:0] fifo_do0;
+wire [7:0] fifo_do1;
+wire [7:0] fifo_do2;
+wire fifo_empty;
+IN_FIFO #(
+    .ALMOST_EMPTY_VALUE(1),          // Almost empty offset (1-2)
+    .ALMOST_FULL_VALUE(1),           // Almost full offset (1-2)
+    .ARRAY_MODE("ARRAY_MODE_4_X_4"), // ARRAY_MODE_4_X_8, ARRAY_MODE_4_X_4
+    .SYNCHRONOUS_MODE("FALSE")       // Clock synchronous (FALSE)
+) ififo (
+    // D0-D9: 4-bit (each) input: FIFO inputs
+    .D0(rx_data[3:0]),         // 4-bit input: Channel 0
+    .D1(rx_data[7:4]),         // 4-bit input: Channel 1
+    .D2({2'd0,rx_err,rx_dv}),  // 4-bit input: Channel 2
+    .D3(4'd0),                 // 4-bit input: Channel 3
+    .D4(4'd0),                 // 4-bit input: Channel 4
+    .D5(8'd0),                 // 8-bit input: Channel 5
+    .D6(8'd0),                 // 8-bit input: Channel 6
+    .D7(4'd0),                 // 4-bit input: Channel 7
+    .D8(4'd0),                 // 4-bit input: Channel 8
+    .D9(4'd0),                 // 4-bit input: Channel 9
+    .WREN(1'b1),               // 1-bit input: Write enable
+    .WRCLK(mac_rx_clk),        // 1-bit input: Write clock
+    // Q0-Q9: 8-bit (each) output: FIFO Outputs
+    .Q0(fifo_do0),             // 8-bit output: Channel 0
+    .Q1(fifo_do1),             // 8-bit output: Channel 1
+    .Q2(fifo_do2),             // 8-bit output: Channel 2
+    .Q3(),                     // 8-bit output: Channel 3
+    .Q4(),                     // 8-bit output: Channel 4
+    .Q5(),                     // 8-bit output: Channel 5
+    .Q6(),                     // 8-bit output: Channel 6
+    .Q7(),                     // 8-bit output: Channel 7
+    .Q8(),                     // 8-bit output: Channel 8
+    .Q9(),                     // 8-bit output: Channel 9
+    .RDEN(1'b1),               // 1-bit input: Read enable
+    .RDCLK(mac_rx_clk),        // 1-bit input: Read clock
+    // FIFO Status Flags: 1-bit (each) output: Flags and other FIFO status outputs
+    .ALMOSTEMPTY(),     // 1-bit output: Almost empty
+    .ALMOSTFULL(),      // 1-bit output: Almost full
+    .EMPTY(fifo_empty), // 1-bit output: Empty
+    .FULL(),            // 1-bit output: Full
 
-//     .RESET(rst)
-// );
+    .RESET(rst)
+);
 
-// wire [7:0] rx_data_d;
-// wire rx_dv_d;
-// wire rx_err_d;
-// assign rx_data_d[3:0] = fifo_do0[7:0];
-// assign rx_data_d[7:4] = fifo_do1[7:0];
-// assign rx_dv_d = fifo_do2[0];
-// assign rx_err_d = fifo_do2[1];
+wire [7:0] rx_data_d;
+wire rx_dv_d;
+wire rx_err_d;
+assign rx_data_d[3:0] = fifo_do0[7:0];
+assign rx_data_d[7:4] = fifo_do1[7:0];
+assign rx_dv_d = fifo_do2[0];
+assign rx_err_d = fifo_do2[1];
 
-reg [7:0] rx_data_d = 8'd0;
-reg rx_dv_d = 1'b0;
-reg rx_err_d = 1'b0;
-always @(posedge mac_rx_clk) begin
-    rx_data_d <= rx_data;
-    rx_dv_d <= rx_dv;
-    rx_err_d <= rx_err;
-end
+// reg [7:0] rx_data_d = 8'd0;
+// reg rx_dv_d = 1'b0;
+// reg rx_err_d = 1'b0;
+// always @(posedge mac_rx_clk) begin
+//     rx_data_d <= rx_data;
+//     rx_dv_d <= rx_dv;
+//     rx_err_d <= rx_err;
+// end
 
 reg [1:0] sr_rx_dv_d = 0;
 always @(posedge mac_rx_clk) begin
@@ -288,7 +289,7 @@ end
 // rx channel, CRC calculation
 // ------------------------------------------------------------------------------------------
 always @(posedge mac_rx_clk) begin
-    if (rx_dv_d == 1'b0) begin  
+    if (rx_dv_d == 1'b0) begin
         rx_cnt <= 0;
     end else begin
         rx_cnt <= rx_cnt + 1'b1;
@@ -297,9 +298,9 @@ end
 
 always @(posedge mac_rx_clk) begin
     rx_crc_rst <= (rx_cnt == 5);
-    if (rx_dv_d == 1'b0) begin 
+    if (rx_dv_d == 1'b0) begin
         rx_crc_en <= 0;
-    end else if (rx_cnt == 7) begin 
+    end else if (rx_cnt == 7) begin
         rx_crc_en <= 1;
     end
 end
@@ -318,7 +319,7 @@ mac_crc rx_crc(
 // ------------------------------------------------------------------------------------------
 reg mac_rx_crc_good = 1'b0;
 always @(posedge mac_rx_clk) begin
-    if (rx_cnt == 9) begin 
+    if (rx_cnt == 9) begin
         mac_rx_valid <= 1;
     end else if (mac_rx_eof) begin // || !sr_rx_dv_d[1]) begin
         mac_rx_valid <= 0;
@@ -326,7 +327,7 @@ always @(posedge mac_rx_clk) begin
     mac_rx_sof <= (rx_cnt == 9);
     mac_rx_eof <= (sr_rx_dv_d[0] & !rx_dv_d);
     mac_rx_crc_good <= (rx_crc_out == 32'hC704DD7B); // CRC32 residue detection
-    mac_rx_fr_err <= (rx_dv_d & !rx_err_d); //!(sr_rx_dv_d[0] & !rx_dv_d) & 
+    mac_rx_fr_err <= (rx_dv_d & !rx_err_d); //!(sr_rx_dv_d[0] & !rx_dv_d) &
 
     rx_data_dd <= rx_data_d;
     mac_rx_data <= rx_data_dd;
@@ -340,6 +341,7 @@ end
 (* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_sof = 1'b0;
 (* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_eof = 1'b0;
 (* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_crc_good = 1'b0;
+(* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_fr_err = 1'b0;
 (* ASYNC_REG = "TRUE" *) reg [3:0] sr_status = 0;
 
 assign mac_rx_clk_o = mac_rx_clk;
@@ -350,13 +352,15 @@ always @(posedge mac_rx_clk) begin
     sr_mac_rx_sof   <= mac_rx_sof  ;
     sr_mac_rx_eof   <= mac_rx_eof  ;
     sr_mac_rx_crc_good <= mac_rx_crc_good;
+    sr_mac_rx_fr_err <= mac_rx_fr_err;
     sr_status   <= status  ;
 
     mac_rx_data_o  <= sr_mac_rx_data  ;
     mac_rx_valid_o <= sr_mac_rx_valid ;
     mac_rx_sof_o   <= sr_mac_rx_sof   ;
     mac_rx_eof_o   <= sr_mac_rx_eof   ;
-    // mac_rx_crc_good_o <= sr_mac_rx_crc_good;
+    mac_rx_crc_good_o <= sr_mac_rx_crc_good;
+    mac_rx_fr_err_o <= sr_mac_rx_fr_err;
     status_o   <= sr_status;
 end
 

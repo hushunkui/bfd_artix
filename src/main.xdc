@@ -7,10 +7,8 @@
 
 set_property PACKAGE_PIN H14 [get_ports {dbg_out[0]}]
 set_property PACKAGE_PIN D10 [get_ports {dbg_out[1]}]
-
 set_property IOSTANDARD LVCMOS33 [get_ports {dbg_out[0]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {dbg_out[1]}]
-
 
 set_property PACKAGE_PIN T14 [get_ports sysclk25]
 set_property IOSTANDARD LVCMOS33 [get_ports sysclk25]
