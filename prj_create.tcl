@@ -67,6 +67,9 @@ add_files -norecurse $script_folder/src/main.v
 add_files -norecurse $script_folder/src/firmware_rev.v
 add_files -norecurse $script_folder/src/mac_rgmii.v
 add_files -norecurse $script_folder/src/mac_crc.v
+add_files -norecurse $script_folder/src/vicg_common_pkg.vhd
+add_files -norecurse $script_folder/src/time_gen.vhd
+add_files -norecurse $script_folder/src/fpga_test_01.vhd
 add_files -norecurse $script_folder/src/core_gen/eth_mac/eth_mac.xci
 add_files -norecurse $script_folder/src/core_gen/clk25_wiz0/clk25_wiz0.xci
 set_property include_dirs $script_folder/src [current_fileset]
