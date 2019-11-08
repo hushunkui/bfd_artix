@@ -65,6 +65,8 @@ add_files -fileset constrs_1 -norecurse $script_folder/src/main.xdc
 
 add_files -norecurse $script_folder/src/main.v
 add_files -norecurse $script_folder/src/firmware_rev.v
+add_files -norecurse $script_folder/src/mac_rgmii.v
+add_files -norecurse $script_folder/src/mac_crc.v
 add_files -norecurse $script_folder/src/core_gen/eth_mac/eth_mac.xci
 add_files -norecurse $script_folder/src/core_gen/clk25_wiz0/clk25_wiz0.xci
 set_property include_dirs $script_folder/src [current_fileset]
