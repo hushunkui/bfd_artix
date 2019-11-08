@@ -17,7 +17,7 @@ vlib work
 
 #Compile files in sim folder (excluding model parameter file)#
 #$XILINX variable must be set
-vlog  $env(XILINX)/verilog/src/glbl.v
+vlog  $env(XILINX_VV)/data/verilog/src/glbl.v
 
 vlog ../src/mac_crc.v
 vlog -modelsimini $inifile ../src/mac_rgmii.v
