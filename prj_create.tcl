@@ -40,9 +40,15 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 # project, but make sure you do not have an existing project
 # <./myproj/project_1.xpr> in the current working folder.
 
+set vv_path $::env(XILINX_VV)
+if {![file exist $vv_path/data/boards/board_files/TE0714_35_2I/1.0]} {
+    file copy -force $script_folder/board/TE0714_35_2I $vv_path/data/boards/board_files
+}
+
 set list_projs [get_projects -quiet]
 if { $list_projs eq "" } {
    create_project -force artix_base $script_folder/vv -part xc7a35tcsg325-2
+   set_property BOARD_PART trenz.biz:te0714_35_2i:part0:1.0 [current_project]
    set origin_dir "."
    set obj [get_projects artix_base]
 #   set_property "ip_repo_paths" "[file normalize "$origin_dir/src/vv_ip_repo"]" $obj

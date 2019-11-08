@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?> 
+<!-- ##################################################################### -->
+<!-- ##TE File Version:1.0-->
+<!-- ##TE Last Modification:2016.10.12-->
+<!-- ##################################################################### -->
+<!-- ## replace part_name with correct FPGA PART from board.xml-->
+<part_info part_name="xc7a35tcsg325-2">
+<pins>
+    <!--insert ip pin settings and locations here, see ug895 or other board part files-->
+    <pin index="0" name="sys_clk" iostandard="LVCMOS18" loc="T14"/>
+
+    <pin index="1" name ="MOD_LED" iostandard="LVCMOS18" loc="K18"/>    
+    <pin index="2" name ="EN_GTPWR" iostandard="LVCMOS18" loc="M15"/>    
+
+    <pin index="3" name="spi_ss"   iostandard="LVCMOS18" loc="L15"/>
+    <pin index="4" name="spi_io_0" iostandard="LVCMOS18" loc="K16"/>
+    <pin index="5" name="spi_io_1" iostandard="LVCMOS18" loc="L17"/>
+    <pin index="6" name="spi_io_2" iostandard="LVCMOS18" loc="J15"/>
+    <pin index="7" name="spi_io_3" iostandard="LVCMOS18" loc="J16"/>
+
+    <pin index="8" name="JM2_98"  iostandard="LVCMOS18" loc="U10"/>
+    <pin index="9" name="JM2_100" iostandard="LVCMOS18" loc="L14"/>
+    
+  </pins>
+</part_info>
