@@ -3,6 +3,7 @@
 #
 
 set bit_file ./firmware/bfd_artix_firmware.bit
+set fpga_index 0
 
 if {![file exist $bit_file]} {
     puts "error can't find [file normalize $bit_file]"
@@ -13,8 +14,8 @@ if {![file exist $bit_file]} {
 open_hw
 connect_hw_server -url localhost:3121
 open_hw_target
-refresh_hw_device [lindex [get_hw_devices] 0]
-current_hw_device [lindex [get_hw_devices] 0]
+refresh_hw_device [lindex [get_hw_devices] $fpga_index]
+current_hw_device [lindex [get_hw_devices] $fpga_index
 set_property PROGRAM.FILE $bit_file [current_hw_device]
 # set_property PROBES.FILE {} [current_hw_device]
 # set_property FULL_PROBES.FILE {} [current_hw_device]
