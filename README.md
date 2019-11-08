@@ -3,6 +3,9 @@
 * `./src` - исходники проекта FPGA
 * `./firmware`
 * `./sim` - моделирование
+* `./jtag_download.bat` - сценарий загрузки прошивки через JTAG
+* `./flash_download.bat` - сценарий загрузки прошивки в SPI flash
+* `./flash_file_generate.bat` - сценарий конвертирования прошивки FPGA (BIT файл) в файл для загрузки в SPI flash
 
 ## Создание проекта Xilinx Vivado
 * Скорректировать переменные среды Windows:
