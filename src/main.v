@@ -307,7 +307,23 @@ assign dbg_out[1] = |firmware_date &
                     |mac_tx_reset
                     ;
 
-assign dbg_led = 1'b0;
+// assign dbg_led = 1'b0;
+
+fpga_test_01 #(
+    .G_BLINK_T05(125),  // -- 1/2 ïåðèîäà ìèãàíèÿ ñâåòîäèîäà.(âðåìÿ â ms)
+    .G_CLK_T05us(13) //-- êîë-âî ïåðèîäîâ ÷àñòîòû ïîðòà p_in_clk óêëàäûâàþùèåñÿ â 1/2 ïåðèîäà 1us
+) test_led (
+    .p_out_test_led (dbg_led),
+    .p_out_test_done(),
+
+    .p_out_1us  (),
+    .p_out_1ms  (),
+    .p_out_1s   (),
+
+    .p_in_clken (1'b1),
+    .p_in_clk   (sysclk25),
+    .p_in_rst   (1'b0)
+);
 
 
 
