@@ -78,6 +78,7 @@ add_files -norecurse $script_folder/src/time_gen.vhd
 add_files -norecurse $script_folder/src/fpga_test_01.vhd
 add_files -norecurse $script_folder/src/core_gen/eth_mac/eth_mac.xci
 add_files -norecurse $script_folder/src/core_gen/clk25_wiz0/clk25_wiz0.xci
+add_files -norecurse $script_folder/src/core_gen/ila_0/ila_0.xci
 set_property include_dirs $script_folder/src [current_fileset]
 
 add_files -fileset sim_1 -norecurse $script_folder/sim/main_tb.v

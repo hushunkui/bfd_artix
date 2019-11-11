@@ -45,6 +45,10 @@ module main #(
     input sysclk25
 );
 
+wire [63:0] probe;
+
+wire [ETHCOUNT-1:0] mac_rx_axis_crc_good;
+wire [ETHCOUNT-1:0] mac_rx_axis_fr_err;
 
 wire [(ETHCOUNT*8)-1:0] mac_rx_axis_tdata ;
 wire [ETHCOUNT-1:0]     mac_rx_axis_tvalid;
@@ -54,10 +58,10 @@ wire [ETHCOUNT-1:0]     mac_rx_aclk;
 wire [ETHCOUNT-1:0]     mac_rx_reset;
 wire [79:0]             mac_rx_cfg_vector;
 
-reg [(ETHCOUNT*8)-1:0] mac_tx_axis_tdata  = 0;
-reg [ETHCOUNT-1:0]     mac_tx_axis_tvalid = 0;
-reg [ETHCOUNT-1:0]     mac_tx_axis_tlast  = 0;
-reg [ETHCOUNT-1:0]     mac_tx_axis_tuser  = 0;
+wire [(ETHCOUNT*8)-1:0] mac_tx_axis_tdata ;// = 0;
+wire [ETHCOUNT-1:0]     mac_tx_axis_tvalid;// = 0;
+wire [ETHCOUNT-1:0]     mac_tx_axis_tlast ;// = 0;
+wire [ETHCOUNT-1:0]     mac_tx_axis_tuser ;// = 0;
 wire [ETHCOUNT-1:0]     mac_tx_axis_tready;
 wire [ETHCOUNT-1:0]     mac_tx_aclk;
 wire [ETHCOUNT-1:0]     mac_tx_reset;
@@ -250,8 +254,8 @@ generate
             .mac_rx_valid_o(mac_rx_axis_tvalid[x]         ),
             .mac_rx_sof_o  (mac_rx_axis_tuser [x]         ),
             .mac_rx_eof_o  (mac_rx_axis_tlast [x]         ),
-            .mac_rx_crc_good_o(),  // generated only if CRC is valid
-            .mac_rx_fr_err_o(),
+            .mac_rx_crc_good_o(mac_rx_axis_crc_good[x]),  // generated only if CRC is valid
+            .mac_rx_fr_err_o(mac_rx_axis_fr_err[x]),
             .mac_rx_clk_o  (mac_rx_aclk[x]),      // global clock
 
             // transmit channel, phy side (RGMII)
@@ -268,12 +272,12 @@ generate
             .mac_tx_clk   (mac_gtx_clk)
         );
 
-        always @(posedge mac_gtx_clk) begin
-            mac_tx_axis_tuser [x]         <= mac_rx_axis_tuser [x]         ;
-            mac_tx_axis_tlast [x]         <= mac_rx_axis_tlast [x]         ;
-            mac_tx_axis_tvalid[x]         <= mac_rx_axis_tvalid[x]         ;
-            mac_tx_axis_tdata [(x*8) +: 8]<= mac_rx_axis_tdata [(x*8) +: 8];
-        end
+        // always @(posedge mac_gtx_clk) begin
+        //     mac_tx_axis_tuser [x]         <= mac_rx_axis_tuser [x]         ;
+        //     mac_tx_axis_tlast [x]         <= mac_rx_axis_tlast [x]         ;
+        //     mac_tx_axis_tvalid[x]         <= mac_rx_axis_tvalid[x]         ;
+        //     mac_tx_axis_tdata [(x*8) +: 8]<= mac_rx_axis_tdata [(x*8) +: 8];
+        // end
 
     end
 endgenerate
@@ -328,11 +332,39 @@ fpga_test_01 #(
 
 
 
-// assign mac_tx_axis_tdata  = 0;;
-// assign mac_tx_axis_tvalid = 0;;
-// assign mac_tx_axis_tlast  = 0;;
-// assign mac_tx_axis_tuser  = 0;;
+assign mac_tx_axis_tdata  = 0;
+assign mac_tx_axis_tvalid = 0;
+assign mac_tx_axis_tlast  = 0;
+assign mac_tx_axis_tuser  = 0;
 
+// assign probe[0] = mac_rx_axis_tdata [0];
+// assign probe[1] = mac_rx_axis_tdata [1];
+// assign probe[2] = mac_rx_axis_tdata [2];
+// assign probe[3] = mac_rx_axis_tdata [3];
+// assign probe[4] = mac_rx_axis_tdata [4];
+// assign probe[5] = mac_rx_axis_tdata [5];
+// assign probe[6] = mac_rx_axis_tdata [6];
+// assign probe[7] = mac_rx_axis_tdata [7];
+// assign probe[8] = mac_rx_axis_tvalid [0];
+// assign probe[9] = mac_rx_axis_tuser [0];
+// assign probe[10] = mac_rx_axis_tlast [0];
+// assign probe[11] = mac_rx_axis_crc_good[0];
+// assign probe[12] = mac_rx_axis_fr_err[0];
+// assign probe[31:1] = 0;
+// assign probe[63:32] = 0;
+
+
+ila_0 dbg_ila (
+    .probe0({
+        mac_rx_axis_tdata[7:0],
+        mac_rx_axis_tvalid[0],
+        mac_rx_axis_tuser[0],
+        mac_rx_axis_tlast[0],
+        mac_rx_axis_crc_good[0],
+        mac_rx_axis_fr_err[0]
+    }),
+    .clk(mac_rx_aclk[0])
+);
 
 endmodule
 
