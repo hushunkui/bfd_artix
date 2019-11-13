@@ -45,7 +45,6 @@ module mac_rgmii(
     input       mac_tx_clk,
 
     input rst
-
 );
 
 function [31:0] BitReverse;
@@ -63,6 +62,7 @@ wire phy_rxc_ibuf;
 wire phy_rxc_bufio;
 wire phy_rx_ctl_ibuf;
 wire [3:0] phy_rxd_ibuf;
+wire phy_rxclk;
 wire mac_rx_clk;
 
 reg [7:0] mac_rx_data = 0;
@@ -102,11 +102,11 @@ wire [3:0] phy_txd_obuf;
 
 
 // ------------------------------------------------------------------------------------------
-// rx channel IBUFs
+// rx channel
 // ------------------------------------------------------------------------------------------
 IBUF ibuf_rxclk (.I(phy_rxc), .O(phy_rxc_ibuf));
 BUFG bufio_rxclk (.I(phy_rxc_ibuf), .O(phy_rxc_bufio));
-BUFG bufr_rxclk (.I(phy_rxc_ibuf), .O(mac_rx_clk)); //, .CE(1'b1), .CLR(0));
+BUFG bufr_rxclk (.I(phy_rxc_ibuf), .O(phy_rxclk)); //, .CE(1'b1), .CLR(0));
 
 IBUF ibuf_rxctl (.I(phy_rx_ctl), .O(phy_rx_ctl_ibuf));
 genvar a;
@@ -115,9 +115,7 @@ generate for (a=0; a<4; a=a+1) begin : ibuf_rxd
     end
 endgenerate
 
-// ------------------------------------------------------------------------------------------
 // rx channel IDELAYE2 for data and ctl inputs
-// ------------------------------------------------------------------------------------------
 localparam RX_DATA_DELAY = 12; // 13 - 0.085 setup
 
 IDELAYE2 #(
@@ -143,7 +141,6 @@ IDELAYE2 #(
     .LDPIPEEN   (1'b0),             // 1-bit input: Enable PIPELINE register to load data input
     .REGRST     (rst)               // 1-bit input: Active-high reset tap-delay input
 );
-
 
 genvar b;
 generate for (b=0; b<4; b=b+1) begin : idelay_rxd
@@ -173,10 +170,7 @@ generate for (b=0; b<4; b=b+1) begin : idelay_rxd
     end
 endgenerate
 
-
-// ------------------------------------------------------------------------------------------
 // IDDR for rx channel
-// ------------------------------------------------------------------------------------------
 wire rx_dv;
 wire rx_err;
 wire [7:0] rx_data;
@@ -203,11 +197,7 @@ generate for (c=0; c<4; c=c+1) begin : iddr_rxd
     end
 endgenerate
 
-
-
-// ------------------------------------------------------------------------------------------
 // rx channel, register data
-// ------------------------------------------------------------------------------------------
 wire [7:0] fifo_do0;
 wire [7:0] fifo_do1;
 wire [7:0] fifo_do2;
@@ -230,7 +220,7 @@ IN_FIFO #(
     .D8(4'd0),                 // 4-bit input: Channel 8
     .D9(4'd0),                 // 4-bit input: Channel 9
     .WREN(1'b1),               // 1-bit input: Write enable
-    .WRCLK(mac_rx_clk),        // 1-bit input: Write clock
+    .WRCLK(phy_rxclk),        // 1-bit input: Write clock
     // Q0-Q9: 8-bit (each) output: FIFO Outputs
     .Q0(fifo_do0),             // 8-bit output: Channel 0
     .Q1(fifo_do1),             // 8-bit output: Channel 1
@@ -260,7 +250,9 @@ assign rx_data_d[3:0] = fifo_do0[7:0];
 assign rx_data_d[7:4] = fifo_do1[7:0];
 assign rx_dv_d = fifo_do2[0];
 assign rx_err_d = fifo_do2[1];
+assign mac_rx_clk = mac_tx_clk;
 
+// assign mac_rx_clk = phy_rxclk;
 // reg [7:0] rx_data_d = 8'd0;
 // reg rx_dv_d = 1'b0;
 // reg rx_err_d = 1'b0;
@@ -276,18 +268,14 @@ always @(posedge mac_rx_clk) begin
     sr_rx_dv_d[1] <= sr_rx_dv_d[0];
 end
 
-// ------------------------------------------------------------------------------------------
 // rx channel, status registers during Interframe Gap
-// ------------------------------------------------------------------------------------------
 always @(posedge mac_rx_clk) begin
     if ((rx_dv_d == 1'b0) && (rx_err_d == 1'b0)) begin
         status[3:0] <= rx_data_d[3:0];
     end
 end
 
-// ------------------------------------------------------------------------------------------
 // rx channel, CRC calculation
-// ------------------------------------------------------------------------------------------
 always @(posedge mac_rx_clk) begin
     if (rx_dv_d == 1'b0) begin
         rx_cnt <= 0;
@@ -313,10 +301,7 @@ mac_crc rx_crc(
     .clk     (mac_rx_clk)
 );
 
-
-// ------------------------------------------------------------------------------------------
 // rx channel, output stream generation
-// ------------------------------------------------------------------------------------------
 reg mac_rx_crc_good = 1'b0;
 always @(posedge mac_rx_clk) begin
     if (rx_cnt == 9) begin
@@ -333,9 +318,7 @@ always @(posedge mac_rx_clk) begin
     mac_rx_data <= rx_data_dd;
 end
 
-// ------------------------------------------------------------------------------------------
 // rx channel output buffering
-// ------------------------------------------------------------------------------------------
 (* ASYNC_REG = "TRUE" *) reg [7:0] sr_mac_rx_data = 0;
 (* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_valid = 1'b0;
 (* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_sof = 1'b0;
@@ -343,9 +326,6 @@ end
 (* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_crc_good = 1'b0;
 (* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_fr_err = 1'b0;
 (* ASYNC_REG = "TRUE" *) reg [3:0] sr_status = 0;
-
-assign mac_rx_clk_o = mac_rx_clk;
-
 always @(posedge mac_rx_clk) begin
     sr_mac_rx_data  <= mac_rx_data ;
     sr_mac_rx_valid <= mac_rx_valid;
@@ -364,10 +344,12 @@ always @(posedge mac_rx_clk) begin
     status_o   <= sr_status;
 end
 
+assign mac_rx_clk_o = mac_rx_clk;
 
 // ------------------------------------------------------------------------------------------
-// tx channel, make preamble and CRC
+// tx channel
 // ------------------------------------------------------------------------------------------
+// make preamble and CRC
 assign tx_crc_corrected = BitReverse(~tx_crc_out);
 
 always @(posedge mac_tx_clk) begin
@@ -407,10 +389,7 @@ mac_crc tx_crc(
     .clk     (mac_tx_clk)
 );
 
-
-// ------------------------------------------------------------------------------------------
 // tx channel, make DDR from 8 bit data
-// ------------------------------------------------------------------------------------------
 ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) oddr_txclk (
     .D1 (1'b1),
     .D2 (1'b0),
@@ -442,10 +421,7 @@ generate for (d=0; d<4; d=d+1) begin : oddr_txd
     end
 endgenerate
 
-
-// ------------------------------------------------------------------------------------------
 // tx channel, rgmii OBUF
-// ------------------------------------------------------------------------------------------
 OBUF obuf_txclk (.I(phy_txc_obuf), .O(phy_txc));
 OBUF obuf_txctl (.I(phy_tx_ctl_obuf), .O(phy_tx_ctl));
 genvar e;
