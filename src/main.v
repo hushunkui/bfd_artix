@@ -148,7 +148,6 @@ BUFG sysclk25_bufg (
     .I(sysclk25), .O(sysclk25_g)
 );
 
-
 wire pll0_locked;
 wire clk200M;
 clk25_wiz0 pll0(
@@ -186,7 +185,7 @@ IDELAYCTRL idelayctrl (
 genvar x;
 generate
     for (x=0; x < ETHCOUNT; x=x+1) begin : eth
-        assign eth_phy_rst[x] = 1'b0;
+        assign eth_phy_rst[x] = ~pll0_locked;
 
         // eth_mac rgmii (
         //   .rx_statistics_vector(), // output wire [27 : 0] rx_statistics_vector
