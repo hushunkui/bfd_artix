@@ -173,9 +173,7 @@ process(clk) begin
                             fsm_cs<=S_IDLE;
                         end if;
                     end if;
-
             end case;
-
         end if;
     end if;
 end process;
