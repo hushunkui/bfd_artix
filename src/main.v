@@ -47,7 +47,7 @@ module main #(
 
 wire [63:0] probe;
 
-wire [ETHCOUNT-1:0] mac_rx_axis_crc_good;
+wire [ETHCOUNT-1:0] mac_rx_axis_fr_good;
 wire [ETHCOUNT-1:0] mac_rx_axis_fr_err;
 
 wire [(ETHCOUNT*8)-1:0] mac_rx_axis_tdata ;
@@ -253,7 +253,7 @@ generate
             .mac_rx_valid_o(mac_rx_axis_tvalid[x]         ),
             .mac_rx_sof_o  (mac_rx_axis_tuser [x]         ),
             .mac_rx_eof_o  (mac_rx_axis_tlast [x]         ),
-            .mac_rx_crc_good_o(mac_rx_axis_crc_good[x]),  // generated only if CRC is valid
+            .mac_rx_fr_good_o(mac_rx_axis_fr_good[x]),  // generated only if CRC is valid
             .mac_rx_fr_err_o(mac_rx_axis_fr_err[x]),
             .mac_rx_clk_o  (mac_rx_aclk[x]),      // global clock
 
@@ -268,7 +268,9 @@ generate
             .mac_tx_sof   (mac_tx_axis_tuser [x]         ),
             .mac_tx_eof   (mac_tx_axis_tlast [x]         ),
             .mac_tx_clk_90(mac_gtx_clk90),
-            .mac_tx_clk   (mac_gtx_clk)
+            .mac_tx_clk   (mac_gtx_clk),
+
+            .rst(pll0_locked)
         );
 
         // always @(posedge mac_gtx_clk) begin
@@ -347,7 +349,7 @@ assign mac_tx_axis_tuser  = 0;
 // assign probe[8] = mac_rx_axis_tvalid [0];
 // assign probe[9] = mac_rx_axis_tuser [0];
 // assign probe[10] = mac_rx_axis_tlast [0];
-// assign probe[11] = mac_rx_axis_crc_good[0];
+// assign probe[11] = mac_rx_axis_fr_good[0];
 // assign probe[12] = mac_rx_axis_fr_err[0];
 // assign probe[31:1] = 0;
 // assign probe[63:32] = 0;
@@ -359,7 +361,7 @@ ila_0 dbg_ila (
         mac_rx_axis_tvalid[0],
         mac_rx_axis_tuser[0],
         mac_rx_axis_tlast[0],
-        mac_rx_axis_crc_good[0],
+        mac_rx_axis_fr_good[0],
         mac_rx_axis_fr_err[0]
     }),
     .clk(mac_rx_aclk[0])

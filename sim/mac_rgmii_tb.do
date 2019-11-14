@@ -21,9 +21,11 @@ vlog  $env(XILINX_VV)/data/verilog/src/glbl.v
 
 vlog ../src/mac_crc.v
 vlog -modelsimini $inifile ../src/mac_rgmii.v
+vlog -modelsimini $inifile ../src/core_gen/clk25_wiz0/clk25_wiz0.v
+vlog -modelsimini $inifile ../src/core_gen/clk25_wiz0/clk25_wiz0_clk_wiz.v
 vlog ./mac_rgmii_tb.v
 
-vsim -modelsimini $inifile -t 1ps -novopt +notimingchecks -L unisims_ver -L secureip  -lib work mac_rgmii_tb glbl
+vsim -modelsimini $inifile -t 1ps -novopt +notimingchecks -L unisims_ver -L secureip -lib work mac_rgmii_tb glbl
 
 
 #--------------------------

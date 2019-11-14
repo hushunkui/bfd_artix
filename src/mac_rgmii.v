@@ -1,13 +1,6 @@
-//-----------------------------------------------------------------------
-// Engineer    : Romashko Dmitry
 //
-// Create Date :
+//author: Romashko Dmitry
 //
-// Description : Stream to RGMII converter. Checks CRC on receive channel
-//               and generates on transmit channel.
-//
-//               Important: Module works at Eth 1Gb only!!!!!
-//------------------------------------------------------------------------
 module mac_rgmii(
 //    output [3:0] dbg,
     output reg [3:0] status_o = 0, /** [0] - link up/down = 1/0
@@ -28,7 +21,7 @@ module mac_rgmii(
     output reg       mac_rx_valid_o = 0,
     output reg       mac_rx_sof_o = 0,
     output reg       mac_rx_eof_o = 0,
-    output reg       mac_rx_crc_good_o = 0,  // generated only if CRC is valid
+    output reg       mac_rx_fr_good_o = 0,  // generated only if CRC is valid
     output reg       mac_rx_fr_err_o = 0,
     output           mac_rx_clk_o,      // global clock
 
@@ -110,7 +103,8 @@ BUFG bufr_rxclk (.I(phy_rxc_ibuf), .O(phy_rxclk)); //, .CE(1'b1), .CLR(0));
 
 IBUF ibuf_rxctl (.I(phy_rx_ctl), .O(phy_rx_ctl_ibuf));
 genvar a;
-generate for (a=0; a<4; a=a+1) begin : ibuf_rxd
+generate for (a=0; a<4; a=a+1)
+    begin : ibuf_rxd
         IBUF inst (.I(phy_rxd[a]), .O(phy_rxd_ibuf[a]));
     end
 endgenerate
@@ -143,7 +137,8 @@ IDELAYE2 #(
 );
 
 genvar b;
-generate for (b=0; b<4; b=b+1) begin : idelay_rxd
+generate for (b=0; b<4; b=b+1)
+    begin : idelay_rxd
         IDELAYE2 #(
             .CINVCTRL_SEL("FALSE"),          // Enable dynamic clock inversion (FALSE, TRUE)
             .DELAY_SRC("IDATAIN"),           // Delay input (IDATAIN, DATAIN)
@@ -185,7 +180,8 @@ IDDR #(.DDR_CLK_EDGE(IDDR_MODE)) iddr_rx_ctrl (
 );
 
 genvar c;
-generate for (c=0; c<4; c=c+1) begin : iddr_rxd
+generate for (c=0; c<4; c=c+1)
+    begin : iddr_rxd
         IDDR #(.DDR_CLK_EDGE(IDDR_MODE)) inst (
             .D(phy_rxd_delay[c]),
             .Q1(rx_data[c]),
@@ -250,7 +246,7 @@ assign rx_data_d[3:0] = fifo_do0[7:0];
 assign rx_data_d[7:4] = fifo_do1[7:0];
 assign rx_dv_d = fifo_do2[0];
 assign rx_err_d = fifo_do2[1];
-assign mac_rx_clk = mac_tx_clk;
+assign mac_rx_clk = phy_rxclk;//mac_tx_clk;
 
 // assign mac_rx_clk = phy_rxclk;
 // reg [7:0] rx_data_d = 8'd0;
@@ -302,7 +298,7 @@ mac_crc rx_crc(
 );
 
 // rx channel, output stream generation
-reg mac_rx_crc_good = 1'b0;
+reg mac_rx_fr_good = 1'b0;
 always @(posedge mac_rx_clk) begin
     if (rx_cnt == 9) begin
         mac_rx_valid <= 1;
@@ -311,7 +307,7 @@ always @(posedge mac_rx_clk) begin
     end
     mac_rx_sof <= (rx_cnt == 9);
     mac_rx_eof <= (sr_rx_dv_d[0] & !rx_dv_d);
-    mac_rx_crc_good <= (rx_crc_out == 32'hC704DD7B); // CRC32 residue detection
+    mac_rx_fr_good <= (rx_crc_out == 32'hC704DD7B); // CRC32 residue detection
     mac_rx_fr_err <= (rx_dv_d & !rx_err_d); //!(sr_rx_dv_d[0] & !rx_dv_d) &
 
     rx_data_dd <= rx_data_d;
@@ -323,7 +319,7 @@ end
 (* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_valid = 1'b0;
 (* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_sof = 1'b0;
 (* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_eof = 1'b0;
-(* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_crc_good = 1'b0;
+(* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_fr_good = 1'b0;
 (* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_fr_err = 1'b0;
 (* ASYNC_REG = "TRUE" *) reg [3:0] sr_status = 0;
 always @(posedge mac_rx_clk) begin
@@ -331,7 +327,7 @@ always @(posedge mac_rx_clk) begin
     sr_mac_rx_valid <= mac_rx_valid;
     sr_mac_rx_sof   <= mac_rx_sof  ;
     sr_mac_rx_eof   <= mac_rx_eof  ;
-    sr_mac_rx_crc_good <= mac_rx_crc_good;
+    sr_mac_rx_fr_good <= mac_rx_fr_good;
     sr_mac_rx_fr_err <= mac_rx_fr_err;
     sr_status   <= status  ;
 
@@ -339,7 +335,7 @@ always @(posedge mac_rx_clk) begin
     mac_rx_valid_o <= sr_mac_rx_valid ;
     mac_rx_sof_o   <= sr_mac_rx_sof   ;
     mac_rx_eof_o   <= sr_mac_rx_eof   ;
-    mac_rx_crc_good_o <= sr_mac_rx_crc_good;
+    mac_rx_fr_good_o <= sr_mac_rx_fr_good;
     mac_rx_fr_err_o <= sr_mac_rx_fr_err;
     status_o   <= sr_status;
 end
@@ -409,7 +405,8 @@ ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) oddr_txctl (
 );
 
 genvar d;
-generate for (d=0; d<4; d=d+1) begin : oddr_txd
+generate for (d=0; d<4; d=d+1)
+    begin : oddr_txd
         ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) inst (
             .D1 (tx_data[d]),
             .D2 (tx_data[d+4]),
@@ -425,7 +422,8 @@ endgenerate
 OBUF obuf_txclk (.I(phy_txc_obuf), .O(phy_txc));
 OBUF obuf_txctl (.I(phy_tx_ctl_obuf), .O(phy_tx_ctl));
 genvar e;
-generate for (e=0; e<4; e=e+1) begin : obuf_txd
+generate for (e=0; e<4; e=e+1)
+    begin : obuf_txd
         OBUF inst (.I(phy_txd_obuf[e]), .O(phy_txd[e]));
     end
 endgenerate

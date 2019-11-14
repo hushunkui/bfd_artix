@@ -1,10 +1,14 @@
 onerror {resume}
 quietly WaveActivateNextPane {} 0
+add wave -noupdate /mac_rgmii_tb/rst
+add wave -noupdate /mac_rgmii_tb/mac_gtx_clk
+add wave -noupdate /mac_rgmii_tb/mac_gtx_clk90
+add wave -noupdate /mac_rgmii_tb/pll0_locked
+add wave -noupdate /mac_rgmii_tb/mac/rst
 add wave -noupdate /mac_rgmii_tb/mac/phy_rxd
 add wave -noupdate /mac_rgmii_tb/mac/phy_rx_ctl
 add wave -noupdate /mac_rgmii_tb/mac/phy_rxc
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_clk
-add wave -noupdate /mac_rgmii_tb/mac/rst
 add wave -noupdate /mac_rgmii_tb/mac/rx_data
 add wave -noupdate /mac_rgmii_tb/mac/rx_dv
 add wave -noupdate /mac_rgmii_tb/mac/rx_err
@@ -18,7 +22,7 @@ add wave -noupdate /mac_rgmii_tb/mac/mac_rx_data
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_valid
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_sof
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_eof
-add wave -noupdate /mac_rgmii_tb/mac/mac_rx_crc_good
+add wave -noupdate /mac_rgmii_tb/mac/mac_rx_fr_good
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_fr_err
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_data_o
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_valid_o
@@ -50,4 +54,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {2124202 ps} {2268395 ps}
+WaveRestoreZoom {0 ps} {5250 ns}

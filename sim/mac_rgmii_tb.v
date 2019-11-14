@@ -4,9 +4,8 @@
 `timescale 1ns / 1ps
 module mac_rgmii_tb();
 
-reg sysclk_p = 1;
-always #2.5 sysclk_p = ~sysclk_p;
-wire sysclk_n = ~sysclk_p;
+reg clk = 1;
+always #4 clk = ~clk;
 
 reg rxc = 1;
 always #4 rxc = ~rxc;
@@ -46,7 +45,7 @@ function[31:0]  NextCRC;
     input[31:0]     C;
     reg[31:0]       NewCRC;
     begin
-    NewCRC[0]=C[24]^C[30]^D[1]^D[7];//^D[3];//
+    NewCRC[0]=C[24]^C[30]^D[1]^D[7];//^D[3]; // add ^D[3] for generate error
     NewCRC[1]=C[25]^C[31]^D[0]^D[6]^C[24]^C[30]^D[1]^D[7];
     NewCRC[2]=C[26]^D[5]^C[25]^C[31]^D[0]^D[6]^C[24]^C[30]^D[1]^D[7];
     NewCRC[3]=C[27]^D[4]^C[26]^D[5]^C[25]^C[31]^D[0]^D[6];
@@ -92,7 +91,7 @@ task SendByte;
         rx_ctl = 1'b1;
         rxd = byte[3:0];
         #4;
-        rx_ctl = dbg;
+        rx_ctl = dbg; //set 1'b0 for generate error
         rxd = byte[7:4];
         tx_crc = NextCRC(byte, tx_crc);
     end
@@ -421,6 +420,23 @@ initial begin
     $finish;
 end
 
+wire pll0_locked;
+wire clk200M;
+wire mac_gtx_clk;
+wire mac_gtx_clk90;
+clk25_wiz0 pll0(
+    // Clock out ports
+    .clk_out1(mac_gtx_clk),
+    .clk_out2(mac_gtx_clk90),
+    .clk_out3(),
+    .clk_out4(clk200M),
+    // Status and control signals
+    .reset(rst), // input reset
+    .locked(pll0_locked),       // output locked
+    // Clock in ports
+    .clk_in1(clk)
+);
+
 wire txc;
 wire tx_ctl;
 wire [3:0] txd;
@@ -436,7 +452,7 @@ mac_rgmii mac(
     .mac_rx_valid_o(),
     .mac_rx_sof_o  (),
     .mac_rx_eof_o  (),
-    .mac_rx_crc_good_o(),  // generated only if CRC is valid
+    .mac_rx_fr_good_o(),  // generated only if CRC is valid
     .mac_rx_fr_err_o(),
     .mac_rx_clk_o  (),
 
@@ -448,10 +464,10 @@ mac_rgmii mac(
     .mac_tx_valid(1'b0),
     .mac_tx_sof  (1'b0),
     .mac_tx_eof  (1'b0),
-    .mac_tx_clk_90(1'b0),
-    .mac_tx_clk  (1'b0),
+    .mac_tx_clk_90(mac_gtx_clk90),
+    .mac_tx_clk  (mac_gtx_clk),
 
-    .rst(rst)
+    .rst(1'b0) //(~pll0_locked)
 );
 
 endmodule
