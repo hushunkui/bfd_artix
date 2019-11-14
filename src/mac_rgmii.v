@@ -246,7 +246,7 @@ assign rx_data_d[3:0] = fifo_do0[7:0];
 assign rx_data_d[7:4] = fifo_do1[7:0];
 assign rx_dv_d = fifo_do2[0];
 assign rx_err_d = fifo_do2[1];
-assign mac_rx_clk = mac_tx_clk;//phy_rxclk;//
+assign mac_rx_clk = mac_tx_clk;
 
 // assign mac_rx_clk = phy_rxclk;
 // reg [7:0] rx_data_d = 8'd0;
@@ -303,41 +303,67 @@ reg mac_rx_fr_good = 1'b0;
 always @(posedge mac_rx_clk) begin
     if (rx_cnt == 9) begin
         mac_rx_valid <= 1;
-    end else if (mac_rx_eof) begin // || !sr_rx_dv_d[1]) begin
+    end else if (mac_rx_eof) begin
         mac_rx_valid <= 0;
     end
     mac_rx_sof <= (rx_cnt == 9);
     mac_rx_eof <= (sr_rx_dv_d[0] & !rx_dv_d);
     mac_rx_fr_good <= (rx_crc_out == 32'hC704DD7B); // CRC32 residue detection
-    mac_rx_fr_err <= (rx_dv_d & !rx_err_d); //!(sr_rx_dv_d[0] & !rx_dv_d) &
+    mac_rx_fr_err <= (rx_dv_d & !rx_err_d);
 
     rx_data_dd <= rx_data_d;
     mac_rx_data <= rx_data_dd;
 end
 
+
 // rx channel output buffering
-(* ASYNC_REG = "TRUE" *) reg [7:0] sr_mac_rx_data = 0;
-(* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_valid = 1'b0;
-(* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_sof = 1'b0;
+reg [3:0] i;
+localparam [3:0] PIPELINE = 5;
+(* ASYNC_REG = "TRUE" *) reg [7:0] sr_mac_rx_data [PIPELINE-1:0];
+(* ASYNC_REG = "TRUE" *) reg [PIPELINE-1:0] sr_mac_rx_valid = 0;
+(* ASYNC_REG = "TRUE" *) reg [PIPELINE-1:0] sr_mac_rx_sof = 0;
 (* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_eof = 1'b0;
 (* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_fr_good = 1'b0;
 (* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_fr_err = 1'b0;
 (* ASYNC_REG = "TRUE" *) reg [3:0] sr_status = 0;
 always @(posedge mac_rx_clk) begin
-    sr_mac_rx_data  <= mac_rx_data ;
-    sr_mac_rx_valid <= mac_rx_valid;
-    sr_mac_rx_sof   <= mac_rx_sof  ;
+    // sr_mac_rx_data[0]  <= mac_rx_data ;
+    // sr_mac_rx_valid[0] <= mac_rx_valid;
+    // sr_mac_rx_sof[0]   <= mac_rx_sof  ;
+    // for(i = 0; i < (PIPELINE - 1); i = i + 1) begin
+    //     sr_mac_rx_data[i+1]  <= sr_mac_rx_data[i] ;
+    //     sr_mac_rx_valid[i+1] <= sr_mac_rx_valid[i];
+    //     sr_mac_rx_sof[i+1]   <= sr_mac_rx_sof[i]  ;
+    // end
+
+    // sr_mac_rx_eof   <= mac_rx_eof  ;
+    // sr_mac_rx_fr_good <= mac_rx_fr_good;
+    // sr_mac_rx_fr_err <= mac_rx_fr_err;
+    // sr_status   <= status  ;
+
+    // mac_rx_data_o  <= sr_mac_rx_data[4]  ;
+    // mac_rx_valid_o <= sr_mac_rx_valid[4] & sr_mac_rx_valid[0];
+    // mac_rx_sof_o   <= sr_mac_rx_sof[4]   ;
+    // mac_rx_eof_o   <= sr_mac_rx_eof;
+    // mac_rx_fr_good_o <= sr_mac_rx_fr_good;
+    // mac_rx_fr_err_o <= sr_mac_rx_fr_err;
+
+    sr_mac_rx_data[0]  <= mac_rx_data ;
+    sr_mac_rx_valid[0] <= mac_rx_valid;
+    sr_mac_rx_sof[0]   <= mac_rx_sof  ;
+
     sr_mac_rx_eof   <= mac_rx_eof  ;
-    sr_mac_rx_fr_good <= mac_rx_fr_good;
+    sr_mac_rx_fr_good <= mac_rx_fr_good & mac_rx_eof;
     sr_mac_rx_fr_err <= mac_rx_fr_err;
     sr_status   <= status  ;
 
-    mac_rx_data_o  <= sr_mac_rx_data  ;
-    mac_rx_valid_o <= sr_mac_rx_valid ;
-    mac_rx_sof_o   <= sr_mac_rx_sof   ;
-    mac_rx_eof_o   <= sr_mac_rx_eof   ;
+    mac_rx_data_o  <= sr_mac_rx_data[0] ;
+    mac_rx_valid_o <= sr_mac_rx_valid[0];
+    mac_rx_sof_o   <= sr_mac_rx_sof[0]  ;
+    mac_rx_eof_o   <= sr_mac_rx_eof;
     mac_rx_fr_good_o <= sr_mac_rx_fr_good;
     mac_rx_fr_err_o <= sr_mac_rx_fr_err;
+
     status_o   <= sr_status;
 end
 

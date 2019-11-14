@@ -386,6 +386,125 @@ task SendUARTByte;
     end
 endtask
 
+
+task SendCRC_tt;
+    input dbg;
+    reg [31:0] crc;
+    begin
+        #0.1;
+        crc = tx_crc_corr + dbg;
+        SendByte(8'h44, 1'b1);
+        SendByte(8'h21, 1'b1);
+        #4; rx_ctl = 0;
+        @(posedge rxc);
+        // rx_ctl = 0; //romashko
+        rxd = 4'hD;
+    end
+endtask
+
+task SendTestPKT;
+    begin
+        SendByte(8'h55, 1'b1);
+        SendByte(8'h55, 1'b1);
+        SendByte(8'h55, 1'b1);
+        SendByte(8'h55, 1'b1);
+        SendByte(8'h55, 1'b1);
+        SendByte(8'h55, 1'b1);
+        SendByte(8'h55, 1'b1);
+        SendByte(8'hD5, 1'b1);
+
+        SendByte(8'hFF, 1'b1);
+        SendByte(8'hFF, 1'b1);
+        SendByte(8'hFF, 1'b1);
+        SendByte(8'hFF, 1'b1);
+        SendByte(8'hFF, 1'b1);
+        SendByte(8'hFF, 1'b1);
+
+        SendByte(8'h04, 1'b1);
+        SendByte(8'h92, 1'b1);
+        SendByte(8'h26, 1'b1);
+        SendByte(8'h3E, 1'b1);
+
+        SendByte(8'hB3, 1'b1);
+        SendByte(8'h63, 1'b1);
+        SendByte(8'h08, 1'b1);
+        SendByte(8'h06, 1'b1);
+
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h01, 1'b1);
+        SendByte(8'h08, 1'b1);
+        SendByte(8'h00, 1'b1);
+
+        SendByte(8'h06, 1'b1);
+        SendByte(8'h04, 1'b1);
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h01, 1'b1);
+
+        SendByte(8'h04, 1'b1);
+        SendByte(8'h92, 1'b1);
+        SendByte(8'h26, 1'b1);
+        SendByte(8'h3e, 1'b1);
+
+        SendByte(8'hb3, 1'b1);
+        SendByte(8'h63, 1'b1);
+        SendByte(8'hc0, 1'b1);
+        SendByte(8'ha8, 1'b1);
+
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h11, 1'b1);
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h00, 1'b1);
+
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h00, 1'b1);
+
+        SendByte(8'hc0, 1'b1);
+        SendByte(8'ha8, 1'b1);
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h01, 1'b1);
+
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h00, 1'b1);
+
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h00, 1'b1);
+
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h00, 1'b1);
+
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h00, 1'b1);
+
+        SendByte(8'h00, 1'b1);
+        SendByte(8'h00, 1'b1);
+
+        SendByte(8'h69, 1'b1);
+        SendByte(8'h9c, 1'b1);
+        SendByte(8'h6d, 1'b1);
+        SendByte(8'h3b, 1'b1);
+
+        #0.1;
+        SendByte(8'h1c, 1'b1);
+        SendByte(8'hdf, 1'b1);
+        SendByte(8'h44, 1'b1);
+        SendByte(8'h21, 1'b1);
+        #4; rx_ctl = 0;
+        @(posedge rxc);
+        // rx_ctl = 0; //romashko
+        rxd = 4'hD;
+    end
+endtask
+
 reg rst = 1'b0;
 initial begin
     // $dumpfile("icarus/dump.fst");
@@ -401,9 +520,11 @@ initial begin
     SendARPPacket(48'hFFFF_FFFF_FFFF, 48'hE091_F5B4_06B0, 32'hC0A80101, 32'hC0A80120);
     #1_000;
 
-    SendTestPacket(48'hFFFF_FFFF_FFFF, 48'h0102_0304_0506);
+    // SendTestPacket(48'hFFFF_FFFF_FFFF, 48'h0102_0304_0506);
+    SendTestPKT();
     #1_000;
-    SendGVCP_Ack();
+    // SendGVCP_Ack();
+    SendTestPKT();
     #100;
 
     #30_000;

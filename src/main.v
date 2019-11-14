@@ -354,9 +354,57 @@ assign mac_tx_axis_tuser  = 0;
 // assign probe[31:1] = 0;
 // assign probe[63:32] = 0;
 
+wire [7:0] mac0_rx_axis_tdata ;
+wire       mac0_rx_axis_tvalid;
+wire       mac0_rx_axis_tlast ;
+wire       mac0_rx_axis_tuser ;
+wire       mac0_rx_axis_fr_good;
+wire       mac0_rx_axis_fr_err;
+
+wire [7:0] mac1_rx_axis_tdata ;
+wire       mac1_rx_axis_tvalid;
+wire       mac1_rx_axis_tlast ;
+wire       mac1_rx_axis_tuser ;
+wire       mac1_rx_axis_fr_good;
+wire       mac1_rx_axis_fr_err;
+
+wire [7:0] mac2_rx_axis_tdata ;
+wire       mac2_rx_axis_tvalid;
+wire       mac2_rx_axis_tlast ;
+wire       mac2_rx_axis_tuser ;
+wire       mac2_rx_axis_fr_good;
+wire       mac2_rx_axis_fr_err;
+
+wire [7:0] mac3_rx_axis_tdata ;
+wire       mac3_rx_axis_tvalid;
+wire       mac3_rx_axis_tlast ;
+wire       mac3_rx_axis_tuser ;
+wire       mac3_rx_axis_fr_good;
+wire       mac3_rx_axis_fr_err;
+
+assign mac0_rx_axis_tdata   = mac_rx_axis_tdata[7:0];
+assign mac0_rx_axis_tvalid  = mac_rx_axis_tvalid[0];
+assign mac0_rx_axis_tlast   = mac_rx_axis_tuser[0];
+assign mac0_rx_axis_tuser   = mac_rx_axis_tlast[0];
+assign mac0_rx_axis_fr_good = mac_rx_axis_fr_good[0];
+assign mac0_rx_axis_fr_err  = mac_rx_axis_fr_err[0];
+
+assign mac1_rx_axis_tdata   = mac_rx_axis_tdata[15:8];
+assign mac1_rx_axis_tvalid  = mac_rx_axis_tvalid[1];
+assign mac1_rx_axis_tlast   = mac_rx_axis_tuser[1];
+assign mac1_rx_axis_tuser   = mac_rx_axis_tlast[1];
+assign mac1_rx_axis_fr_good = mac_rx_axis_fr_good[1];
+assign mac1_rx_axis_fr_err  = mac_rx_axis_fr_err[1];
 
 ila_0 dbg_ila (
     .probe0({
+        mac_rx_axis_tdata[15:8],
+        mac_rx_axis_tvalid[1],
+        mac_rx_axis_tuser[1],
+        mac_rx_axis_tlast[1],
+        mac_rx_axis_fr_good[1],
+        mac_rx_axis_fr_err[1],
+
         mac_rx_axis_tdata[7:0],
         mac_rx_axis_tvalid[0],
         mac_rx_axis_tuser[0],
@@ -364,8 +412,25 @@ ila_0 dbg_ila (
         mac_rx_axis_fr_good[0],
         mac_rx_axis_fr_err[0]
     }),
-    .clk(mac_rx_aclk[0]) //(mac_gtx_clk) //
+    .clk(mac_gtx_clk) //(mac_rx_aclk[0]) //
 );
+
+    // .probe0({
+    //     mac1_rx_axis_tdata,
+    //     mac1_rx_axis_tvalid,
+    //     mac1_rx_axis_tuser,
+    //     mac1_rx_axis_tlast,
+    //     mac1_rx_axis_fr_good,
+    //     mac1_rx_axis_fr_err,
+
+    //     mac0_rx_axis_tdata,
+    //     mac0_rx_axis_tvalid,
+    //     mac0_rx_axis_tuser,
+    //     mac0_rx_axis_tlast,
+    //     mac0_rx_axis_fr_good,
+    //     mac0_rx_axis_fr_err
+    // }),
+
 
 endmodule
 
