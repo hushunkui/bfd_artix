@@ -246,7 +246,7 @@ assign rx_data_d[3:0] = fifo_do0[7:0];
 assign rx_data_d[7:4] = fifo_do1[7:0];
 assign rx_dv_d = fifo_do2[0];
 assign rx_err_d = fifo_do2[1];
-assign mac_rx_clk = phy_rxclk;//mac_tx_clk;
+assign mac_rx_clk = mac_tx_clk;//phy_rxclk;//
 
 // assign mac_rx_clk = phy_rxclk;
 // reg [7:0] rx_data_d = 8'd0;
@@ -271,7 +271,7 @@ always @(posedge mac_rx_clk) begin
     end
 end
 
-// rx channel, CRC calculation
+// rx channel, main rx counter
 always @(posedge mac_rx_clk) begin
     if (rx_dv_d == 1'b0) begin
         rx_cnt <= 0;
@@ -280,6 +280,7 @@ always @(posedge mac_rx_clk) begin
     end
 end
 
+// rx channel, CRC calculation
 always @(posedge mac_rx_clk) begin
     rx_crc_rst <= (rx_cnt == 5);
     if (rx_dv_d == 1'b0) begin

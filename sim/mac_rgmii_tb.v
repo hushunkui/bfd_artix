@@ -5,10 +5,10 @@
 module mac_rgmii_tb();
 
 reg clk = 1;
-always #4 clk = ~clk;
+always #20 clk = ~clk; //25MHz
 
 reg rxc = 1;
-always #4 rxc = ~rxc;
+always #4 rxc = ~rxc; //125MHz
 task tick;
     begin
         @(posedge rxc);#0;
@@ -397,7 +397,7 @@ initial begin
     #100;
     rst = 1'b0;
 
-    #1_000;
+    #6_000;
     SendARPPacket(48'hFFFF_FFFF_FFFF, 48'hE091_F5B4_06B0, 32'hC0A80101, 32'hC0A80120);
     #1_000;
 
@@ -425,15 +425,12 @@ wire clk200M;
 wire mac_gtx_clk;
 wire mac_gtx_clk90;
 clk25_wiz0 pll0(
-    // Clock out ports
-    .clk_out1(mac_gtx_clk),
+    .clk_out1(mac_gtx_clk), //125MHz
     .clk_out2(mac_gtx_clk90),
     .clk_out3(),
     .clk_out4(clk200M),
-    // Status and control signals
-    .reset(rst), // input reset
-    .locked(pll0_locked),       // output locked
-    // Clock in ports
+    .reset(rst),
+    .locked(pll0_locked),
     .clk_in1(clk)
 );
 
@@ -467,7 +464,7 @@ mac_rgmii mac(
     .mac_tx_clk_90(mac_gtx_clk90),
     .mac_tx_clk  (mac_gtx_clk),
 
-    .rst(1'b0) //(~pll0_locked)
+    .rst(~pll0_locked) //(1'b0) //
 );
 
 endmodule
