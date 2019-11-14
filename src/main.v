@@ -72,7 +72,7 @@ wire mac_gtx_clk90;
 
 wire sysrst;
 
-assign sysrst = 1'b1;
+assign sysrst = 1'b0;
 
 assign eth_phy_mdio = 1'bz;
 assign eth_phy_mdc = 1'b0;
@@ -185,7 +185,7 @@ IDELAYCTRL idelayctrl (
 genvar x;
 generate
     for (x=0; x < ETHCOUNT; x=x+1) begin : eth
-        assign eth_phy_rst[x] = ~pll0_locked;
+        assign eth_phy_rst[x] = pll0_locked;
 
         // eth_mac rgmii (
         //   .rx_statistics_vector(), // output wire [27 : 0] rx_statistics_vector
@@ -270,7 +270,7 @@ generate
             .mac_tx_clk_90(mac_gtx_clk90),
             .mac_tx_clk   (mac_gtx_clk),
 
-            .rst(pll0_locked)
+            .rst(~pll0_locked)
         );
 
         // always @(posedge mac_gtx_clk) begin
@@ -316,7 +316,7 @@ assign dbg_out[1] = |firmware_date &
 
 fpga_test_01 #(
     .G_BLINK_T05(125),  // -- 1/2 ïåðèîäà ìèãàíèÿ ñâåòîäèîäà.(âðåìÿ â ms)
-    .G_CLK_T05us(13) //-- êîë-âî ïåðèîäîâ ÷àñòîòû ïîðòà p_in_clk óêëàäûâàþùèåñÿ â 1/2 ïåðèîäà 1us
+    .G_CLK_T05us(62) //(13) //-- êîë-âî ïåðèîäîâ ÷àñòîòû ïîðòà p_in_clk óêëàäûâàþùèåñÿ â 1/2 ïåðèîäà 1us
 ) test_led (
     .p_out_test_led (dbg_led),
     .p_out_test_done(),
@@ -326,8 +326,8 @@ fpga_test_01 #(
     .p_out_1s   (),
 
     .p_in_clken (1'b1),
-    .p_in_clk   (sysclk25),
-    .p_in_rst   (1'b0)
+    .p_in_clk   (mac_rx_aclk[0]), //(mac_gtx_clk),//(sysclk25),
+    .p_in_rst   (~pll0_locked)
 );
 
 
@@ -364,7 +364,7 @@ ila_0 dbg_ila (
         mac_rx_axis_fr_good[0],
         mac_rx_axis_fr_err[0]
     }),
-    .clk(mac_rx_aclk[0])
+    .clk(mac_rx_aclk[0]) //(mac_gtx_clk) //
 );
 
 endmodule
