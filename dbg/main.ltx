@@ -98,7 +98,7 @@
         <net name="mac_rx_axis_tdata_1[0]"/>
       </nets>
     </probe>
-    <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
+    <probe type="ila" busType="net" source="netlist" spec="ILA_V2_RT">
       <probeOptions Id="DebugProbeParams">
         <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
         <Option Id="CORE_LOCATION" value="1:0"/>
@@ -110,7 +110,7 @@
         <Option Id="PROBE_PORT_BIT_COUNT" value="1"/>
       </probeOptions>
       <nets>
-        <net name="mac_rx_axis_fr_err_1[1]"/>
+        <net name="dbg_mac0_rx_fr_good"/>
       </nets>
     </probe>
     <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
@@ -125,7 +125,7 @@
         <Option Id="PROBE_PORT_BIT_COUNT" value="1"/>
       </probeOptions>
       <nets>
-        <net name="mac_rx_axis_fr_good[1]"/>
+        <net name="mac_rx_axis_fr_err_1[1]"/>
       </nets>
     </probe>
     <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
@@ -140,7 +140,7 @@
         <Option Id="PROBE_PORT_BIT_COUNT" value="1"/>
       </probeOptions>
       <nets>
-        <net name="mac_rx_axis_tlast[1]"/>
+        <net name="mac_rx_axis_fr_good[1]"/>
       </nets>
     </probe>
     <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
@@ -155,7 +155,7 @@
         <Option Id="PROBE_PORT_BIT_COUNT" value="1"/>
       </probeOptions>
       <nets>
-        <net name="mac_rx_axis_tuser[1]"/>
+        <net name="mac_rx_axis_tlast[1]"/>
       </nets>
     </probe>
     <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
@@ -170,7 +170,7 @@
         <Option Id="PROBE_PORT_BIT_COUNT" value="1"/>
       </probeOptions>
       <nets>
-        <net name="mac_rx_axis_tvalid[1]"/>
+        <net name="mac_rx_axis_tuser[1]"/>
       </nets>
     </probe>
     <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
@@ -182,17 +182,10 @@
         <Option Id="HW_ILA" value="dbg_ila"/>
         <Option Id="PROBE_PORT" value="0"/>
         <Option Id="PROBE_PORT_BITS" value="18"/>
-        <Option Id="PROBE_PORT_BIT_COUNT" value="8"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="1"/>
       </probeOptions>
       <nets>
-        <net name="mac_rx_axis_tdata_2[15]"/>
-        <net name="mac_rx_axis_tdata_2[14]"/>
-        <net name="mac_rx_axis_tdata_2[13]"/>
-        <net name="mac_rx_axis_tdata_2[12]"/>
-        <net name="mac_rx_axis_tdata_2[11]"/>
-        <net name="mac_rx_axis_tdata_2[10]"/>
-        <net name="mac_rx_axis_tdata_2[9]"/>
-        <net name="mac_rx_axis_tdata_2[8]"/>
+        <net name="mac_rx_axis_tvalid[1]"/>
       </nets>
     </probe>
     <probe type="ila" busType="bus" source="netlist" spec="ILA_V2_RT">
@@ -203,16 +196,93 @@
         <Option Id="HUB_CLK_INPUT_FREQ_HZ" value="125000003"/>
         <Option Id="HW_ILA" value="dbg_ila"/>
         <Option Id="PROBE_PORT" value="0"/>
-        <Option Id="PROBE_PORT_BITS" value="26"/>
-        <Option Id="PROBE_PORT_BIT_COUNT" value="6"/>
+        <Option Id="PROBE_PORT_BITS" value="19"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="8"/>
       </probeOptions>
       <nets>
-        <net name="mac_rx_axis_tdata[31]"/>
-        <net name="mac_rx_axis_tdata[30]"/>
-        <net name="mac_rx_axis_tdata[29]"/>
-        <net name="mac_rx_axis_tdata[28]"/>
-        <net name="mac_rx_axis_tdata[27]"/>
-        <net name="mac_rx_axis_tdata[26]"/>
+        <net name="mac_rx_axis_tdata[15]"/>
+        <net name="mac_rx_axis_tdata[14]"/>
+        <net name="mac_rx_axis_tdata[13]"/>
+        <net name="mac_rx_axis_tdata[12]"/>
+        <net name="mac_rx_axis_tdata[11]"/>
+        <net name="mac_rx_axis_tdata[10]"/>
+        <net name="mac_rx_axis_tdata[9]"/>
+        <net name="mac_rx_axis_tdata[8]"/>
+      </nets>
+    </probe>
+    <probe type="ila" busType="net" source="netlist" spec="ILA_V2_RT">
+      <probeOptions Id="DebugProbeParams">
+        <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
+        <Option Id="CORE_LOCATION" value="1:0"/>
+        <Option Id="CORE_UUID" value="760af3897fd45eb59e7485d630722b42"/>
+        <Option Id="HUB_CLK_INPUT_FREQ_HZ" value="125000003"/>
+        <Option Id="HW_ILA" value="dbg_ila"/>
+        <Option Id="PROBE_PORT" value="0"/>
+        <Option Id="PROBE_PORT_BITS" value="27"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="1"/>
+      </probeOptions>
+      <nets>
+        <net name="dbg_mac1_rx_fr_good"/>
+      </nets>
+    </probe>
+    <probe type="ila" busType="net" source="netlist" spec="ILA_V2_RT">
+      <probeOptions Id="DebugProbeParams">
+        <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
+        <Option Id="CORE_LOCATION" value="1:0"/>
+        <Option Id="CORE_UUID" value="760af3897fd45eb59e7485d630722b42"/>
+        <Option Id="HUB_CLK_INPUT_FREQ_HZ" value="125000003"/>
+        <Option Id="HW_ILA" value="dbg_ila"/>
+        <Option Id="PROBE_PORT" value="0"/>
+        <Option Id="PROBE_PORT_BITS" value="28"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="1"/>
+      </probeOptions>
+      <nets>
+        <net name="err_det"/>
+      </nets>
+    </probe>
+    <probe type="ila" busType="net" source="netlist" spec="ILA_V2_RT">
+      <probeOptions Id="DebugProbeParams">
+        <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
+        <Option Id="CORE_LOCATION" value="1:0"/>
+        <Option Id="CORE_UUID" value="760af3897fd45eb59e7485d630722b42"/>
+        <Option Id="HUB_CLK_INPUT_FREQ_HZ" value="125000003"/>
+        <Option Id="HW_ILA" value="dbg_ila"/>
+        <Option Id="PROBE_PORT" value="0"/>
+        <Option Id="PROBE_PORT_BITS" value="29"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="1"/>
+      </probeOptions>
+      <nets>
+        <net name="mac1_rx_err"/>
+      </nets>
+    </probe>
+    <probe type="ila" busType="net" source="netlist" spec="ILA_V2_RT">
+      <probeOptions Id="DebugProbeParams">
+        <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
+        <Option Id="CORE_LOCATION" value="1:0"/>
+        <Option Id="CORE_UUID" value="760af3897fd45eb59e7485d630722b42"/>
+        <Option Id="HUB_CLK_INPUT_FREQ_HZ" value="125000003"/>
+        <Option Id="HW_ILA" value="dbg_ila"/>
+        <Option Id="PROBE_PORT" value="0"/>
+        <Option Id="PROBE_PORT_BITS" value="30"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="1"/>
+      </probeOptions>
+      <nets>
+        <net name="mac1_rx_err_0"/>
+      </nets>
+    </probe>
+    <probe type="ila" busType="net" source="netlist" spec="ILA_V2_RT">
+      <probeOptions Id="DebugProbeParams">
+        <Option Id="BSCAN_SWITCH_INDEX" value="0"/>
+        <Option Id="CORE_LOCATION" value="1:0"/>
+        <Option Id="CORE_UUID" value="760af3897fd45eb59e7485d630722b42"/>
+        <Option Id="HUB_CLK_INPUT_FREQ_HZ" value="125000003"/>
+        <Option Id="HW_ILA" value="dbg_ila"/>
+        <Option Id="PROBE_PORT" value="0"/>
+        <Option Id="PROBE_PORT_BITS" value="31"/>
+        <Option Id="PROBE_PORT_BIT_COUNT" value="1"/>
+      </probeOptions>
+      <nets>
+        <net name="mac0_rx_err"/>
       </nets>
     </probe>
     <probe type="ila" busType="net" source="netlist" spec="ILA_V2_RT">
@@ -227,7 +297,7 @@
         <Option Id="PROBE_PORT_BIT_COUNT" value="1"/>
       </probeOptions>
       <nets>
-        <net name="&lt;const0>"/>
+        <net name="mac0_rx_err_0"/>
       </nets>
     </probe>
     <probe type="ila" busType="net" source="netlist" spec="ILA_V2_RT">
@@ -692,7 +762,7 @@
         <Option Id="PROBE_PORT_BIT_COUNT" value="1"/>
       </probeOptions>
       <nets>
-        <net name="&lt;const0>_31"/>
+        <net name="&lt;const0>"/>
       </nets>
     </probe>
   </probeset>

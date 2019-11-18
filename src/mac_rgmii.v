@@ -2,7 +2,7 @@
 //author: Romashko Dmitry
 //
 module mac_rgmii(
-//    output [3:0] dbg,
+    output reg dbg_mac_rx_fr_good = 1'b0,
     output reg [3:0] status_o = 0, /** [0] - link up/down = 1/0
                                        [2:1] - phy_rxc speed:
                                             00 - 2.5MHz (Eth:10Mb)
@@ -327,44 +327,46 @@ localparam [3:0] PIPELINE = 5;
 (* ASYNC_REG = "TRUE" *) reg       sr_mac_rx_fr_err = 1'b0;
 (* ASYNC_REG = "TRUE" *) reg [3:0] sr_status = 0;
 always @(posedge mac_rx_clk) begin
-    // sr_mac_rx_data[0]  <= mac_rx_data ;
-    // sr_mac_rx_valid[0] <= mac_rx_valid;
-    // sr_mac_rx_sof[0]   <= mac_rx_sof  ;
-    // for(i = 0; i < (PIPELINE - 1); i = i + 1) begin
-    //     sr_mac_rx_data[i+1]  <= sr_mac_rx_data[i] ;
-    //     sr_mac_rx_valid[i+1] <= sr_mac_rx_valid[i];
-    //     sr_mac_rx_sof[i+1]   <= sr_mac_rx_sof[i]  ;
-    // end
-
-    // sr_mac_rx_eof   <= mac_rx_eof  ;
-    // sr_mac_rx_fr_good <= mac_rx_fr_good;
-    // sr_mac_rx_fr_err <= mac_rx_fr_err;
-    // sr_status   <= status  ;
-
-    // mac_rx_data_o  <= sr_mac_rx_data[4]  ;
-    // mac_rx_valid_o <= sr_mac_rx_valid[4] & sr_mac_rx_valid[0];
-    // mac_rx_sof_o   <= sr_mac_rx_sof[4]   ;
-    // mac_rx_eof_o   <= sr_mac_rx_eof;
-    // mac_rx_fr_good_o <= sr_mac_rx_fr_good;
-    // mac_rx_fr_err_o <= sr_mac_rx_fr_err;
-
     sr_mac_rx_data[0]  <= mac_rx_data ;
     sr_mac_rx_valid[0] <= mac_rx_valid;
     sr_mac_rx_sof[0]   <= mac_rx_sof  ;
+    for(i = 0; i < (PIPELINE - 1); i = i + 1) begin
+        sr_mac_rx_data[i+1]  <= sr_mac_rx_data[i] ;
+        sr_mac_rx_valid[i+1] <= sr_mac_rx_valid[i];
+        sr_mac_rx_sof[i+1]   <= sr_mac_rx_sof[i]  ;
+    end
 
     sr_mac_rx_eof   <= mac_rx_eof  ;
     sr_mac_rx_fr_good <= mac_rx_fr_good & mac_rx_eof;
     sr_mac_rx_fr_err <= mac_rx_fr_err;
     sr_status   <= status  ;
+    dbg_mac_rx_fr_good <= mac_rx_fr_good;
 
-    mac_rx_data_o  <= sr_mac_rx_data[0] ;
-    mac_rx_valid_o <= sr_mac_rx_valid[0];
-    mac_rx_sof_o   <= sr_mac_rx_sof[0]  ;
+    mac_rx_data_o  <= sr_mac_rx_data[4]  ;
+    mac_rx_valid_o <= sr_mac_rx_valid[4] & sr_mac_rx_valid[0];
+    mac_rx_sof_o   <= sr_mac_rx_sof[4]   ;
     mac_rx_eof_o   <= sr_mac_rx_eof;
     mac_rx_fr_good_o <= sr_mac_rx_fr_good;
     mac_rx_fr_err_o <= sr_mac_rx_fr_err;
 
-    status_o   <= sr_status;
+    // sr_mac_rx_data[0]  <= mac_rx_data ;
+    // sr_mac_rx_valid[0] <= mac_rx_valid;
+    // sr_mac_rx_sof[0]   <= mac_rx_sof  ;
+
+    // sr_mac_rx_eof   <= mac_rx_eof  ;
+    // sr_mac_rx_fr_good <= mac_rx_fr_good & mac_rx_eof;
+    // sr_mac_rx_fr_err <= mac_rx_fr_err;
+    // sr_status   <= status  ;
+    // dbg_mac_rx_fr_good <= mac_rx_fr_good;
+
+    // mac_rx_data_o  <= sr_mac_rx_data[0] ;
+    // mac_rx_valid_o <= sr_mac_rx_valid[0];
+    // mac_rx_sof_o   <= sr_mac_rx_sof[0]  ;
+    // mac_rx_eof_o   <= sr_mac_rx_eof;
+    // mac_rx_fr_good_o <= sr_mac_rx_fr_good;
+    // mac_rx_fr_err_o <= sr_mac_rx_fr_err;
+
+    // status_o   <= sr_status;
 end
 
 assign mac_rx_clk_o = mac_rx_clk;
