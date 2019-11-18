@@ -56,28 +56,26 @@ signal fsm_cs: TEth_fsm_mdio;
 
 signal fsm_en        : std_logic;
 
-signal clkdiv       : integer range 0 to G_DIV-1;
+signal clkdiv        : integer range 0 to G_DIV-1;
 
-signal mdio_done     : std_logic;
-signal aphy     : std_logic_vector(4 downto 0);
-signal areg     : std_logic_vector(4 downto 0);
-signal txd      : std_logic_vector(15 downto 0);
+signal mdio_done     : std_logic:='0';
+signal txd           : std_logic_vector(15 downto 0):=(others=>'0');
 signal mdio_rxd      : std_logic_vector(15 downto 0):=(others=>'0');
 
-signal bitcnt        : unsigned(5 downto 0) := (others=>'0');
+signal bitcnt        : unsigned(5 downto 0):=(others=>'0');
 
-signal txld        : std_logic;
-signal txen        : std_logic;
+signal txld            : std_logic:='0';
+signal txen            : std_logic:='0';
 signal sr_txd          : std_logic_vector(15 downto 0):=(others=>'0');
-signal rxen        : std_logic;
+signal rxen            : std_logic:='0';
 signal sr_rxd          : std_logic_vector(15 downto 0):=(others=>'0');
-signal sr_en           : std_logic;
+signal sr_en           : std_logic:='0';
 
-signal mdc           : std_logic:='0';
-signal mdio_i       : std_logic;
+signal mdc             : std_logic:='0';
+signal mdio_i          : std_logic;
 signal tst_fms_cs      : std_logic_vector(2 downto 0);
 signal tst_fms_cs_dly  : std_logic_vector(tst_fms_cs'range);
-signal sr_rxen       : std_logic;
+signal sr_rxen         : std_logic;
 signal tst_txd_en      : std_logic;
 
 
@@ -85,7 +83,7 @@ begin --architecture end behavioral;
 
 
 ---------------------------------------------
-fsm_en <= sr_en and mdc;
+fsm_en <= sr_en and mdc; --falling edge mdc clk
 process(clk) begin
     if rising_edge(clk) then
         if rst = '1' then
@@ -234,7 +232,7 @@ process(clk) begin
     end if;
 end process;
 
-sr_rxen <= rxen and sr_en and not mdc;
+sr_rxen <= rxen and sr_en and not mdc; --rising edge mdc clk
 process(clk) begin
     if rising_edge(clk) then
         if (sr_rxen = '1') then

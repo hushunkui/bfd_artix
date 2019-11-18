@@ -19,14 +19,24 @@ initial begin
     // $dumpfile("icarus/dump.fst");
     // $dumpvars;
 
+    mdio_start = 1'b0;
+
     rst = 1'b0;
     #500;
     rst = 1'b1;
     #100;
     rst = 1'b0;
 
-    $display("\007");
-    $finish;
+    #500;
+    mdio_start = 1'b1;
+    @(posedge clk);
+
+    #100;
+    mdio_start = 1'b0;
+    @(posedge clk);
+
+    // $display("\007");
+    // $finish;
 end
 
 eth_mdio #(
