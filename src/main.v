@@ -115,16 +115,13 @@ BUFG sysclk25_bufg (
 wire pll0_locked;
 wire clk200M;
 clk25_wiz0 pll0(
-    // Clock out ports
     .clk_out1(mac_gtx_clk),
     .clk_out2(mac_gtx_clk90),
     .clk_out3(),
     .clk_out4(clk200M),
-    // Status and control signals
-    .reset(sysrst), // input reset
-    .locked(pll0_locked),       // output locked
-    // Clock in ports
-    .clk_in1(sysclk25_g)
+    .locked(pll0_locked),
+    .clk_in1(sysclk25_g),
+    .reset(sysrst)
 );
 
 
