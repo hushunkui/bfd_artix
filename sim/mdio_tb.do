@@ -20,7 +20,7 @@ vlib work
 vlog  $env(XILINX_VV)/data/verilog/src/glbl.v
 
 vcom ../src/mdio.vhd
-vlog ./mdio_tb.v
+vlog ./mdio_tb.v -sv
 
 vsim -modelsimini $inifile -t 1ps -novopt +notimingchecks -lib work mdio_tb
 

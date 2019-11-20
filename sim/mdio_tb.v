@@ -14,6 +14,7 @@ reg [4:0] mdio_aphy = 0;
 reg [4:0] mdio_areg = 0;
 reg [15:0] mdio_txd = 0;
 wire [15:0] mdio_rxd;
+wire mdio_busy;
 
 initial begin
     // $dumpfile("icarus/dump.fst");
@@ -37,12 +38,43 @@ initial begin
     mdio_txd  <= 16'h8FFA;
     mdio_dir  <= 1'b1; //1 -tx; 0 -rx
     @(posedge clk);
-
     #100;
     mdio_start = 1'b0;
     @(posedge clk);
+    while (mdio_busy==1'b1) begin
+        @(posedge clk);
+    end
+    $display("DONE!");
 
-    // $display("\007");
+    mdio_start = 1'b1;
+    mdio_aphy <= 5'h06;
+    mdio_areg <= 5'h0B;
+    mdio_txd  <= 16'h8FFA;
+    mdio_dir  <= 1'b0; //1 -tx; 0 -rx
+    @(posedge clk);
+    #100;
+    mdio_start = 1'b0;
+    @(posedge clk);
+    while (mdio_busy==1'b1) begin
+        @(posedge clk);
+    end
+    $display("DONE!");
+
+    mdio_start = 1'b1;
+    mdio_aphy <= 5'h06;
+    mdio_areg <= 5'h0B;
+    mdio_txd  <= 16'h8FFA;
+    mdio_dir  <= 1'b1; //1 -tx; 0 -rx
+    @(posedge clk);
+    #100;
+    mdio_start = 1'b0;
+    @(posedge clk);
+    while (mdio_busy==1'b1) begin
+        @(posedge clk);
+    end
+    $display("DONE!");
+
+
     // $finish;
 end
 
@@ -57,7 +89,7 @@ eth_mdio #(
     .usr_txd(mdio_txd),
     .usr_rxd(mdio_rxd),
     .usr_done(),
-    .usr_busy(),
+    .usr_busy(mdio_busy),
 
     .p_out_mdio_t(),
     .p_out_mdio(),
