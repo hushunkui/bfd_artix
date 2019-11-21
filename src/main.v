@@ -9,8 +9,8 @@ module main #(
 ) (
     output mgt_pwr_en,
 
-    input [13:0] usr_lvds_p,
-    input [13:0] usr_lvds_n,
+    output [13:0] usr_lvds_p,
+    output [13:0] usr_lvds_n,
 
     output [(ETHCOUNT*4)-1:0] rgmii_txd   ,
     output [ETHCOUNT-1:0]     rgmii_tx_ctl,
@@ -77,29 +77,29 @@ assign sysrst = 1'b0;
 assign eth_phy_mdio = 1'bz;
 assign eth_phy_mdc = 1'b0;
 
-wire [31:0] firmware_date;
-wire [31:0] firmware_time;
+// wire [31:0] firmware_date;
+// wire [31:0] firmware_time;
 
-wire [31:0] M_AXI_0_awaddr ;
-wire [2:0]  M_AXI_0_awprot ;
-wire        M_AXI_0_awready;
-wire        M_AXI_0_awvalid;
-wire [31:0] M_AXI_0_wdata  ;
-wire [3:0]  M_AXI_0_wstrb  ;
-wire        M_AXI_0_wvalid ;
-wire        M_AXI_0_wready ;
-wire [1:0]  M_AXI_0_bresp  ;
-wire        M_AXI_0_bvalid ;
-wire        M_AXI_0_bready ;
+// wire [31:0] M_AXI_0_awaddr ;
+// wire [2:0]  M_AXI_0_awprot ;
+// wire        M_AXI_0_awready;
+// wire        M_AXI_0_awvalid;
+// wire [31:0] M_AXI_0_wdata  ;
+// wire [3:0]  M_AXI_0_wstrb  ;
+// wire        M_AXI_0_wvalid ;
+// wire        M_AXI_0_wready ;
+// wire [1:0]  M_AXI_0_bresp  ;
+// wire        M_AXI_0_bvalid ;
+// wire        M_AXI_0_bready ;
 
-wire [31:0] M_AXI_0_araddr ;
-wire [2:0]  M_AXI_0_arprot ;
-wire        M_AXI_0_arready;
-wire        M_AXI_0_arvalid;
-wire [31:0] M_AXI_0_rdata  ;
-wire        M_AXI_0_rvalid ;
-wire [1:0]  M_AXI_0_rresp  ;
-wire        M_AXI_0_rready ;
+// wire [31:0] M_AXI_0_araddr ;
+// wire [2:0]  M_AXI_0_arprot ;
+// wire        M_AXI_0_arready;
+// wire        M_AXI_0_arvalid;
+// wire [31:0] M_AXI_0_rdata  ;
+// wire        M_AXI_0_rvalid ;
+// wire [1:0]  M_AXI_0_rresp  ;
+// wire        M_AXI_0_rready ;
 
 // system system_i(
 //     .M_AXI_0_awaddr  (M_AXI_0_awaddr ),
@@ -164,11 +164,20 @@ wire [13:0] usr_lvds_i;
 genvar i;
 generate
     for (i=0; i < 14; i=i+1) begin
-        IBUFDS usr_lvds_ibuf_diff (
-            .I (usr_lvds_p[i]), .IB(usr_lvds_n[i]), .O(usr_lvds_i[i])
+        // IBUFDS usr_lvds_ibuf_diff (
+        //     .I (usr_lvds_p[i]), .IB(usr_lvds_n[i]), .O(usr_lvds_i[i])
+        // );
+        OBUFDS usr_lvds_obuf_diff (
+            .O (usr_lvds_p[i]), .OB(usr_lvds_n[i]), .I(usr_lvds_i[i])
         );
     end
 endgenerate
+
+assign usr_lvds_i = 14'h15555;
+// always @(posedge mac_gtx_clk) begin
+//     usr_lvds_i <= usr_lvds_i + 1;
+// end
+
 
 
 wire clk20_i;
@@ -306,10 +315,10 @@ always @(posedge sysclk25_g) begin
     sysclk25_div <= ~sysclk25_div;
 end
 
-assign dbg_out[0] = |usr_lvds_i;
-assign dbg_out[1] = |firmware_date &
-                    |firmware_time &
-                    clk20_div | sysclk25_div &
+assign dbg_out[0] = 1'b0;//|usr_lvds_i;
+// |firmware_date &
+//                     |firmware_time &
+assign dbg_out[1] = clk20_div | sysclk25_div &
                     |mac_rx_axis_tdata &
                     |mac_rx_axis_tvalid &
                     |mac_rx_axis_tlast &
@@ -334,7 +343,7 @@ fpga_test_01 #(
     .p_out_1s   (),
 
     .p_in_clken (1'b1),
-    .p_in_clk   (mac_rx_aclk[0]), //(mac_gtx_clk),//(sysclk25),
+    .p_in_clk   (mac_gtx_clk), //(mac_gtx_clk),//(sysclk25),
     .p_in_rst   (~pll0_locked)
 );
 
@@ -345,22 +354,6 @@ assign mac_tx_axis_tdata  = 0;
 assign mac_tx_axis_tvalid = 0;
 assign mac_tx_axis_tlast  = 0;
 assign mac_tx_axis_tuser  = 0;
-
-// assign probe[0] = mac_rx_axis_tdata [0];
-// assign probe[1] = mac_rx_axis_tdata [1];
-// assign probe[2] = mac_rx_axis_tdata [2];
-// assign probe[3] = mac_rx_axis_tdata [3];
-// assign probe[4] = mac_rx_axis_tdata [4];
-// assign probe[5] = mac_rx_axis_tdata [5];
-// assign probe[6] = mac_rx_axis_tdata [6];
-// assign probe[7] = mac_rx_axis_tdata [7];
-// assign probe[8] = mac_rx_axis_tvalid [0];
-// assign probe[9] = mac_rx_axis_tuser [0];
-// assign probe[10] = mac_rx_axis_tlast [0];
-// assign probe[11] = mac_rx_axis_fr_good[0];
-// assign probe[12] = mac_rx_axis_fr_err[0];
-// assign probe[31:1] = 0;
-// assign probe[63:32] = 0;
 
 wire [7:0] mac0_rx_axis_tdata ;
 wire       mac0_rx_axis_tvalid;
