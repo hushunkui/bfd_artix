@@ -160,22 +160,24 @@ assign eth_phy_mdc = 1'b0;
 // );
 
 
-wire [13:0] usr_lvds_i;
+wire [13:0] usr_lvds_io;
 genvar i;
 generate
     for (i=0; i < 14; i=i+1) begin
         // IBUFDS usr_lvds_ibuf_diff (
-        //     .I (usr_lvds_p[i]), .IB(usr_lvds_n[i]), .O(usr_lvds_i[i])
+        //     .I (usr_lvds_p[i]), .IB(usr_lvds_n[i]), .O(usr_lvds_io[i])
         // );
         OBUFDS usr_lvds_obuf_diff (
-            .O (usr_lvds_p[i]), .OB(usr_lvds_n[i]), .I(usr_lvds_i[i])
+            .O (usr_lvds_p[i]), .OB(usr_lvds_n[i]), .I(usr_lvds_io[i])
         );
     end
 endgenerate
 
-assign usr_lvds_i = 14'h15555;
+wire [13:0] usr_lvds;
+assign usr_lvds_io = usr_lvds;
+assign usr_lvds = 14'h2AAA;
 // always @(posedge mac_gtx_clk) begin
-//     usr_lvds_i <= usr_lvds_i + 1;
+//     usr_lvds_io <= usr_lvds_io + 1;
 // end
 
 
@@ -315,7 +317,7 @@ always @(posedge sysclk25_g) begin
     sysclk25_div <= ~sysclk25_div;
 end
 
-assign dbg_out[0] = 1'b0;//|usr_lvds_i;
+assign dbg_out[0] = 1'b0;//|usr_lvds;
 // |firmware_date &
 //                     |firmware_time &
 assign dbg_out[1] = clk20_div | sysclk25_div &
