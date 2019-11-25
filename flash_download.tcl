@@ -14,7 +14,7 @@ set flash_index 0
 set fpga_index 0
 
 #Set file path
-set bit_file ./firmware/bfd_artix_firmware.bit
+set bit_file ./firmware/test_connect_zynq_const_0x2AAA.bit
 set mcs_file ./firmware/bfd_artix_firmware.mcs
 
 #Set server path

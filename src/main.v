@@ -4,13 +4,13 @@
 `timescale 1ns / 1ps
 
 module main #(
-    parameter ETHCOUNT = 2, //max 4
+    parameter ETHCOUNT = 1, //max 4
     parameter SIM = 0
 ) (
     output mgt_pwr_en,
 
-    input [13:0] usr_lvds_p,
-    input [13:0] usr_lvds_n,
+    output [13:0] usr_lvds_p,
+    output [13:0] usr_lvds_n,
 
     output [(ETHCOUNT*4)-1:0] rgmii_txd   ,
     output [ETHCOUNT-1:0]     rgmii_tx_ctl,
@@ -77,24 +77,109 @@ assign sysrst = 1'b0;
 assign eth_phy_mdio = 1'bz;
 assign eth_phy_mdc = 1'b0;
 
-wire [31:0] firmware_date;
-wire [31:0] firmware_time;
+// wire [31:0] firmware_date;
+// wire [31:0] firmware_time;
 
-firmware_rev revision (
-   .firmware_date(firmware_date),
-   .firmware_time(firmware_time)
-);
+// wire [31:0] M_AXI_0_awaddr ;
+// wire [2:0]  M_AXI_0_awprot ;
+// wire        M_AXI_0_awready;
+// wire        M_AXI_0_awvalid;
+// wire [31:0] M_AXI_0_wdata  ;
+// wire [3:0]  M_AXI_0_wstrb  ;
+// wire        M_AXI_0_wvalid ;
+// wire        M_AXI_0_wready ;
+// wire [1:0]  M_AXI_0_bresp  ;
+// wire        M_AXI_0_bvalid ;
+// wire        M_AXI_0_bready ;
+
+// wire [31:0] M_AXI_0_araddr ;
+// wire [2:0]  M_AXI_0_arprot ;
+// wire        M_AXI_0_arready;
+// wire        M_AXI_0_arvalid;
+// wire [31:0] M_AXI_0_rdata  ;
+// wire        M_AXI_0_rvalid ;
+// wire [1:0]  M_AXI_0_rresp  ;
+// wire        M_AXI_0_rready ;
+
+// system system_i(
+//     .M_AXI_0_awaddr  (M_AXI_0_awaddr ),
+//     .M_AXI_0_awprot  (M_AXI_0_awprot ),
+//     .M_AXI_0_awready (M_AXI_0_awready),
+//     .M_AXI_0_awvalid (M_AXI_0_awvalid),
+//     .M_AXI_0_wdata   (M_AXI_0_wdata  ),
+//     .M_AXI_0_wstrb   (M_AXI_0_wstrb  ),
+//     .M_AXI_0_wvalid  (M_AXI_0_wvalid ),
+//     .M_AXI_0_wready  (M_AXI_0_wready ),
+//     .M_AXI_0_bresp   (M_AXI_0_bresp  ),
+//     .M_AXI_0_bvalid  (M_AXI_0_bvalid ),
+//     .M_AXI_0_bready  (M_AXI_0_bready ),
+
+//     .M_AXI_0_araddr  (M_AXI_0_araddr ),
+//     .M_AXI_0_arprot  (M_AXI_0_arprot ),
+//     .M_AXI_0_arready (M_AXI_0_arready),
+//     .M_AXI_0_arvalid (M_AXI_0_arvalid),
+//     .M_AXI_0_rdata   (M_AXI_0_rdata  ),
+//     .M_AXI_0_rvalid  (M_AXI_0_rvalid ),
+//     .M_AXI_0_rresp   (M_AXI_0_rresp  ),
+//     .M_AXI_0_rready  (M_AXI_0_rready ),
+
+//     .aclk(aclk),
+//     .areset_n(areset_n)
+// );
+
+// usr_logic #(
+//     .SIM (SIM)
+// ) m_usr (
+// //user part
+//     .test_gpio (test_gpio),
+
+// //AXI interface
+//     .s_axi_awaddr  (M_AXI_0_awaddr ),
+//     .s_axi_awprot  (M_AXI_0_awprot ),
+//     .s_axi_awready (M_AXI_0_awready),
+//     .s_axi_awvalid (M_AXI_0_awvalid),
+//     .s_axi_wdata   (M_AXI_0_wdata  ),
+//     .s_axi_wstrb   (M_AXI_0_wstrb  ),
+//     .s_axi_wvalid  (M_AXI_0_wvalid ),
+//     .s_axi_wready  (M_AXI_0_wready ),
+//     .s_axi_bresp   (M_AXI_0_bresp  ),
+//     .s_axi_bvalid  (M_AXI_0_bvalid ),
+//     .s_axi_bready  (M_AXI_0_bready ),
+
+//     .s_axi_araddr  (M_AXI_0_araddr ),
+//     .s_axi_arprot  (M_AXI_0_arprot ),
+//     .s_axi_arready (M_AXI_0_arready),
+//     .s_axi_arvalid (M_AXI_0_arvalid),
+//     .s_axi_rdata   (M_AXI_0_rdata  ),
+//     .s_axi_rvalid  (M_AXI_0_rvalid ),
+//     .s_axi_rresp   (M_AXI_0_rresp  ),
+//     .s_axi_rready  (M_AXI_0_rready ),
+
+//     .s_axi_resetn (sys_rstn),
+//     .s_axi_clk (sys_clk)
+// );
 
 
-wire [13:0] usr_lvds_i;
+wire [13:0] usr_lvds_io;
 genvar i;
 generate
     for (i=0; i < 14; i=i+1) begin
-        IBUFDS usr_lvds_ibuf_diff (
-            .I (usr_lvds_p[i]), .IB(usr_lvds_n[i]), .O(usr_lvds_i[i])
+        // IBUFDS usr_lvds_ibuf_diff (
+        //     .I (usr_lvds_p[i]), .IB(usr_lvds_n[i]), .O(usr_lvds_io[i])
+        // );
+        OBUFDS usr_lvds_obuf_diff (
+            .O (usr_lvds_p[i]), .OB(usr_lvds_n[i]), .I(usr_lvds_io[i])
         );
     end
 endgenerate
+
+wire [13:0] usr_lvds;
+assign usr_lvds_io = usr_lvds;
+assign usr_lvds = 14'h2AAA;
+// always @(posedge mac_gtx_clk) begin
+//     usr_lvds_io <= usr_lvds_io + 1;
+// end
+
 
 
 wire clk20_i;
@@ -115,16 +200,13 @@ BUFG sysclk25_bufg (
 wire pll0_locked;
 wire clk200M;
 clk25_wiz0 pll0(
-    // Clock out ports
     .clk_out1(mac_gtx_clk),
     .clk_out2(mac_gtx_clk90),
     .clk_out3(),
     .clk_out4(clk200M),
-    // Status and control signals
-    .reset(sysrst), // input reset
-    .locked(pll0_locked),       // output locked
-    // Clock in ports
-    .clk_in1(sysclk25_g)
+    .locked(pll0_locked),
+    .clk_in1(sysclk25_g),
+    .reset(sysrst)
 );
 
 
@@ -151,7 +233,9 @@ generate
     end
 endgenerate
 
-mac_rgmii rgmii (
+wire dbg_mac0_rx_fr_good;
+wire dbg_mac1_rx_fr_good;
+mac_rgmii rgmii_0 (
     .status_o(),
     // phy side (RGMII)
     .phy_rxd   (rgmii_rxd   [(0*4) +: 4]),
@@ -168,46 +252,55 @@ mac_rgmii rgmii (
     .mac_rx_eof_o  (mac_rx_axis_tlast [0]         ),
     .mac_rx_fr_good_o(mac_rx_axis_fr_good[0]),
     .mac_rx_fr_err_o(mac_rx_axis_fr_err[0]),
-    .mac_rx_clk_o  (mac_rx_aclk[0]),
-
-    .mac_tx_data  (mac_rx_axis_tdata [(1*8) +: 8]),
-    .mac_tx_valid (mac_rx_axis_tvalid[1]         ),
-    .mac_tx_sof   (mac_rx_axis_tuser [1]         ),
-    .mac_tx_eof   (mac_rx_axis_tlast [1]         ),
-    .mac_tx_clk_90(mac_gtx_clk90),
-    .mac_tx_clk   (mac_gtx_clk),
-
-    .rst(~pll0_locked)
-);
-
-mac_rgmii rgmii (
-    .status_o(),
-    // phy side (RGMII)
-    .phy_rxd   (rgmii_rxd   [(1*4) +: 4]),
-    .phy_rx_ctl(rgmii_rx_ctl[1]         ),
-    .phy_rxc   (rgmii_rxc   [1]         ),
-    .phy_txd   (rgmii_txd   [(1*4) +: 4]),
-    .phy_tx_ctl(rgmii_tx_ctl[1]         ),
-    .phy_txc   (rgmii_txc   [1]         ),
-
-    // logic side
-    .mac_rx_data_o (mac_rx_axis_tdata [(1*8) +: 8]),
-    .mac_rx_valid_o(mac_rx_axis_tvalid[1]         ),
-    .mac_rx_sof_o  (mac_rx_axis_tuser [1]         ),
-    .mac_rx_eof_o  (mac_rx_axis_tlast [1]         ),
-    .mac_rx_fr_good_o(mac_rx_axis_fr_good[1]),
-    .mac_rx_fr_err_o(mac_rx_axis_fr_err[1]),
     .mac_rx_clk_o  (),
+    .dbg_mac_rx_fr_good(dbg_mac0_rx_fr_good),
 
-    .mac_tx_data  (mac_rx_axis_tdata [(0*8) +: 8]),
-    .mac_tx_valid (mac_rx_axis_tvalid[0]         ),
-    .mac_tx_sof   (mac_rx_axis_tuser [0]         ),
-    .mac_tx_eof   (mac_rx_axis_tlast [0]         ),
+    .mac_tx_data  (mac_tx_axis_tdata [(0*8) +: 8]),
+    .mac_tx_valid (mac_tx_axis_tvalid[0]         ),
+    .mac_tx_sof   (mac_tx_axis_tuser [0]         ),
+    .mac_tx_eof   (mac_tx_axis_tlast [0]         ),
     .mac_tx_clk_90(mac_gtx_clk90),
     .mac_tx_clk   (mac_gtx_clk),
 
     .rst(~pll0_locked)
 );
+
+    // .mac_tx_data  (mac_rx_axis_tdata [(1*8) +: 8]),
+    // .mac_tx_valid (mac_rx_axis_tvalid[1]         ),
+    // .mac_tx_sof   (mac_rx_axis_tuser [1]         ),
+    // .mac_tx_eof   (mac_rx_axis_tlast [1]         ),
+    // .mac_tx_clk_90(mac_gtx_clk90),
+    // .mac_tx_clk   (mac_gtx_clk),
+
+// mac_rgmii rgmii_1 (
+//     .status_o(),
+//     // phy side (RGMII)
+//     .phy_rxd   (rgmii_rxd   [(1*4) +: 4]),
+//     .phy_rx_ctl(rgmii_rx_ctl[1]         ),
+//     .phy_rxc   (rgmii_rxc   [1]         ),
+//     .phy_txd   (rgmii_txd   [(1*4) +: 4]),
+//     .phy_tx_ctl(rgmii_tx_ctl[1]         ),
+//     .phy_txc   (rgmii_txc   [1]         ),
+
+//     // logic side
+//     .mac_rx_data_o (mac_rx_axis_tdata [(1*8) +: 8]),
+//     .mac_rx_valid_o(mac_rx_axis_tvalid[1]         ),
+//     .mac_rx_sof_o  (mac_rx_axis_tuser [1]         ),
+//     .mac_rx_eof_o  (mac_rx_axis_tlast [1]         ),
+//     .mac_rx_fr_good_o(mac_rx_axis_fr_good[1]),
+//     .mac_rx_fr_err_o(mac_rx_axis_fr_err[1]),
+//     .mac_rx_clk_o  (),
+//     .dbg_mac_rx_fr_good(dbg_mac1_rx_fr_good),
+
+//     .mac_tx_data  (mac_rx_axis_tdata [(0*8) +: 8]),
+//     .mac_tx_valid (mac_rx_axis_tvalid[0]         ),
+//     .mac_tx_sof   (mac_rx_axis_tuser [0]         ),
+//     .mac_tx_eof   (mac_rx_axis_tlast [0]         ),
+//     .mac_tx_clk_90(mac_gtx_clk90),
+//     .mac_tx_clk   (mac_gtx_clk),
+
+//     .rst(~pll0_locked)
+// );
 
 
 
@@ -224,15 +317,14 @@ always @(posedge sysclk25_g) begin
     sysclk25_div <= ~sysclk25_div;
 end
 
-assign dbg_out[0] = |usr_lvds_i;
-assign dbg_out[1] = |firmware_date &
-                    |firmware_time &
-                    clk20_div | sysclk25_div &
+assign dbg_out[0] = 1'b0;//|usr_lvds;
+// |firmware_date &
+//                     |firmware_time &
+assign dbg_out[1] = clk20_div | sysclk25_div &
                     |mac_rx_axis_tdata &
                     |mac_rx_axis_tvalid &
                     |mac_rx_axis_tlast &
                     |mac_rx_axis_tuser &
-                    |mac_rx_aclk &
                     |mac_rx_reset &
                     |mac_tx_axis_tready &
                     |mac_tx_aclk &
@@ -253,7 +345,7 @@ fpga_test_01 #(
     .p_out_1s   (),
 
     .p_in_clken (1'b1),
-    .p_in_clk   (mac_rx_aclk[0]), //(mac_gtx_clk),//(sysclk25),
+    .p_in_clk   (mac_gtx_clk), //(mac_gtx_clk),//(sysclk25),
     .p_in_rst   (~pll0_locked)
 );
 
@@ -264,22 +356,6 @@ assign mac_tx_axis_tdata  = 0;
 assign mac_tx_axis_tvalid = 0;
 assign mac_tx_axis_tlast  = 0;
 assign mac_tx_axis_tuser  = 0;
-
-// assign probe[0] = mac_rx_axis_tdata [0];
-// assign probe[1] = mac_rx_axis_tdata [1];
-// assign probe[2] = mac_rx_axis_tdata [2];
-// assign probe[3] = mac_rx_axis_tdata [3];
-// assign probe[4] = mac_rx_axis_tdata [4];
-// assign probe[5] = mac_rx_axis_tdata [5];
-// assign probe[6] = mac_rx_axis_tdata [6];
-// assign probe[7] = mac_rx_axis_tdata [7];
-// assign probe[8] = mac_rx_axis_tvalid [0];
-// assign probe[9] = mac_rx_axis_tuser [0];
-// assign probe[10] = mac_rx_axis_tlast [0];
-// assign probe[11] = mac_rx_axis_fr_good[0];
-// assign probe[12] = mac_rx_axis_fr_err[0];
-// assign probe[31:1] = 0;
-// assign probe[63:32] = 0;
 
 wire [7:0] mac0_rx_axis_tdata ;
 wire       mac0_rx_axis_tvalid;
@@ -311,27 +387,47 @@ wire       mac3_rx_axis_fr_err;
 
 assign mac0_rx_axis_tdata   = mac_rx_axis_tdata[7:0];
 assign mac0_rx_axis_tvalid  = mac_rx_axis_tvalid[0];
-assign mac0_rx_axis_tlast   = mac_rx_axis_tuser[0];
-assign mac0_rx_axis_tuser   = mac_rx_axis_tlast[0];
+assign mac0_rx_axis_tuser   = mac_rx_axis_tuser[0];
+assign mac0_rx_axis_tlast   = mac_rx_axis_tlast[0];
 assign mac0_rx_axis_fr_good = mac_rx_axis_fr_good[0];
 assign mac0_rx_axis_fr_err  = mac_rx_axis_fr_err[0];
 
-assign mac1_rx_axis_tdata   = mac_rx_axis_tdata[15:8];
-assign mac1_rx_axis_tvalid  = mac_rx_axis_tvalid[1];
-assign mac1_rx_axis_tlast   = mac_rx_axis_tuser[1];
-assign mac1_rx_axis_tuser   = mac_rx_axis_tlast[1];
-assign mac1_rx_axis_fr_good = mac_rx_axis_fr_good[1];
-assign mac1_rx_axis_fr_err  = mac_rx_axis_fr_err[1];
+// assign mac1_rx_axis_tdata   = mac_rx_axis_tdata[15:8];
+// assign mac1_rx_axis_tvalid  = mac_rx_axis_tvalid[1];
+// assign mac1_rx_axis_tuser   = mac_rx_axis_tuser[1];
+// assign mac1_rx_axis_tlast   = mac_rx_axis_tlast[1];
+// assign mac1_rx_axis_fr_good = mac_rx_axis_fr_good[1];
+// assign mac1_rx_axis_fr_err  = mac_rx_axis_fr_err[1];
+
+reg err_det = 1'b0;
+reg mac0_rx_err_0 = 1'b0;
+reg mac1_rx_err_0 = 1'b0;
+reg mac0_rx_err = 1'b0;
+reg mac1_rx_err = 1'b0;
+always @(posedge mac_gtx_clk) begin
+    mac0_rx_err_0 <= 1'b0;
+    if (mac0_rx_axis_tlast & mac0_rx_axis_tvalid) begin
+        mac0_rx_err_0 <= ~mac0_rx_axis_fr_good;
+    end
+    mac0_rx_err <= mac0_rx_err_0 | mac0_rx_axis_fr_err;
+    err_det = mac0_rx_err;
+
+    // mac1_rx_err_0 <= 1'b0;
+    // if (mac1_rx_axis_tlast & mac1_rx_axis_tvalid) begin
+    //     mac1_rx_err_0 <= ~mac1_rx_axis_fr_good;
+    // end
+    // mac1_rx_err <= mac1_rx_err_0 | mac1_rx_axis_fr_err;
+
+    // err_det = mac0_rx_err | mac1_rx_err;
+end
 
 ila_0 dbg_ila (
     .probe0({
-        mac_rx_axis_tdata[15:8],
-        mac_rx_axis_tvalid[1],
-        mac_rx_axis_tuser[1],
-        mac_rx_axis_tlast[1],
-        mac_rx_axis_fr_good[1],
-        mac_rx_axis_fr_err[1],
+        mac0_rx_err_0,
+        mac0_rx_err,
+        err_det,
 
+        dbg_mac0_rx_fr_good,
         mac_rx_axis_tdata[7:0],
         mac_rx_axis_tvalid[0],
         mac_rx_axis_tuser[0],
@@ -341,6 +437,16 @@ ila_0 dbg_ila (
     }),
     .clk(mac_gtx_clk) //(mac_rx_aclk[0]) //
 );
+
+        // mac1_rx_err_0,
+        // mac1_rx_err,
+        // dbg_mac1_rx_fr_good,
+        // mac_rx_axis_tdata[15:8],
+        // mac_rx_axis_tvalid[1],
+        // mac_rx_axis_tuser[1],
+        // mac_rx_axis_tlast[1],
+        // mac_rx_axis_fr_good[1],
+        // mac_rx_axis_fr_err[1],
 
     // .probe0({
     //     mac1_rx_axis_tdata,
