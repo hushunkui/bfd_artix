@@ -60,6 +60,21 @@ set_property PACKAGE_PIN C12 [get_ports {rgmii_rx_ctl[0]}]
 set_property PACKAGE_PIN D13 [get_ports {rgmii_rxc[0]}]
 set_property PACKAGE_PIN C13 [get_ports {eth_phy_rst[0]}]
 
+#set Eth_Tco_max   -1.5
+#set Eth_Tco_min   -2.8
+set Eth_Tco_max   0.5
+set Eth_Tco_min   -0.5
+
+create_clock -period 8 -name rgmii_rx_virt_clk [get_ports {rgmii_rxc[0]}]
+set rgmii_rx_clk rgmii_rx_virt_clk
+
+set_input_delay -clock [get_clocks $rgmii_rx_clk] -max [expr $Eth_Tco_max] [get_ports {rgmii_rxd[*] rgmii_rx_ctl[*]}]
+set_input_delay -clock [get_clocks $rgmii_rx_clk] -min [expr $Eth_Tco_min] [get_ports {rgmii_rxd[*] rgmii_rx_ctl[*]}]
+set_input_delay -clock [get_clocks $rgmii_rx_clk] -clock_fall -max [expr $Eth_Tco_max] -add_delay [get_ports {rgmii_rxd[*] rgmii_rx_ctl[*]}]
+set_input_delay -clock [get_clocks $rgmii_rx_clk] -clock_fall -min [expr $Eth_Tco_min] -add_delay [get_ports {rgmii_rxd[*] rgmii_rx_ctl[*]}]
+
+set_property IDELAY_VALUE 13 [get_cells {rgmii_0/idelay_rxd[*].inst}]
+
 set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[0]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[1]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[2]}]
