@@ -74,6 +74,7 @@ set_input_delay -clock [get_clocks $rgmii_rx_clk] -clock_fall -max [expr $Eth_Tc
 set_input_delay -clock [get_clocks $rgmii_rx_clk] -clock_fall -min [expr $Eth_Tco_min] -add_delay [get_ports {rgmii_rxd[*] rgmii_rx_ctl[*]}]
 
 set_property IDELAY_VALUE 13 [get_cells {rgmii_0/idelay_rxd[*].inst}]
+#set_property IDELAY_VALUE 13 [get_cells {rgmii_1/idelay_rxd[*].inst}]
 
 set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[0]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[1]}]

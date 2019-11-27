@@ -57,7 +57,6 @@ wire [ETHCOUNT-1:0]     mac_rx_axis_tlast ;
 wire [ETHCOUNT-1:0]     mac_rx_axis_tuser ;
 wire [ETHCOUNT-1:0]     mac_rx_aclk;
 wire [ETHCOUNT-1:0]     mac_rx_reset;
-wire [79:0]             mac_rx_cfg_vector;
 
 wire [(ETHCOUNT*8)-1:0] mac_tx_axis_tdata ;// = 0;
 wire [ETHCOUNT-1:0]     mac_tx_axis_tvalid;// = 0;
@@ -66,7 +65,6 @@ wire [ETHCOUNT-1:0]     mac_tx_axis_tuser ;// = 0;
 wire [ETHCOUNT-1:0]     mac_tx_axis_tready;
 wire [ETHCOUNT-1:0]     mac_tx_aclk;
 wire [ETHCOUNT-1:0]     mac_tx_reset;
-wire [79:0]             mac_tx_cfg_vector;
 
 wire mac_gtx_clk;
 wire mac_gtx_clk90;
