@@ -60,21 +60,76 @@ set_property PACKAGE_PIN C12 [get_ports {rgmii_rx_ctl[0]}]
 set_property PACKAGE_PIN D13 [get_ports {rgmii_rxc[0]}]
 set_property PACKAGE_PIN C13 [get_ports {eth_phy_rst[0]}]
 
-#set Eth_Tco_max   -1.5
-#set Eth_Tco_min   -2.8
-set Eth_Tco_max   0.5
-set Eth_Tco_min   -0.5
+# input      _______________________________                                  ________
+# clock    _|                               |________________________________|
+#           |                               |
+#           |-> (trco_min+trce_dly_min)     |-> (tfco_min+trce_dly_min)
+#           |-----> (trco_max+trce_dly_max) |-----> (tfco_max+trce_dly_max)
+#          ____    ____________________________    ____________________________    ___
+# data     ____XXXX__________Rise_Data_________XXXX__________Fall_Data_________XXXX___
+#
+create_clock -period 8 -name rgmii0_rx_clk [get_ports {rgmii_rxc[0]}]
+set trco_max        0.500;          # Maximum clock to output delay from rising edge (external device)
+set trco_min        -0.500;         # Minimum clock to output delay from rising edge (external device)
+set tfco_max        2.600;          # Maximum clock to output delay from falling edge (external device)
+set tfco_min        1.000;          # Minimum clock to output delay from falling edge (external device)
+set trce_dly_max    0.000;          # Maximum board trace delay
+set trce_dly_min    0.000;          # Minimum board trace delay
+set input_ports     {rgmii_rxd[0] rgmii_rxd[1] rgmii_rxd[2] rgmii_rxd[3] rgmii_rx_ctl[0]};  # List of input ports
 
-create_clock -period 8 -name rgmii_rx_virt_clk [get_ports {rgmii_rxc[0]}]
-set rgmii_rx_clk rgmii_rx_virt_clk
+# Input Delay Constraint
+set_input_delay -clock rgmii0_rx_clk -max [expr $trco_max + $trce_dly_max] [get_ports $input_ports];
+set_input_delay -clock rgmii0_rx_clk -min [expr $trco_min + $trce_dly_min] [get_ports $input_ports];
+set_input_delay -clock rgmii0_rx_clk -max [expr $tfco_max + $trce_dly_max] [get_ports $input_ports] -clock_fall -add_delay;
+set_input_delay -clock rgmii0_rx_clk -min [expr $tfco_min + $trce_dly_min] [get_ports $input_ports] -clock_fall -add_delay;
 
-set_input_delay -clock [get_clocks $rgmii_rx_clk] -max [expr $Eth_Tco_max] [get_ports {rgmii_rxd[*] rgmii_rx_ctl[*]}]
-set_input_delay -clock [get_clocks $rgmii_rx_clk] -min [expr $Eth_Tco_min] [get_ports {rgmii_rxd[*] rgmii_rx_ctl[*]}]
-set_input_delay -clock [get_clocks $rgmii_rx_clk] -clock_fall -max [expr $Eth_Tco_max] -add_delay [get_ports {rgmii_rxd[*] rgmii_rx_ctl[*]}]
-set_input_delay -clock [get_clocks $rgmii_rx_clk] -clock_fall -min [expr $Eth_Tco_min] -add_delay [get_ports {rgmii_rxd[*] rgmii_rx_ctl[*]}]
+# Report Timing Template
+# report_timing -rise_from [get_ports $input_ports] -max_paths 20 -nworst 2 -delay_type min_max -name sys_sync_ddr_in_rise -file sys_sync_ddr_in_rise.txt;
+# report_timing -fall_from [get_ports $input_ports] -max_paths 20 -nworst 2 -delay_type min_max -name sys_sync_ddr_in_fall -file sys_sync_ddr_in_fall.txt;
 
-set_property IDELAY_VALUE 13 [get_cells {rgmii_0/idelay_rxd[*].inst}]
-#set_property IDELAY_VALUE 13 [get_cells {rgmii_1/idelay_rxd[*].inst}]
+
+create_clock -period 8 -name rgmii1_rx_clk [get_ports {rgmii_rxc[1]}]
+set trco_max        0.500;          # Maximum clock to output delay from rising edge (external device)
+set trco_min        -0.500;         # Minimum clock to output delay from rising edge (external device)
+set tfco_max        2.600;          # Maximum clock to output delay from falling edge (external device)
+set tfco_min        1.000;          # Minimum clock to output delay from falling edge (external device)
+set trce_dly_max    0.000;          # Maximum board trace delay
+set trce_dly_min    0.000;          # Minimum board trace delay
+set input_ports     {rgmii_rxd[4] rgmii_rxd[5] rgmii_rxd[6] rgmii_rxd[7] rgmii_rx_ctl[1]};  # List of input ports
+
+# Input Delay Constraint
+set_input_delay -clock rgmii1_rx_clk -max [expr $trco_max + $trce_dly_max] [get_ports $input_ports];
+set_input_delay -clock rgmii1_rx_clk -min [expr $trco_min + $trce_dly_min] [get_ports $input_ports];
+set_input_delay -clock rgmii1_rx_clk -max [expr $tfco_max + $trce_dly_max] [get_ports $input_ports] -clock_fall -add_delay;
+set_input_delay -clock rgmii1_rx_clk -min [expr $tfco_min + $trce_dly_min] [get_ports $input_ports] -clock_fall -add_delay;
+
+# Report Timing Template
+# report_timing -rise_from [get_ports $input_ports] -max_paths 20 -nworst 2 -delay_type min_max -name sys_sync_ddr_in_rise -file sys_sync_ddr_in_rise.txt;
+# report_timing -fall_from [get_ports $input_ports] -max_paths 20 -nworst 2 -delay_type min_max -name sys_sync_ddr_in_fall -file sys_sync_ddr_in_fall.txt;
+
+
+##set Eth_Tco_max   -1.5
+##set Eth_Tco_min   -2.8
+#set Eth_Tco_max   0.5
+#set Eth_Tco_min   -0.5
+
+#create_clock -period 8 -name rgmii0_rx_clk [get_ports {rgmii_rxc[0]}]
+##set rgmii_rx_clk rgmii_rx_virt_clk
+#
+#set_input_delay -clock [get_clocks rgmii0_rx_clk] -max [expr $Eth_Tco_max] [get_ports {rgmii_rxd[0] rgmii_rxd[1] rgmii_rxd[2] rgmii_rxd[3] rgmii_rx_ctl[0]}]
+#set_input_delay -clock [get_clocks rgmii0_rx_clk] -min [expr $Eth_Tco_min] [get_ports {rgmii_rxd[0] rgmii_rxd[1] rgmii_rxd[2] rgmii_rxd[3] rgmii_rx_ctl[0]}]
+#set_input_delay -clock [get_clocks rgmii0_rx_clk] -clock_fall -max [expr $Eth_Tco_max] -add_delay [get_ports {rgmii_rxd[0] rgmii_rxd[1] rgmii_rxd[2] rgmii_rxd[3] rgmii_rx_ctl[0]}]
+#set_input_delay -clock [get_clocks rgmii0_rx_clk] -clock_fall -min [expr $Eth_Tco_min] -add_delay [get_ports {rgmii_rxd[0] rgmii_rxd[1] rgmii_rxd[2] rgmii_rxd[3] rgmii_rx_ctl[0]}]
+#
+#create_clock -period 8 -name rgmii1_rx_clk [get_ports {rgmii_rxc[1]}]
+#
+#set_input_delay -clock [get_clocks rgmii1_rx_clk] -max [expr $Eth_Tco_max] [get_ports {rgmii_rxd[4] rgmii_rxd[5] rgmii_rxd[6] rgmii_rxd[7] rgmii_rx_ctl[1]}]
+#set_input_delay -clock [get_clocks rgmii1_rx_clk] -min [expr $Eth_Tco_min] [get_ports {rgmii_rxd[4] rgmii_rxd[5] rgmii_rxd[6] rgmii_rxd[7] rgmii_rx_ctl[1]}]
+#set_input_delay -clock [get_clocks rgmii1_rx_clk] -clock_fall -max [expr $Eth_Tco_max] -add_delay [get_ports {rgmii_rxd[4] rgmii_rxd[5] rgmii_rxd[6] rgmii_rxd[7] rgmii_rx_ctl[1]}]
+#set_input_delay -clock [get_clocks rgmii1_rx_clk] -clock_fall -min [expr $Eth_Tco_min] -add_delay [get_ports {rgmii_rxd[4] rgmii_rxd[5] rgmii_rxd[6] rgmii_rxd[7] rgmii_rx_ctl[1]}]
+
+set_property IDELAY_VALUE 16 [get_cells {rgmii_0/idelay_rxd[*].inst}]
+set_property IDELAY_VALUE 16 [get_cells {rgmii_1/idelay_rxd[*].inst}]
 
 set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[0]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[1]}]
