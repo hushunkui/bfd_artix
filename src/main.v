@@ -79,84 +79,86 @@ assign eth_phy_mdc = 1'b0;
 // wire [31:0] firmware_date;
 // wire [31:0] firmware_time;
 
-// wire [31:0] M_AXI_0_awaddr ;
-// wire [2:0]  M_AXI_0_awprot ;
-// wire        M_AXI_0_awready;
-// wire        M_AXI_0_awvalid;
-// wire [31:0] M_AXI_0_wdata  ;
-// wire [3:0]  M_AXI_0_wstrb  ;
-// wire        M_AXI_0_wvalid ;
-// wire        M_AXI_0_wready ;
-// wire [1:0]  M_AXI_0_bresp  ;
-// wire        M_AXI_0_bvalid ;
-// wire        M_AXI_0_bready ;
+wire [31:0] M_AXI_0_awaddr ;
+wire [2:0]  M_AXI_0_awprot ;
+wire        M_AXI_0_awready;
+wire        M_AXI_0_awvalid;
+wire [31:0] M_AXI_0_wdata  ;
+wire [3:0]  M_AXI_0_wstrb  ;
+wire        M_AXI_0_wvalid ;
+wire        M_AXI_0_wready ;
+wire [1:0]  M_AXI_0_bresp  ;
+wire        M_AXI_0_bvalid ;
+wire        M_AXI_0_bready ;
 
-// wire [31:0] M_AXI_0_araddr ;
-// wire [2:0]  M_AXI_0_arprot ;
-// wire        M_AXI_0_arready;
-// wire        M_AXI_0_arvalid;
-// wire [31:0] M_AXI_0_rdata  ;
-// wire        M_AXI_0_rvalid ;
-// wire [1:0]  M_AXI_0_rresp  ;
-// wire        M_AXI_0_rready ;
+wire [31:0] M_AXI_0_araddr ;
+wire [2:0]  M_AXI_0_arprot ;
+wire        M_AXI_0_arready;
+wire        M_AXI_0_arvalid;
+wire [31:0] M_AXI_0_rdata  ;
+wire        M_AXI_0_rvalid ;
+wire [1:0]  M_AXI_0_rresp  ;
+wire        M_AXI_0_rready ;
 
-// system system_i(
-//     .M_AXI_0_awaddr  (M_AXI_0_awaddr ),
-//     .M_AXI_0_awprot  (M_AXI_0_awprot ),
-//     .M_AXI_0_awready (M_AXI_0_awready),
-//     .M_AXI_0_awvalid (M_AXI_0_awvalid),
-//     .M_AXI_0_wdata   (M_AXI_0_wdata  ),
-//     .M_AXI_0_wstrb   (M_AXI_0_wstrb  ),
-//     .M_AXI_0_wvalid  (M_AXI_0_wvalid ),
-//     .M_AXI_0_wready  (M_AXI_0_wready ),
-//     .M_AXI_0_bresp   (M_AXI_0_bresp  ),
-//     .M_AXI_0_bvalid  (M_AXI_0_bvalid ),
-//     .M_AXI_0_bready  (M_AXI_0_bready ),
+wire [0:0] test_gpio;
 
-//     .M_AXI_0_araddr  (M_AXI_0_araddr ),
-//     .M_AXI_0_arprot  (M_AXI_0_arprot ),
-//     .M_AXI_0_arready (M_AXI_0_arready),
-//     .M_AXI_0_arvalid (M_AXI_0_arvalid),
-//     .M_AXI_0_rdata   (M_AXI_0_rdata  ),
-//     .M_AXI_0_rvalid  (M_AXI_0_rvalid ),
-//     .M_AXI_0_rresp   (M_AXI_0_rresp  ),
-//     .M_AXI_0_rready  (M_AXI_0_rready ),
+system system_i(
+    .M_AXI_0_awaddr  (M_AXI_0_awaddr ),
+    .M_AXI_0_awprot  (M_AXI_0_awprot ),
+    .M_AXI_0_awready (M_AXI_0_awready),
+    .M_AXI_0_awvalid (M_AXI_0_awvalid),
+    .M_AXI_0_wdata   (M_AXI_0_wdata  ),
+    .M_AXI_0_wstrb   (M_AXI_0_wstrb  ),
+    .M_AXI_0_wvalid  (M_AXI_0_wvalid ),
+    .M_AXI_0_wready  (M_AXI_0_wready ),
+    .M_AXI_0_bresp   (M_AXI_0_bresp  ),
+    .M_AXI_0_bvalid  (M_AXI_0_bvalid ),
+    .M_AXI_0_bready  (M_AXI_0_bready ),
 
-//     .aclk(aclk),
-//     .areset_n(areset_n)
-// );
+    .M_AXI_0_araddr  (M_AXI_0_araddr ),
+    .M_AXI_0_arprot  (M_AXI_0_arprot ),
+    .M_AXI_0_arready (M_AXI_0_arready),
+    .M_AXI_0_arvalid (M_AXI_0_arvalid),
+    .M_AXI_0_rdata   (M_AXI_0_rdata  ),
+    .M_AXI_0_rvalid  (M_AXI_0_rvalid ),
+    .M_AXI_0_rresp   (M_AXI_0_rresp  ),
+    .M_AXI_0_rready  (M_AXI_0_rready ),
 
-// usr_logic #(
-//     .SIM (SIM)
-// ) m_usr (
-// //user part
-//     .test_gpio (test_gpio),
+    .aclk(mac_gtx_clk),
+    .areset_n(pll0_locked)
+);
 
-// //AXI interface
-//     .s_axi_awaddr  (M_AXI_0_awaddr ),
-//     .s_axi_awprot  (M_AXI_0_awprot ),
-//     .s_axi_awready (M_AXI_0_awready),
-//     .s_axi_awvalid (M_AXI_0_awvalid),
-//     .s_axi_wdata   (M_AXI_0_wdata  ),
-//     .s_axi_wstrb   (M_AXI_0_wstrb  ),
-//     .s_axi_wvalid  (M_AXI_0_wvalid ),
-//     .s_axi_wready  (M_AXI_0_wready ),
-//     .s_axi_bresp   (M_AXI_0_bresp  ),
-//     .s_axi_bvalid  (M_AXI_0_bvalid ),
-//     .s_axi_bready  (M_AXI_0_bready ),
+usr_logic #(
+    .SIM (SIM)
+) m_usr (
+//user part
+    .test_gpio (test_gpio),
 
-//     .s_axi_araddr  (M_AXI_0_araddr ),
-//     .s_axi_arprot  (M_AXI_0_arprot ),
-//     .s_axi_arready (M_AXI_0_arready),
-//     .s_axi_arvalid (M_AXI_0_arvalid),
-//     .s_axi_rdata   (M_AXI_0_rdata  ),
-//     .s_axi_rvalid  (M_AXI_0_rvalid ),
-//     .s_axi_rresp   (M_AXI_0_rresp  ),
-//     .s_axi_rready  (M_AXI_0_rready ),
+//AXI interface
+    .s_axi_awaddr  (M_AXI_0_awaddr ),
+    .s_axi_awprot  (M_AXI_0_awprot ),
+    .s_axi_awready (M_AXI_0_awready),
+    .s_axi_awvalid (M_AXI_0_awvalid),
+    .s_axi_wdata   (M_AXI_0_wdata  ),
+    .s_axi_wstrb   (M_AXI_0_wstrb  ),
+    .s_axi_wvalid  (M_AXI_0_wvalid ),
+    .s_axi_wready  (M_AXI_0_wready ),
+    .s_axi_bresp   (M_AXI_0_bresp  ),
+    .s_axi_bvalid  (M_AXI_0_bvalid ),
+    .s_axi_bready  (M_AXI_0_bready ),
 
-//     .s_axi_resetn (sys_rstn),
-//     .s_axi_clk (sys_clk)
-// );
+    .s_axi_araddr  (M_AXI_0_araddr ),
+    .s_axi_arprot  (M_AXI_0_arprot ),
+    .s_axi_arready (M_AXI_0_arready),
+    .s_axi_arvalid (M_AXI_0_arvalid),
+    .s_axi_rdata   (M_AXI_0_rdata  ),
+    .s_axi_rvalid  (M_AXI_0_rvalid ),
+    .s_axi_rresp   (M_AXI_0_rresp  ),
+    .s_axi_rready  (M_AXI_0_rready ),
+
+    .s_axi_resetn (pll0_locked),
+    .s_axi_clk (mac_gtx_clk)
+);
 
 
 wire [13:0] usr_lvds_io;
@@ -250,7 +252,7 @@ mac_rgmii rgmii_0 (
     .mac_rx_eof_o  (mac_rx_axis_tlast [0]         ),
     .mac_rx_fr_good_o(mac_rx_axis_fr_good[0]),
     .mac_rx_fr_err_o(mac_rx_axis_fr_err[0]),
-    .mac_rx_clk_o  (),
+    .mac_rx_clk_o  (mac_rx_aclk[0]),
     .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[0]),
 
     .mac_tx_data  (mac_rx_axis_tdata [(1*8) +: 8]),
@@ -280,7 +282,7 @@ mac_rgmii rgmii_1 (
     .mac_rx_eof_o  (mac_rx_axis_tlast [1]         ),
     .mac_rx_fr_good_o(mac_rx_axis_fr_good[1]),
     .mac_rx_fr_err_o(mac_rx_axis_fr_err[1]),
-    .mac_rx_clk_o  (),
+    .mac_rx_clk_o  (mac_rx_aclk[1]),
     .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[1]),
 
     .mac_tx_data  (mac_rx_axis_tdata [(0*8) +: 8]),
@@ -440,7 +442,7 @@ ila_0 dbg_ila (
         mac0_rx_axis_fr_good,
         mac0_rx_axis_fr_err
     }),
-    .clk(mac_gtx_clk) //(mac_rx_aclk[0]) //
+    .clk(mac_rx_aclk[0]) //(mac_gtx_clk) //
 );
 
 
