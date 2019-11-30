@@ -32,7 +32,7 @@ process(p_in_rst,p_in_clk)
 begin
     if p_in_rst='1' then
         srambler<=(others=>'0');
-    if rising_edge(p_in_clk) then
+    elsif rising_edge(p_in_clk) then
         if p_in_SOF='1' then
             srambler <= srambler32_0(std_logic_vector(TO_UNSIGNED(G_INIT_VAL, 16)));
         else

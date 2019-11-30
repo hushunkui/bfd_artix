@@ -2,7 +2,7 @@
 // author: Golovachenko Viktor
 //
 
-module test_tx (
+module test_rx (
     input [7:0] mac_rx_data,
     input mac_rx_valid,
     input mac_rx_sof,
@@ -51,7 +51,7 @@ always @(posedge clk) begin
 
         RX: begin
             if (mac_rx_valid) begin
-                if (mac_tx_data[7:0] != mac_rx_data) || (mac_rx_eof) || (mac_rx_fr_err) begin
+                if ((mac_tx_data[7:0] != mac_rx_data) || (mac_rx_eof) || (mac_rx_fr_err)) begin
                     if (mac_rx_eof && mac_rx_fr_good) begin
                         fsm_cs <= IDLE;
                     end else begin
