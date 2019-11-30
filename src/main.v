@@ -4,7 +4,7 @@
 `timescale 1ns / 1ps
 
 module main #(
-    parameter ETHCOUNT = 2, //max 4
+    parameter ETHCOUNT = 4, //max 4
     parameter SIM = 0
 ) (
     output mgt_pwr_en,
@@ -295,6 +295,66 @@ mac_rgmii rgmii_1 (
     .rst(~pll0_locked)
 );
 
+mac_rgmii rgmii_2 (
+    .status_o(),
+    // phy side (RGMII)
+    .phy_rxd   (rgmii_rxd   [(2*4) +: 4]),
+    .phy_rx_ctl(rgmii_rx_ctl[2]         ),
+    .phy_rxc   (rgmii_rxc   [2]         ),
+    .phy_txd   (rgmii_txd   [(2*4) +: 4]),
+    .phy_tx_ctl(rgmii_tx_ctl[2]         ),
+    .phy_txc   (rgmii_txc   [2]         ),
+
+    // logic side
+    .mac_rx_data_o (mac_rx_axis_tdata [(2*8) +: 8]),
+    .mac_rx_valid_o(mac_rx_axis_tvalid[2]         ),
+    .mac_rx_sof_o  (mac_rx_axis_tuser [2]         ),
+    .mac_rx_eof_o  (mac_rx_axis_tlast [2]         ),
+    .mac_rx_fr_good_o(mac_rx_axis_fr_good[2]),
+    .mac_rx_fr_err_o(mac_rx_axis_fr_err[2]),
+    .mac_rx_clk_o  (mac_rx_aclk[2]),
+    .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[2]),
+
+    .mac_tx_data  (mac_rx_axis_tdata [(3*8) +: 8]),
+    .mac_tx_valid (mac_rx_axis_tvalid[3]         ),
+    .mac_tx_sof   (mac_rx_axis_tuser [3]         ),
+    .mac_tx_eof   (mac_rx_axis_tlast [3]         ),
+    .mac_tx_clk_90(mac_gtx_clk90),
+    .mac_tx_clk   (mac_gtx_clk),
+
+    .rst(~pll0_locked)
+);
+
+mac_rgmii rgmii_3 (
+    .status_o(),
+    // phy side (RGMII)
+    .phy_rxd   (rgmii_rxd   [(3*4) +: 4]),
+    .phy_rx_ctl(rgmii_rx_ctl[3]         ),
+    .phy_rxc   (rgmii_rxc   [3]         ),
+    .phy_txd   (rgmii_txd   [(3*4) +: 4]),
+    .phy_tx_ctl(rgmii_tx_ctl[3]         ),
+    .phy_txc   (rgmii_txc   [3]         ),
+
+    // logic side
+    .mac_rx_data_o (mac_rx_axis_tdata [(3*8) +: 8]),
+    .mac_rx_valid_o(mac_rx_axis_tvalid[3]         ),
+    .mac_rx_sof_o  (mac_rx_axis_tuser [3]         ),
+    .mac_rx_eof_o  (mac_rx_axis_tlast [3]         ),
+    .mac_rx_fr_good_o(mac_rx_axis_fr_good[3]),
+    .mac_rx_fr_err_o(mac_rx_axis_fr_err[3]),
+    .mac_rx_clk_o  (mac_rx_aclk[3]),
+    .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[3]),
+
+    .mac_tx_data  (mac_rx_axis_tdata [(2*8) +: 8]),
+    .mac_tx_valid (mac_rx_axis_tvalid[2]         ),
+    .mac_tx_sof   (mac_rx_axis_tuser [2]         ),
+    .mac_tx_eof   (mac_rx_axis_tlast [2]         ),
+    .mac_tx_clk_90(mac_gtx_clk90),
+    .mac_tx_clk   (mac_gtx_clk),
+
+    .rst(~pll0_locked)
+);
+
 
 
 //----------------------------------
@@ -442,7 +502,7 @@ ila_0 dbg_ila (
         mac0_rx_axis_fr_good,
         mac0_rx_axis_fr_err
     }),
-    .clk(mac_rx_aclk[0]) //(mac_gtx_clk) //
+    .clk(mac_gtx_clk) //(mac_rx_aclk[0]) //
 );
 
 
