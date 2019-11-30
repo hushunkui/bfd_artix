@@ -1,14 +1,6 @@
--------------------------------------------------------------------------
--- Company     : Linkos
--- Engineer    : Golovachenko Victor
 --
--- Create Date : 09.02.2011 15:58:19
--- Module Name : sata_scrambler
+-- author: Golovachenko Viktor
 --
--- Revision:
--- Revision 0.01 - File Created
---
--------------------------------------------------------------------------
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
