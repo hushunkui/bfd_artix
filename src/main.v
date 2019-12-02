@@ -358,6 +358,7 @@ mac_rgmii rgmii_3 (
     .rst(~pll0_locked)
 );
 
+wire [7:0] test_data;
 test_phy test_phy (
     .mac_tx_data  (mac_rx_axis_tdata [(2*8) +: 8]),
     .mac_tx_valid (mac_rx_axis_tvalid[2]         ),
@@ -373,6 +374,7 @@ test_phy test_phy (
 
     .start(reg_ctrl[0]),
     .err(test_err),
+    .test_data(test_data),
 
     .clk(mac_gtx_clk),
     .rst(~pll0_locked)
@@ -406,11 +408,12 @@ assign dbg_out[1] = clk20_div | sysclk25_div &
 
 // assign dbg_led = 1'b0;
 
+wire led_blink;
 fpga_test_01 #(
     .G_BLINK_T05(125),  // -- 1/2 ïåðèîäà ìèãàíèÿ ñâåòîäèîäà.(âðåìÿ â ms)
     .G_CLK_T05us(62) //(13) //-- êîë-âî ïåðèîäîâ ÷àñòîòû ïîðòà p_in_clk óêëàäûâàþùèåñÿ â 1/2 ïåðèîäà 1us
 ) test_led (
-    .p_out_test_led (dbg_led),
+    .p_out_test_led (led_blink),
     .p_out_test_done(),
 
     .p_out_1us  (),
@@ -422,6 +425,7 @@ fpga_test_01 #(
     .p_in_rst   (~pll0_locked)
 );
 
+assign dbg_led = led_blink & !test_gpio[0];
 
 
 
@@ -462,21 +466,21 @@ wire       mac3_rx_axis_fr_good;
 wire       mac3_rx_axis_fr_err;
 wire       mac3_rx_fr_good_dbg;
 
-assign mac0_rx_axis_tdata   = mac_rx_axis_tdata[7:0];
-assign mac0_rx_axis_tvalid  = mac_rx_axis_tvalid[0];
-assign mac0_rx_axis_tuser   = mac_rx_axis_tuser[0];
-assign mac0_rx_axis_tlast   = mac_rx_axis_tlast[0];
-assign mac0_rx_axis_fr_good = mac_rx_axis_fr_good[0];
-assign mac0_rx_axis_fr_err  = mac_rx_axis_fr_err[0];
-assign mac0_rx_fr_good_dbg  = mac_rx_fr_good_dbg[0];
+assign mac0_rx_axis_tdata   = mac_rx_axis_tdata[(2*8) +: 8];
+assign mac0_rx_axis_tvalid  = mac_rx_axis_tvalid[2];
+assign mac0_rx_axis_tuser   = mac_rx_axis_tuser[2];
+assign mac0_rx_axis_tlast   = mac_rx_axis_tlast[2];
+assign mac0_rx_axis_fr_good = mac_rx_axis_fr_good[2];
+assign mac0_rx_axis_fr_err  = mac_rx_axis_fr_err[2];
+assign mac0_rx_fr_good_dbg  = mac_rx_fr_good_dbg[2];
 
-assign mac1_rx_axis_tdata   = mac_rx_axis_tdata[15:8];
-assign mac1_rx_axis_tvalid  = mac_rx_axis_tvalid[1];
-assign mac1_rx_axis_tuser   = mac_rx_axis_tuser[1];
-assign mac1_rx_axis_tlast   = mac_rx_axis_tlast[1];
-assign mac1_rx_axis_fr_good = mac_rx_axis_fr_good[1];
-assign mac1_rx_axis_fr_err  = mac_rx_axis_fr_err[1];
-assign mac1_rx_fr_good_dbg  = mac_rx_fr_good_dbg[1];
+assign mac1_rx_axis_tdata   = mac_rx_axis_tdata[(3*8) +: 8];
+assign mac1_rx_axis_tvalid  = mac_rx_axis_tvalid[3];
+assign mac1_rx_axis_tuser   = mac_rx_axis_tuser[3];
+assign mac1_rx_axis_tlast   = mac_rx_axis_tlast[3];
+assign mac1_rx_axis_fr_good = mac_rx_axis_fr_good[3];
+assign mac1_rx_axis_fr_err  = mac_rx_axis_fr_err[3];
+assign mac1_rx_fr_good_dbg  = mac_rx_fr_good_dbg[3];
 
 reg err_det = 1'b0;
 reg mac0_rx_err_0 = 1'b0;
@@ -502,6 +506,8 @@ end
 
 ila_0 dbg_ila (
     .probe0({
+        test_data,
+        reg_ctrl[0],
         test_err,
 
         mac0_rx_err_0,

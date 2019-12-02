@@ -16,8 +16,9 @@ module test_tx (
     input rst
 );
 
-wire [31:0] test_data;
+wire [31:0] data;
 reg [15:0] dcnt = 0;
+reg srcambler_sof = 1'b0;
 
 // enum int unsigned {
 // IDLE ,
@@ -36,18 +37,19 @@ reg [15:0] dcnt = 0;
 // } state = IDLE;
 
 localparam IDLE  = 2'd0;
-localparam TX    = 2'd1;
-localparam PAUSE = 2'd2;
+localparam TXSTART = 2'd1;
+localparam TX    = 2'd2;
+localparam PAUSE = 2'd3;
 reg [1:0] fsm_cs = IDLE;
 
-assign mac_tx_data = test_data[7:0];
+assign mac_tx_data = data[7:0];
 
 sata_scrambler #(
     .G_INIT_VAL (16'h55AA)
 ) test_data (
-    .p_in_SOF    (1'b0),
+    .p_in_SOF    (srcambler_sof),
     .p_in_en     (mac_tx_valid),
-    .p_out_result(test_data),
+    .p_out_result(data),
 
     .p_in_clk(clk),
     .p_in_rst(rst)
@@ -56,6 +58,14 @@ sata_scrambler #(
 always @(posedge clk) begin
     case (fsm_cs)
         IDLE: begin
+            if (start) begin
+                srcambler_sof <= 1'b1;
+                fsm_cs <= TXSTART;
+            end
+        end
+
+        TXSTART: begin
+            srcambler_sof <= 1'b0;
             mac_tx_valid <= 1'b0;
             mac_tx_sof <= 1'b0;
             mac_tx_eof <= 1'b0;
@@ -70,10 +80,15 @@ always @(posedge clk) begin
 
         TX: begin
             mac_tx_sof <= 1'b0;
-            mac_tx_eof <= 1'b0;
+            if (dcnt == (pkt_size - 2)) begin
+                mac_tx_eof <= 1'b1;
+            end else if (dcnt == (pkt_size - 1)) begin
+                mac_tx_eof <= 1'b0;
+                mac_tx_valid <= 1'b0;
+            end
+
             if (dcnt == (pkt_size - 1)) begin
                 dcnt <= 0;
-                mac_tx_valid <= 1'b0;
                 fsm_cs <= PAUSE;
             end else begin
                 dcnt <= dcnt + 1;
@@ -83,7 +98,11 @@ always @(posedge clk) begin
         PAUSE: begin
             if (dcnt == (pause_size - 1)) begin
                 dcnt <= 0;
-                fsm_cs <= IDLE;
+                if (start) begin
+                    fsm_cs <= TXSTART;
+                end else begin
+                    fsm_cs <= IDLE;
+                end
             end else begin
                 dcnt <= dcnt + 1;
             end

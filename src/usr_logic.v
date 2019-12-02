@@ -8,7 +8,7 @@ module usr_logic #(
     parameter SIM = 0
 ) (
     output [0:0] test_gpio,
-    output [31:0] reg_ctrl = 0,
+    output reg [31:0] reg_ctrl = 0,
 
 //AXI interface
     input  [31:0]  s_axi_awaddr ,

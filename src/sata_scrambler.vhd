@@ -24,7 +24,7 @@ end entity sata_scrambler;
 
 architecture behavioral of sata_scrambler is
 
-signal srambler : std_logic_vector(31 downto 0);
+signal srambler : std_logic_vector(31 downto 0) := (others=>'0');
 
 begin --architecture behavioral
 

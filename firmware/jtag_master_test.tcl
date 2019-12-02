@@ -41,71 +41,17 @@ set baseaddr 0x44A00000
 # Create a write transactions
 create_hw_axi_txn reg_test0_wr [get_hw_axis $jtag_axi_master] -type write -address [format %08x [expr $baseaddr + $UREG_TEST0]] -data 00000001
 create_hw_axi_txn reg_test1_wr [get_hw_axis $jtag_axi_master] -type write -address [format %08x [expr $baseaddr + $UREG_TEST1]] -data $wdata_2
+create_hw_axi_txn reg_ctrl_wr [get_hw_axis $jtag_axi_master] -type write -address [format %08x [expr $baseaddr + $UREG_CTRL]] -data 00000000
 # Create a read transactions
 create_hw_axi_txn reg_test0_rd [get_hw_axis $jtag_axi_master] -type read -address [format %08x [expr $baseaddr + $UREG_TEST0]]
 create_hw_axi_txn reg_test1_rd [get_hw_axis $jtag_axi_master] -type read -address [format %08x [expr $baseaddr + $UREG_TEST1]]
+create_hw_axi_txn reg_ctrl_rd  [get_hw_axis $jtag_axi_master] -type read -address [format %08x [expr $baseaddr + $UREG_CTRL]]
 create_hw_axi_txn reg_firmware_data_addr_rd [get_hw_axis $jtag_axi_master] -type read -address [format %08x [expr $baseaddr + $UREG_FIRMWARE_DATE]]
 create_hw_axi_txn reg_firmware_time_addr_rd [get_hw_axis $jtag_axi_master] -type read -address [format %08x [expr $baseaddr + $UREG_FIRMWARE_TIME]]
 
 # Initiate transactions
-set_property DATA 00000000 [get_hw_axi_txn reg_test0_wr]
-run_hw_axi reg_test0_wr -quiet
-run_hw_axi reg_test0_rd -quiet
-run_hw_axi reg_firmware_data_addr_rd -quiet
-set rdata [get_property DATA [get_hw_axi_txn reg_firmware_data_addr_rd] -quiet]
-puts "reg_test0_rd: $rdata"
+set_property DATA 00000001 [get_hw_axi_txn reg_ctrl_wr]
+run_hw_axi reg_ctrl_wr -quiet
 
-run_hw_axi reg_firmware_time_addr_rd -quiet
-set rdata [get_property DATA [get_hw_axi_txn reg_firmware_time_addr_rd] -quiet]
-puts "reg_test0_rd: $rdata"
-
-
-sleep 3000
-puts "sleep 1"
-
-# Initiate transactions
-set_property DATA 00000001 [get_hw_axi_txn reg_test0_wr]
-run_hw_axi reg_test0_wr -quiet
-run_hw_axi reg_test0_rd -quiet
-run_hw_axi reg_firmware_data_addr_rd -quiet
-set rdata [get_property DATA [get_hw_axi_txn reg_firmware_data_addr_rd] -quiet]
-puts "reg_test0_rd: $rdata"
-
-run_hw_axi reg_firmware_time_addr_rd -quiet
-set rdata [get_property DATA [get_hw_axi_txn reg_firmware_time_addr_rd] -quiet]
-puts "reg_test0_rd: $rdata"
-
-sleep 3000
-puts "sleep 2"
-
-# Initiate transactions
-set_property DATA 00000000 [get_hw_axi_txn reg_test0_wr]
-run_hw_axi reg_test0_wr -quiet
-run_hw_axi reg_test0_rd -quiet
-run_hw_axi reg_firmware_data_addr_rd -quiet
-set rdata [get_property DATA [get_hw_axi_txn reg_firmware_data_addr_rd] -quiet]
-puts "reg_test0_rd: $rdata"
-
-run_hw_axi reg_firmware_time_addr_rd -quiet
-set rdata [get_property DATA [get_hw_axi_txn reg_firmware_time_addr_rd] -quiet]
-puts "reg_test0_rd: $rdata"
-
-# set rdata_tmp [get_property DATA [get_hw_axi_txn reg_test1_rd]]
-# puts "reg_test1_rd: $rdata_tmp"
-
-# # Compare read data
-# if { $rdata_tmp == $wdata_1 } {
-# 	puts "Data comparison test pass for - S00_AXI"
-# } else {
-# 	puts "Data comparison test fail for - S00_AXI, expected-$wdata_1 actual-$rdata_tmp"
-# 	$ec=1
-# }
-
-# # Check error flag
-# if { $ec == 0 } {
-# 	 puts "PTGEN_TEST: PASSED!"
-# } else {
-# 	 puts "PTGEN_TEST: FAILED!"
-# }
 
 #close_hw

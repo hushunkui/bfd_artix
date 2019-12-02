@@ -17,6 +17,7 @@ module test_phy (
 
     input start,
     output err,
+    output [7:0] test_data,
 
     input clk,
     input rst
@@ -29,6 +30,8 @@ test_tx test_tx (
     .mac_tx_eof  (mac_tx_eof  ),
 
     .start(start),
+    .pkt_size(16'd512),
+    .pause_size(16'd64),
 
     .clk(clk),
     .rst(rst)
@@ -44,6 +47,7 @@ test_rx test_rx (
 
     .start(start),
     .err(err),
+    .test_data(test_data),
 
     .clk(clk),
     .rst(rst)
