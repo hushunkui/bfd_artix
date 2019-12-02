@@ -8,6 +8,11 @@
 #current_hw_device [lindex [get_hw_devices] $fpga_index]
 
 
+proc sleep {time} {
+    after $time set end 1
+    vwait end
+}
+
 # jtag axi master interface hardware name, change as per your design.
 set jtag_axi_master hw_axi_1
 set ec 0
@@ -34,7 +39,7 @@ set baseaddr 0x44A00000
 
 # Test:
 # Create a write transactions
-create_hw_axi_txn reg_test0_wr [get_hw_axis $jtag_axi_master] -type write -address [format %08x [expr $baseaddr + $UREG_TEST0]] -data $wdata_1
+create_hw_axi_txn reg_test0_wr [get_hw_axis $jtag_axi_master] -type write -address [format %08x [expr $baseaddr + $UREG_TEST0]] -data 00000001
 create_hw_axi_txn reg_test1_wr [get_hw_axis $jtag_axi_master] -type write -address [format %08x [expr $baseaddr + $UREG_TEST1]] -data $wdata_2
 # Create a read transactions
 create_hw_axi_txn reg_test0_rd [get_hw_axis $jtag_axi_master] -type read -address [format %08x [expr $baseaddr + $UREG_TEST0]]
@@ -43,10 +48,9 @@ create_hw_axi_txn reg_firmware_data_addr_rd [get_hw_axis $jtag_axi_master] -type
 create_hw_axi_txn reg_firmware_time_addr_rd [get_hw_axis $jtag_axi_master] -type read -address [format %08x [expr $baseaddr + $UREG_FIRMWARE_TIME]]
 
 # Initiate transactions
+set_property DATA 00000000 [get_hw_axi_txn reg_test0_wr]
 run_hw_axi reg_test0_wr -quiet
-run_hw_axi reg_test1_wr -quiet
 run_hw_axi reg_test0_rd -quiet
-run_hw_axi reg_test1_rd -quiet
 run_hw_axi reg_firmware_data_addr_rd -quiet
 set rdata [get_property DATA [get_hw_axi_txn reg_firmware_data_addr_rd] -quiet]
 puts "reg_test0_rd: $rdata"
@@ -54,6 +58,38 @@ puts "reg_test0_rd: $rdata"
 run_hw_axi reg_firmware_time_addr_rd -quiet
 set rdata [get_property DATA [get_hw_axi_txn reg_firmware_time_addr_rd] -quiet]
 puts "reg_test0_rd: $rdata"
+
+
+sleep 3000
+puts "sleep 1"
+
+# Initiate transactions
+set_property DATA 00000001 [get_hw_axi_txn reg_test0_wr]
+run_hw_axi reg_test0_wr -quiet
+run_hw_axi reg_test0_rd -quiet
+run_hw_axi reg_firmware_data_addr_rd -quiet
+set rdata [get_property DATA [get_hw_axi_txn reg_firmware_data_addr_rd] -quiet]
+puts "reg_test0_rd: $rdata"
+
+run_hw_axi reg_firmware_time_addr_rd -quiet
+set rdata [get_property DATA [get_hw_axi_txn reg_firmware_time_addr_rd] -quiet]
+puts "reg_test0_rd: $rdata"
+
+sleep 3000
+puts "sleep 2"
+
+# Initiate transactions
+set_property DATA 00000000 [get_hw_axi_txn reg_test0_wr]
+run_hw_axi reg_test0_wr -quiet
+run_hw_axi reg_test0_rd -quiet
+run_hw_axi reg_firmware_data_addr_rd -quiet
+set rdata [get_property DATA [get_hw_axi_txn reg_firmware_data_addr_rd] -quiet]
+puts "reg_test0_rd: $rdata"
+
+run_hw_axi reg_firmware_time_addr_rd -quiet
+set rdata [get_property DATA [get_hw_axi_txn reg_firmware_time_addr_rd] -quiet]
+puts "reg_test0_rd: $rdata"
+
 # set rdata_tmp [get_property DATA [get_hw_axi_txn reg_test1_rd]]
 # puts "reg_test1_rd: $rdata_tmp"
 
