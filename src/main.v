@@ -66,6 +66,8 @@ wire [ETHCOUNT-1:0]     mac_tx_axis_tready;
 wire [ETHCOUNT-1:0]     mac_tx_aclk;
 wire [ETHCOUNT-1:0]     mac_tx_reset;
 
+wire [(ETHCOUNT*4)-1:0] mac_fifo_status;
+
 wire mac_gtx_clk;
 wire mac_gtx_clk90;
 
@@ -240,6 +242,7 @@ endgenerate
 
 mac_rgmii rgmii_0 (
     .status_o(),
+    .fifo_status(mac_fifo_status[(0*4) +: 4]),
     // phy side (RGMII)
     .phy_rxd   (rgmii_rxd   [(0*4) +: 4]),
     .phy_rx_ctl(rgmii_rx_ctl[0]         ),
@@ -270,6 +273,7 @@ mac_rgmii rgmii_0 (
 
 mac_rgmii rgmii_1 (
     .status_o(),
+    .fifo_status(mac_fifo_status[(1*4) +: 4]),
     // phy side (RGMII)
     .phy_rxd   (rgmii_rxd   [(1*4) +: 4]),
     .phy_rx_ctl(rgmii_rx_ctl[1]         ),
@@ -300,6 +304,7 @@ mac_rgmii rgmii_1 (
 
 mac_rgmii rgmii_2 (
     .status_o(),
+    .fifo_status(mac_fifo_status[(2*4) +: 4]),
     // phy side (RGMII)
     .phy_rxd   (rgmii_rxd   [(2*4) +: 4]),
     .phy_rx_ctl(rgmii_rx_ctl[2]         ),
@@ -330,6 +335,7 @@ mac_rgmii rgmii_2 (
 
 mac_rgmii rgmii_3 (
     .status_o(),
+    .fifo_status(mac_fifo_status[(3*4) +: 4]),
     // phy side (RGMII)
     .phy_rxd   (rgmii_rxd   [(3*4) +: 4]),
     .phy_rx_ctl(rgmii_rx_ctl[3]         ),
@@ -506,6 +512,7 @@ end
 
 ila_0 dbg_ila (
     .probe0({
+        mac_fifo_status[(3*4) +: 4],
         test_data,
         reg_ctrl[0],
         test_err,

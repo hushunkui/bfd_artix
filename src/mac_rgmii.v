@@ -10,6 +10,7 @@ module mac_rgmii(
                                             10 - 125MHz (Eth:1Gb)
                                         [3] - duplex full/half = 1/0
                                     */
+    output reg [3:0] fifo_status = 0,
 
     // receive channel, phy side (RGMII)
     input [3:0] phy_rxd   ,
@@ -198,6 +199,7 @@ wire [7:0] fifo_do0;
 wire [7:0] fifo_do1;
 wire [7:0] fifo_do2;
 wire fifo_empty;
+wire fifo_full;
 IN_FIFO #(
     .ALMOST_EMPTY_VALUE(1),          // Almost empty offset (1-2)
     .ALMOST_FULL_VALUE(1),           // Almost full offset (1-2)
@@ -231,10 +233,10 @@ IN_FIFO #(
     .RDEN(1'b1),               // 1-bit input: Read enable
     .RDCLK(mac_rx_clk),        // 1-bit input: Read clock
     // FIFO Status Flags: 1-bit (each) output: Flags and other FIFO status outputs
-    .ALMOSTEMPTY(),     // 1-bit output: Almost empty
-    .ALMOSTFULL(),      // 1-bit output: Almost full
+    .ALMOSTEMPTY(fifo_aempty),     // 1-bit output: Almost empty
+    .ALMOSTFULL(fifo_afull),      // 1-bit output: Almost full
     .EMPTY(fifo_empty), // 1-bit output: Empty
-    .FULL(),            // 1-bit output: Full
+    .FULL(fifo_full),   // 1-bit output: Full
 
     .RESET(rst)
 );
@@ -257,6 +259,13 @@ assign mac_rx_clk = mac_tx_clk;
 //     rx_dv_d <= rx_dv;
 //     rx_err_d <= rx_err;
 // end
+
+always @(posedge mac_rx_clk) begin
+    fifo_status[0] <= fifo_empty;
+    fifo_status[1] <= fifo_full;
+    fifo_status[2] <= fifo_aempty;
+    fifo_status[3] <= fifo_afull;
+end
 
 reg [1:0] sr_rx_dv_d = 0;
 always @(posedge mac_rx_clk) begin
