@@ -21,8 +21,8 @@ vlog  $env(XILINX_VV)/data/verilog/src/glbl.v
 
 vcom ../src/vicg_common_pkg.vhd
 vcom ../src/sata_scrambler.vhd
-vlog ../src/test_tx.v
-vlog ../src/test_rx.v
+vlog ../src/test_tx.v -sv +define+SIM_FSM
+vlog ../src/test_rx.v -sv +define+SIM_FSM
 vlog ../src/test_phy.v
 vlog ./test_phy_tb.v -sv
 

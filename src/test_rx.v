@@ -18,10 +18,25 @@ module test_rx (
     input rst
 );
 
-localparam IDLE  = 2'd0;
-localparam RXSTART = 2'd1;
-localparam RX    = 2'd2;
-localparam ERR   = 2'd3;
+`ifdef SIM_FSM
+    enum int unsigned {
+        IDLE   ,
+        RXSTART,
+        RX     ,
+        ERR
+    } fsm_cs = IDLE;
+`else
+    localparam IDLE    = 2'd0;
+    localparam RXSTART = 2'd1;
+    localparam RX      = 2'd2;
+    localparam ERR     = 2'd3;
+    reg [1:0] fsm_cs = IDLE;
+`endif
+
+localparam IDLE   = 2'd0;
+localparam RXSTART= 2'd1;
+localparam RX     = 2'd2;
+localparam ERR    = 2'd3;
 reg [1:0] fsm_cs = IDLE;
 
 wire [31:0] data;
