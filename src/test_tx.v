@@ -20,27 +20,20 @@ wire [31:0] data;
 reg [15:0] dcnt = 0;
 reg srcambler_sof = 1'b0;
 
-// enum int unsigned {
-// IDLE ,
-// CHK_1,
-// CHK_2,
-// CHK_3,
-// CHK_4,
-// CHK_5,
-// CHK_6,
-// CHK_7,
-// CHK_8,
-// CHK_9,
-// CHK_10,
-// WAIT_EOF,
-// S_PAUSE
-// } state = IDLE;
-
-localparam IDLE  = 2'd0;
-localparam TXSTART = 2'd1;
-localparam TX    = 2'd2;
-localparam PAUSE = 2'd3;
-reg [1:0] fsm_cs = IDLE;
+`ifdef SIM_FSM
+    enum int unsigned {
+        IDLE   ,
+        TXSTART,
+        TX     ,
+        PAUSE
+    } fsm_cs = IDLE;
+`else
+    localparam IDLE    = 2'd0;
+    localparam TXSTART = 2'd1;
+    localparam TX      = 2'd2;
+    localparam PAUSE   = 2'd3;
+    reg [1:0] fsm_cs = IDLE;
+`endif
 
 assign mac_tx_data = data[7:0];
 
