@@ -33,12 +33,6 @@ module test_rx (
     reg [1:0] fsm_cs = IDLE;
 `endif
 
-localparam IDLE   = 2'd0;
-localparam RXSTART= 2'd1;
-localparam RX     = 2'd2;
-localparam ERR    = 2'd3;
-reg [1:0] fsm_cs = IDLE;
-
 wire [31:0] data;
 reg err_crc   = 1'b0;
 reg err_fr_rx = 1'b0;
