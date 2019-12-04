@@ -3,6 +3,7 @@
 //
 module mac_rgmii(
     output reg dbg_mac_rx_fr_good = 1'b0,
+    output dbg_fifo_rd,
     output [3:0] status_o, /** [0] - link up/down = 1/0
                                 [2:1] - phy_rxc speed:
                                     00 - 2.5MHz (Eth:10Mb)
@@ -199,10 +200,16 @@ reg link = 1'b0;
 reg [1:0] speed = 0;
 reg duplex = 1'b0;
 always @(posedge phy_rxc_bufio) begin
-    if (!rx_dv && !rx_err) begin
-        link <= rx_data[0];
-        speed <= rx_data[2:1];
-        duplex <= rx_data[3];
+    if (rst) begin
+        link = 1'b0;
+        speed = 0;
+        duplex = 1'b0;
+    end else begin
+        if (!rx_dv && !rx_err) begin
+            link <= rx_data[0];
+            speed <= rx_data[2:1];
+            duplex <= rx_data[3];
+        end
     end
 end
 assign status_o = {duplex, speed, link};
@@ -214,8 +221,20 @@ wire [7:0] fifo_do2;
 wire fifo_empty;
 wire fifo_full;
 wire fifo_rst;
+reg fifo_rd = 1'b0;
+localparam SR_FIFO_RD_EN_LEN = 8;
+reg [SR_FIFO_RD_EN_LEN-1:0] sr_fifo_rd_en = 0;
 
-assign fifo_rst = !(link && (speed == 2'b10));
+assign fifo_rst = !(link && (speed == 2'b10)) || rst;
+
+always @(posedge phy_rxc_bufio) begin
+    if (fifo_rst) begin
+        sr_fifo_rd_en <= {SR_FIFO_RD_EN_LEN{1'b0}};
+    end else begin
+        sr_fifo_rd_en  <= {1'b1, sr_fifo_rd_en[SR_FIFO_RD_EN_LEN-1:1]};
+    end
+end
+
 IN_FIFO #(
     .ALMOST_EMPTY_VALUE(1),          // Almost empty offset (1-2)
     .ALMOST_FULL_VALUE(1),           // Almost full offset (1-2)
@@ -246,7 +265,7 @@ IN_FIFO #(
     .Q7(),                     // 8-bit output: Channel 7
     .Q8(),                     // 8-bit output: Channel 8
     .Q9(),                     // 8-bit output: Channel 9
-    .RDEN(1'b1),               // 1-bit input: Read enable
+    .RDEN(fifo_rd),            // 1-bit input: Read enable
     .RDCLK(mac_rx_clk),        // 1-bit input: Read clock
     // FIFO Status Flags: 1-bit (each) output: Flags and other FIFO status outputs
     .ALMOSTEMPTY(fifo_aempty),     // 1-bit output: Almost empty
@@ -262,7 +281,10 @@ always @(posedge mac_rx_clk) begin
     fifo_status[1] <= fifo_full;
     fifo_status[2] <= fifo_aempty;
     fifo_status[3] <= fifo_afull;
+
+    fifo_rd <= sr_fifo_rd_en[0];
 end
+assign dbg_fifo_rd = fifo_rd;
 
 wire [7:0] rx_data_d;
 wire rx_dv_d;

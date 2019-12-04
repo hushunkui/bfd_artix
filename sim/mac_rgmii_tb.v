@@ -560,11 +560,17 @@ wire tx_ctl;
 wire [3:0] txd;
 
 mac_rgmii mac(
+    .dbg_mac_rx_fr_good(),
+    .dbg_fifo_rd(),
     .status_o(),
+    .fifo_status(),
 
     .phy_rxd   (rxd   ),
     .phy_rx_ctl(rx_ctl),
     .phy_rxc   (rxc   ),
+    .phy_txd   (txd   ),
+    .phy_tx_ctl(tx_ctl),
+    .phy_txc   (txc   ),
 
     .mac_rx_data_o (),
     .mac_rx_valid_o(),
@@ -573,10 +579,6 @@ mac_rgmii mac(
     .mac_rx_fr_good_o(),  // generated only if CRC is valid
     .mac_rx_fr_err_o(),
     .mac_rx_clk_o  (),
-
-    .phy_txd   (txd   ),
-    .phy_tx_ctl(tx_ctl),
-    .phy_txc   (txc   ),
 
     .mac_tx_data (8'd0),
     .mac_tx_valid(1'b0),
