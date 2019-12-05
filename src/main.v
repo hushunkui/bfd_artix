@@ -260,6 +260,7 @@ mac_rgmii rgmii_0 (
     .mac_rx_eof_o  (mac_rx_axis_tlast [0]         ),
     .mac_rx_fr_good_o(mac_rx_axis_fr_good[0]),
     .mac_rx_fr_err_o(mac_rx_axis_fr_err[0]),
+    .mac_rx_fr_bad_o(),
     .mac_rx_clk_o  (mac_rx_aclk[0]),
     .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[0]),
 
@@ -293,6 +294,7 @@ mac_rgmii rgmii_1 (
     .mac_rx_eof_o  (mac_rx_axis_tlast [1]         ),
     .mac_rx_fr_good_o(mac_rx_axis_fr_good[1]),
     .mac_rx_fr_err_o(mac_rx_axis_fr_err[1]),
+    .mac_rx_fr_bad_o(),
     .mac_rx_clk_o  (mac_rx_aclk[1]),
     .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[1]),
 
@@ -326,6 +328,7 @@ mac_rgmii rgmii_2 (
     .mac_rx_eof_o  (),
     .mac_rx_fr_good_o(),
     .mac_rx_fr_err_o(),
+    .mac_rx_fr_bad_o(),
     .mac_rx_clk_o  (),
     .dbg_mac_rx_fr_good(),
 
@@ -360,6 +363,7 @@ mac_rgmii rgmii_3 (
     .mac_rx_eof_o  (mac_rx_axis_tlast [3]         ),
     .mac_rx_fr_good_o(mac_rx_axis_fr_good[3]),
     .mac_rx_fr_err_o(mac_rx_axis_fr_err[3]),
+    .mac_rx_fr_bad_o(),
     .mac_rx_clk_o  (mac_rx_aclk[3]),
     .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[3]),
 

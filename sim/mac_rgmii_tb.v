@@ -233,6 +233,7 @@ endtask
 task SendTestPacket;
     input [47:0] mac_dst;
     input [47:0] mac_src;
+    input err;
     begin
         SendPreamble();
         SendMAC(mac_dst);
@@ -244,7 +245,7 @@ task SendTestPacket;
         repeat (28) SendByte(8'h00, 1'b1);
         // zero padding
         repeat (18) SendByte(8'h00, 1'b1);
-        SendCRC(1'b0);
+        SendCRC(err);
     end
 endtask
 
@@ -520,11 +521,13 @@ initial begin
     SendARPPacket(48'hFFFF_FFFF_FFFF, 48'hE091_F5B4_06B0, 32'hC0A80101, 32'hC0A80120);
     #1_000;
 
-    // SendTestPacket(48'hFFFF_FFFF_FFFF, 48'h0102_0304_0506);
-    SendTestPKT();
+    SendTestPacket(48'hAAAA_FFFF_FFFF, 48'h0102_0304_0506, 1'b0);
     #1_000;
-    // SendGVCP_Ack();
-    SendTestPKT();
+    SendTestPacket(48'hBBBB_BBBB_BBBB, 48'h0102_0304_0506, 1'b1);
+    #1_000;
+    SendTestPacket(48'hCCCC_CCCC_CCCC, 48'h0102_0304_0506, 1'b0);
+    #100;
+    SendTestPacket(48'hAAAA_FFFF_BBBB, 48'h0102_0304_0506, 1'b1);
     #100;
 
     #30_000;
@@ -578,6 +581,7 @@ mac_rgmii mac(
     .mac_rx_eof_o  (),
     .mac_rx_fr_good_o(),  // generated only if CRC is valid
     .mac_rx_fr_err_o(),
+    .mac_rx_fr_bad_o(),
     .mac_rx_clk_o  (),
 
     .mac_tx_data (8'd0),
