@@ -96,7 +96,6 @@
 // The module declaration for the Transmitter FIFO
 //------------------------------------------------------------------------------
 
-(* DowngradeIPIdentifiedWarnings = "yes" *)
 module eth_mac_tx_client_fifo # (
    parameter FULL_DUPLEX_ONLY = 0
 ) (
@@ -316,64 +315,63 @@ end
 always @(wr_state, wr_sof_pipe[1], wr_eof_pipe[0], wr_eof_pipe[1],
          wr_eof_bram[0], wr_fifo_overflow, data_count)
 begin
-case (wr_state)
-   WAIT_s : begin
-      if (wr_sof_pipe[1] == 1'b1 && wr_eof_pipe[1] == 1'b0) begin
-         wr_nxt_state <= DATA_s;
+   case (wr_state)
+      WAIT_s : begin
+         if (wr_sof_pipe[1] == 1'b1 && wr_eof_pipe[1] == 1'b0) begin
+            wr_nxt_state <= DATA_s;
+         end
+         else begin
+            wr_nxt_state <= WAIT_s;
+         end
       end
-      else begin
-         wr_nxt_state <= WAIT_s;
-      end
-   end
 
-   DATA_s : begin
-      // Wait for the end of frame to be detected.
-      if (wr_fifo_overflow == 1'b1 && wr_eof_pipe[0] == 1'b0
-         && wr_eof_pipe[1] == 1'b0) begin
-         wr_nxt_state <= OVFLOW_s;
-      end
-      else if (wr_eof_pipe[1] == 1'b1) begin
-         if (data_count[3:2] != 2'b11) begin
+      DATA_s : begin
+         // Wait for the end of frame to be detected.
+         if (wr_fifo_overflow == 1'b1 && wr_eof_pipe[0] == 1'b0
+            && wr_eof_pipe[1] == 1'b0) begin
             wr_nxt_state <= OVFLOW_s;
+         end
+         else if (wr_eof_pipe[1] == 1'b1) begin
+            if (data_count[3:2] != 2'b11) begin
+               wr_nxt_state <= OVFLOW_s;
+            end
+            else begin
+               wr_nxt_state <= EOF_s;
+            end
+         end
+         else begin
+            wr_nxt_state <= DATA_s;
+         end
+      end
+
+      EOF_s : begin
+         // If the start of frame is already in the pipe, a back-to-back frame
+         // transmission has occured. Move straight back to frame state.
+         if (wr_sof_pipe[1] == 1'b1 && wr_eof_pipe[1] == 1'b0) begin
+            wr_nxt_state <= DATA_s;
+         end
+         else if (wr_eof_bram[0] == 1'b1) begin
+            wr_nxt_state <= WAIT_s;
          end
          else begin
             wr_nxt_state <= EOF_s;
          end
       end
-      else begin
-         wr_nxt_state <= DATA_s;
-      end
-   end
 
-   EOF_s : begin
-      // If the start of frame is already in the pipe, a back-to-back frame
-      // transmission has occured. Move straight back to frame state.
-      if (wr_sof_pipe[1] == 1'b1 && wr_eof_pipe[1] == 1'b0) begin
-         wr_nxt_state <= DATA_s;
+      OVFLOW_s : begin
+         // Wait until the end of frame is reached before clearing the overflow.
+         if (wr_eof_bram[0] == 1'b1) begin
+            wr_nxt_state <= WAIT_s;
+         end
+         else begin
+            wr_nxt_state <= OVFLOW_s;
+         end
       end
-      else if (wr_eof_bram[0] == 1'b1) begin
+
+      default : begin
          wr_nxt_state <= WAIT_s;
       end
-      else begin
-         wr_nxt_state <= EOF_s;
-      end
-   end
-
-   OVFLOW_s : begin
-      // Wait until the end of frame is reached before clearing the overflow.
-      if (wr_eof_bram[0] == 1'b1) begin
-         wr_nxt_state <= WAIT_s;
-      end
-      else begin
-         wr_nxt_state <= OVFLOW_s;
-      end
-   end
-
-   default : begin
-      wr_nxt_state <= WAIT_s;
-   end
-
-endcase
+   endcase
 end
 
 // small frame count - frames smaller than 10 bytes are problematic as the frame_in_fifo cannot
@@ -468,314 +466,314 @@ end
 
 //----------------------------------------------------------------------------
 // Full duplex-only state machine.
-generate if (FULL_DUPLEX_ONLY == 1) begin : gen_fd_sm
-// Decode next state, combinatorial.
-always @(rd_state, frame_in_fifo, frames_in_fifo, frame_in_fifo_valid, rd_eof, rd_eof_reg, tx_axis_mac_tready)
-begin
-case (rd_state)
-         IDLE_s : begin
-            // If there is a frame in the FIFO, start to queue the new frame
-            // to the output.
-            if ((frame_in_fifo & frame_in_fifo_valid) | frames_in_fifo) begin
-               rd_nxt_state <= QUEUE1_s;
+generate if (FULL_DUPLEX_ONLY == 1)
+   begin : gen_fd_sm
+      // Decode next state, combinatorial.
+      always @(rd_state, frame_in_fifo, frames_in_fifo, frame_in_fifo_valid, rd_eof, rd_eof_reg, tx_axis_mac_tready)
+      begin
+         case (rd_state)
+            IDLE_s : begin
+               // If there is a frame in the FIFO, start to queue the new frame
+               // to the output.
+               if ((frame_in_fifo & frame_in_fifo_valid) | frames_in_fifo) begin
+                  rd_nxt_state <= QUEUE1_s;
+               end
+               else begin
+                  rd_nxt_state <= IDLE_s;
+               end
             end
-            else begin
-               rd_nxt_state <= IDLE_s;
+
+            // Load the output pipeline, which takes three clock cycles.
+            QUEUE1_s : begin
+               rd_nxt_state <= QUEUE2_s;
             end
-         end
 
-         // Load the output pipeline, which takes three clock cycles.
-         QUEUE1_s : begin
-            rd_nxt_state <= QUEUE2_s;
-         end
-
-         QUEUE2_s : begin
-            rd_nxt_state <= QUEUE3_s;
-         end
-
-         QUEUE3_s : begin
-            rd_nxt_state <= START_DATA1_s;
-         end
-
-         START_DATA1_s : begin
-            // The pipeline is full and the frame output starts now.
-            rd_nxt_state <= DATA_PRELOAD1_s;
-         end
-
-         DATA_PRELOAD1_s : begin
-            // Await the tx_axis_mac_tready acknowledge before moving on.
-            if (tx_axis_mac_tready == 1'b1) begin
-               rd_nxt_state <= FRAME_s;
+            QUEUE2_s : begin
+               rd_nxt_state <= QUEUE3_s;
             end
-            else begin
+
+            QUEUE3_s : begin
+               rd_nxt_state <= START_DATA1_s;
+            end
+
+            START_DATA1_s : begin
+               // The pipeline is full and the frame output starts now.
                rd_nxt_state <= DATA_PRELOAD1_s;
             end
-         end
 
-         FRAME_s : begin
-            // Read the frame out of the FIFO. If the MAC deasserts
-            // tx_axis_mac_tready, stall in the handshake state. If the EOF
-            // flag is encountered, move to the finish state.
-            if (tx_axis_mac_tready == 1'b0)
-            begin
-               rd_nxt_state <= HANDSHAKE_s;
+            DATA_PRELOAD1_s : begin
+               // Await the tx_axis_mac_tready acknowledge before moving on.
+               if (tx_axis_mac_tready == 1'b1) begin
+                  rd_nxt_state <= FRAME_s;
+               end
+               else begin
+                  rd_nxt_state <= DATA_PRELOAD1_s;
+               end
             end
-            else if (rd_eof == 1'b1) begin
-               rd_nxt_state <= FINISH_s;
-            end
-            else begin
-               rd_nxt_state <= FRAME_s;
-            end
-         end
 
-         HANDSHAKE_s : begin
-            // Await tx_axis_mac_tready before continuing frame transmission.
-            // If the EOF flag is encountered, move to the finish state.
-            if (tx_axis_mac_tready == 1'b1 && rd_eof_reg == 1'b1) begin
-               rd_nxt_state <= FINISH_s;
+            FRAME_s : begin
+               // Read the frame out of the FIFO. If the MAC deasserts
+               // tx_axis_mac_tready, stall in the handshake state. If the EOF
+               // flag is encountered, move to the finish state.
+               if (tx_axis_mac_tready == 1'b0)
+               begin
+                  rd_nxt_state <= HANDSHAKE_s;
+               end
+               else if (rd_eof == 1'b1) begin
+                  rd_nxt_state <= FINISH_s;
+               end
+               else begin
+                  rd_nxt_state <= FRAME_s;
+               end
             end
-            else if (tx_axis_mac_tready == 1'b1 && rd_eof_reg == 1'b0) begin
-               rd_nxt_state <= FRAME_s;
-            end
-            else begin
-               rd_nxt_state <= HANDSHAKE_s;
-            end
-         end
 
-         FINISH_s : begin
-            // Frame has finished. Assure that the MAC has accepted the final
-            // byte by transitioning to idle only when tx_axis_mac_tready is high.
-            if (tx_axis_mac_tready == 1'b1) begin
+            HANDSHAKE_s : begin
+               // Await tx_axis_mac_tready before continuing frame transmission.
+               // If the EOF flag is encountered, move to the finish state.
+               if (tx_axis_mac_tready == 1'b1 && rd_eof_reg == 1'b1) begin
+                  rd_nxt_state <= FINISH_s;
+               end
+               else if (tx_axis_mac_tready == 1'b1 && rd_eof_reg == 1'b0) begin
+                  rd_nxt_state <= FRAME_s;
+               end
+               else begin
+                  rd_nxt_state <= HANDSHAKE_s;
+               end
+            end
+
+            FINISH_s : begin
+               // Frame has finished. Assure that the MAC has accepted the final
+               // byte by transitioning to idle only when tx_axis_mac_tready is high.
+               if (tx_axis_mac_tready == 1'b1) begin
+                  rd_nxt_state <= IDLE_s;
+               end
+               else begin
+                  rd_nxt_state <= FINISH_s;
+               end
+            end
+
+            default : begin
                rd_nxt_state <= IDLE_s;
             end
-            else begin
-               rd_nxt_state <= FINISH_s;
-            end
-         end
-
-         default : begin
-            rd_nxt_state <= IDLE_s;
-         end
-      endcase
-end
-
-end
+         endcase
+      end
+   end
 endgenerate
 
 //----------------------------------------------------------------------------
 // Full and half duplex state machine.
-generate if (FULL_DUPLEX_ONLY != 1) begin : gen_hd_sm
-// Decode the next state, combinatorial.
-always @(rd_state, frame_in_fifo, frames_in_fifo, frame_in_fifo_valid, rd_eof_reg,
-         tx_axis_mac_tready, rd_drop_frame, rd_retransmit)
-begin
-case (rd_state)
-         IDLE_s : begin
-            // If a retransmit request is detected then prepare to retransmit.
-            if (rd_retransmit == 1'b1) begin
-               rd_nxt_state <= RETRANSMIT_ERR_s;
+generate if (FULL_DUPLEX_ONLY != 1)
+   begin : gen_hd_sm
+      // Decode the next state, combinatorial.
+      always @(rd_state, frame_in_fifo, frames_in_fifo, frame_in_fifo_valid, rd_eof_reg,
+               tx_axis_mac_tready, rd_drop_frame, rd_retransmit)
+      begin
+         case (rd_state)
+            IDLE_s : begin
+               // If a retransmit request is detected then prepare to retransmit.
+               if (rd_retransmit == 1'b1) begin
+                  rd_nxt_state <= RETRANSMIT_ERR_s;
+               end
+               // If there is a frame in the FIFO, then queue the new frame to
+               // the output.
+               else if ((frame_in_fifo & frame_in_fifo_valid) | frames_in_fifo) begin
+                  rd_nxt_state <= QUEUE1_s;
+               end
+               else begin
+                  rd_nxt_state <= IDLE_s;
+               end
             end
-            // If there is a frame in the FIFO, then queue the new frame to
-            // the output.
-            else if ((frame_in_fifo & frame_in_fifo_valid) | frames_in_fifo) begin
+
+            // Load the output pipeline, which takes three clock cycles.
+            QUEUE1_s : begin
+               if (rd_retransmit == 1'b1) begin
+                  rd_nxt_state <= RETRANSMIT_ERR_s;
+               end
+               else begin
+                  rd_nxt_state <= QUEUE2_s;
+               end
+            end
+
+            QUEUE2_s : begin
+               if (rd_retransmit == 1'b1) begin
+                  rd_nxt_state <= RETRANSMIT_ERR_s;
+               end
+               else begin
+                  rd_nxt_state <= QUEUE3_s;
+               end
+            end
+
+            QUEUE3_s : begin
+               if (rd_retransmit == 1'b1) begin
+                  rd_nxt_state <= RETRANSMIT_ERR_s;
+               end
+               else begin
+                  rd_nxt_state <= START_DATA1_s;
+               end
+            end
+
+            START_DATA1_s : begin
+               // The pipeline is full and the frame output starts now.
+               if (rd_retransmit == 1'b1) begin
+                  rd_nxt_state <= RETRANSMIT_ERR_s;
+               end
+               else begin
+                  rd_nxt_state <= DATA_PRELOAD1_s;
+               end
+            end
+
+            DATA_PRELOAD1_s : begin
+               // Await the tx_axis_mac_tready acknowledge before moving on.
+               if (rd_retransmit == 1'b1) begin
+                  rd_nxt_state <= RETRANSMIT_ERR_s;
+               end
+               else if (tx_axis_mac_tready == 1'b1) begin
+                  rd_nxt_state <= DATA_PRELOAD2_s;
+               end
+               else begin
+                  rd_nxt_state <= DATA_PRELOAD1_s;
+               end
+            end
+
+            DATA_PRELOAD2_s : begin
+               // If a collision-only request, then must drop the rest of the
+               // current frame. If collision and retransmit, then prepare
+               // to retransmit the frame.
+               if (rd_drop_frame == 1'b1) begin
+                  rd_nxt_state <= DROP_ERR_s;
+               end
+               else if (rd_retransmit == 1'b1) begin
+                  rd_nxt_state <= RETRANSMIT_ERR_s;
+               end
+               // Read the frame out of the FIFO. If the MAC deasserts
+               // tx_axis_mac_tready, stall in the handshake state. If the EOF
+               // flag is encountered, move to the finish state.
+               else if (tx_axis_mac_tready == 1'b0) begin
+                  rd_nxt_state <= WAIT_HANDSHAKE_s;
+               end
+               else if (rd_eof_reg == 1'b1) begin
+                  rd_nxt_state <= FINISH_s;
+               end
+               else begin
+                  rd_nxt_state <= DATA_PRELOAD2_s;
+               end
+            end
+
+            WAIT_HANDSHAKE_s : begin
+               // Await tx_axis_mac_tready before continuing frame transmission.
+               // If the EOF flag is encountered, move to the finish state.
+               if (rd_retransmit == 1'b1) begin
+                  rd_nxt_state <= RETRANSMIT_ERR_s;
+               end
+               else if (tx_axis_mac_tready == 1'b1 && rd_eof_reg == 1'b1) begin
+                  rd_nxt_state <= FINISH_s;
+               end
+               else if (tx_axis_mac_tready == 1'b1 && rd_eof_reg == 1'b0) begin
+                  rd_nxt_state <= FRAME_s;
+               end
+               else begin
+                  rd_nxt_state <= WAIT_HANDSHAKE_s;
+               end
+            end
+
+            FRAME_s : begin
+               // If a collision-only request, then must drop the rest of the
+               // current frame. If collision and retransmit, then prepare
+               // to retransmit the frame.
+               if (rd_drop_frame == 1'b1) begin
+                  rd_nxt_state <= DROP_ERR_s;
+               end
+               else if (rd_retransmit == 1'b1) begin
+                  rd_nxt_state <= RETRANSMIT_ERR_s;
+               end
+               // Read the frame out of the FIFO. If the MAC deasserts
+               // tx_axis_mac_tready, stall in the handshake state. If the EOF
+               // flag is encountered, move to the finish state.
+               else if (tx_axis_mac_tready == 1'b0) begin
+                  rd_nxt_state <= HANDSHAKE_s;
+               end
+               else if (rd_eof_reg == 1'b1) begin
+                  rd_nxt_state <= FINISH_s;
+               end
+               else begin
+                  rd_nxt_state <= FRAME_s;
+               end
+            end
+
+            HANDSHAKE_s : begin
+               // Await tx_axis_mac_tready before continuing frame transmission.
+               // If the EOF flag is encountered, move to the finish state.
+               if (rd_retransmit == 1'b1) begin
+                  rd_nxt_state <= RETRANSMIT_ERR_s;
+               end
+               else if (tx_axis_mac_tready == 1'b1 && rd_eof_reg == 1'b1) begin
+                  rd_nxt_state <= FINISH_s;
+               end
+               else if (tx_axis_mac_tready == 1'b1 && rd_eof_reg == 1'b0) begin
+                  rd_nxt_state <= FRAME_s;
+               end
+               else begin
+                  rd_nxt_state <= HANDSHAKE_s;
+               end
+            end
+
+            FINISH_s : begin
+               // Frame has finished. Assure that the MAC has accepted the final
+               // byte by transitioning to idle only when tx_axis_mac_tready is high.
+               if (rd_retransmit == 1'b1) begin
+                  rd_nxt_state <= RETRANSMIT_ERR_s;
+               end
+               if (tx_axis_mac_tready == 1'b1) begin
+                  rd_nxt_state <= IDLE_s;
+               end
+               else begin
+                  rd_nxt_state <= FINISH_s;
+               end
+            end
+
+            DROP_ERR_s : begin
+               // FIFO is ready to drop the frame. Assure that the MAC has
+               // accepted the final byte and err signal before dropping.
+               if (tx_axis_mac_tready == 1'b1) begin
+                  rd_nxt_state <= DROP_s;
+               end
+               else begin
+                  rd_nxt_state <= DROP_ERR_s;
+               end
+            end
+
+            DROP_s : begin
+               // Wait until rest of frame has been cleared.
+               if (rd_eof_reg == 1'b1) begin
+                  rd_nxt_state <= IDLE_s;
+               end
+               else begin
+                  rd_nxt_state <= DROP_s;
+               end
+            end
+
+            RETRANSMIT_ERR_s : begin
+               // FIFO is ready to retransmit the frame. Assure that the MAC has
+               // accepted the final byte and err signal before retransmitting.
+               if (tx_axis_mac_tready == 1'b1) begin
+                  rd_nxt_state <= RETRANSMIT_s;
+               end
+               else begin
+                  rd_nxt_state <= RETRANSMIT_ERR_s;
+               end
+            end
+
+            RETRANSMIT_s : begin
+               // Reload the data pipeline from the start of the frame.
                rd_nxt_state <= QUEUE1_s;
             end
-            else begin
+
+            default : begin
                rd_nxt_state <= IDLE_s;
             end
-         end
-
-         // Load the output pipeline, which takes three clock cycles.
-         QUEUE1_s : begin
-            if (rd_retransmit == 1'b1) begin
-               rd_nxt_state <= RETRANSMIT_ERR_s;
-            end
-            else begin
-               rd_nxt_state <= QUEUE2_s;
-            end
-         end
-
-         QUEUE2_s : begin
-            if (rd_retransmit == 1'b1) begin
-               rd_nxt_state <= RETRANSMIT_ERR_s;
-            end
-            else begin
-               rd_nxt_state <= QUEUE3_s;
-            end
-         end
-
-         QUEUE3_s : begin
-            if (rd_retransmit == 1'b1) begin
-               rd_nxt_state <= RETRANSMIT_ERR_s;
-            end
-            else begin
-               rd_nxt_state <= START_DATA1_s;
-            end
-         end
-
-         START_DATA1_s : begin
-            // The pipeline is full and the frame output starts now.
-            if (rd_retransmit == 1'b1) begin
-               rd_nxt_state <= RETRANSMIT_ERR_s;
-            end
-            else begin
-               rd_nxt_state <= DATA_PRELOAD1_s;
-            end
-         end
-
-         DATA_PRELOAD1_s : begin
-            // Await the tx_axis_mac_tready acknowledge before moving on.
-            if (rd_retransmit == 1'b1) begin
-               rd_nxt_state <= RETRANSMIT_ERR_s;
-            end
-            else if (tx_axis_mac_tready == 1'b1) begin
-               rd_nxt_state <= DATA_PRELOAD2_s;
-            end
-            else begin
-               rd_nxt_state <= DATA_PRELOAD1_s;
-            end
-         end
-
-         DATA_PRELOAD2_s : begin
-            // If a collision-only request, then must drop the rest of the
-            // current frame. If collision and retransmit, then prepare
-            // to retransmit the frame.
-            if (rd_drop_frame == 1'b1) begin
-               rd_nxt_state <= DROP_ERR_s;
-            end
-            else if (rd_retransmit == 1'b1) begin
-               rd_nxt_state <= RETRANSMIT_ERR_s;
-            end
-            // Read the frame out of the FIFO. If the MAC deasserts
-            // tx_axis_mac_tready, stall in the handshake state. If the EOF
-            // flag is encountered, move to the finish state.
-            else if (tx_axis_mac_tready == 1'b0) begin
-               rd_nxt_state <= WAIT_HANDSHAKE_s;
-            end
-            else if (rd_eof_reg == 1'b1) begin
-               rd_nxt_state <= FINISH_s;
-            end
-            else begin
-               rd_nxt_state <= DATA_PRELOAD2_s;
-            end
-         end
-
-         WAIT_HANDSHAKE_s : begin
-            // Await tx_axis_mac_tready before continuing frame transmission.
-            // If the EOF flag is encountered, move to the finish state.
-            if (rd_retransmit == 1'b1) begin
-               rd_nxt_state <= RETRANSMIT_ERR_s;
-            end
-            else if (tx_axis_mac_tready == 1'b1 && rd_eof_reg == 1'b1) begin
-               rd_nxt_state <= FINISH_s;
-            end
-            else if (tx_axis_mac_tready == 1'b1 && rd_eof_reg == 1'b0) begin
-               rd_nxt_state <= FRAME_s;
-            end
-            else begin
-               rd_nxt_state <= WAIT_HANDSHAKE_s;
-            end
-         end
-
-         FRAME_s : begin
-            // If a collision-only request, then must drop the rest of the
-            // current frame. If collision and retransmit, then prepare
-            // to retransmit the frame.
-            if (rd_drop_frame == 1'b1) begin
-               rd_nxt_state <= DROP_ERR_s;
-            end
-            else if (rd_retransmit == 1'b1) begin
-               rd_nxt_state <= RETRANSMIT_ERR_s;
-            end
-            // Read the frame out of the FIFO. If the MAC deasserts
-            // tx_axis_mac_tready, stall in the handshake state. If the EOF
-            // flag is encountered, move to the finish state.
-            else if (tx_axis_mac_tready == 1'b0) begin
-               rd_nxt_state <= HANDSHAKE_s;
-            end
-            else if (rd_eof_reg == 1'b1) begin
-               rd_nxt_state <= FINISH_s;
-            end
-            else begin
-               rd_nxt_state <= FRAME_s;
-            end
-         end
-
-         HANDSHAKE_s : begin
-            // Await tx_axis_mac_tready before continuing frame transmission.
-            // If the EOF flag is encountered, move to the finish state.
-            if (rd_retransmit == 1'b1) begin
-               rd_nxt_state <= RETRANSMIT_ERR_s;
-            end
-            else if (tx_axis_mac_tready == 1'b1 && rd_eof_reg == 1'b1) begin
-               rd_nxt_state <= FINISH_s;
-            end
-            else if (tx_axis_mac_tready == 1'b1 && rd_eof_reg == 1'b0) begin
-               rd_nxt_state <= FRAME_s;
-            end
-            else begin
-               rd_nxt_state <= HANDSHAKE_s;
-            end
-         end
-
-         FINISH_s : begin
-            // Frame has finished. Assure that the MAC has accepted the final
-            // byte by transitioning to idle only when tx_axis_mac_tready is high.
-            if (rd_retransmit == 1'b1) begin
-               rd_nxt_state <= RETRANSMIT_ERR_s;
-            end
-            if (tx_axis_mac_tready == 1'b1) begin
-               rd_nxt_state <= IDLE_s;
-            end
-            else begin
-               rd_nxt_state <= FINISH_s;
-            end
-         end
-
-         DROP_ERR_s : begin
-            // FIFO is ready to drop the frame. Assure that the MAC has
-            // accepted the final byte and err signal before dropping.
-            if (tx_axis_mac_tready == 1'b1) begin
-               rd_nxt_state <= DROP_s;
-            end
-            else begin
-               rd_nxt_state <= DROP_ERR_s;
-            end
-         end
-
-         DROP_s : begin
-            // Wait until rest of frame has been cleared.
-            if (rd_eof_reg == 1'b1) begin
-               rd_nxt_state <= IDLE_s;
-            end
-            else begin
-               rd_nxt_state <= DROP_s;
-            end
-         end
-
-         RETRANSMIT_ERR_s : begin
-            // FIFO is ready to retransmit the frame. Assure that the MAC has
-            // accepted the final byte and err signal before retransmitting.
-            if (tx_axis_mac_tready == 1'b1) begin
-               rd_nxt_state <= RETRANSMIT_s;
-            end
-            else begin
-               rd_nxt_state <= RETRANSMIT_ERR_s;
-            end
-         end
-
-         RETRANSMIT_s : begin
-            // Reload the data pipeline from the start of the frame.
-            rd_nxt_state <= QUEUE1_s;
-         end
-
-         default : begin
-            rd_nxt_state <= IDLE_s;
-         end
-      endcase
-end
-
-end
+         endcase
+      end
+   end
 endgenerate
 
 // Combinatorially select tdata candidates.
@@ -908,78 +906,76 @@ end
 
 //----------------------------------------------------------------------------
 // Decode full duplex-only control signals.
-generate if (FULL_DUPLEX_ONLY == 1) begin : gen_fd_decode
+generate if (FULL_DUPLEX_ONLY == 1)
+   begin : gen_fd_decode
+      // rd_en is used to enable the BRAM read and load the output pipeline.
+      assign rd_en = (rd_state == IDLE_s) ? 1'b0 :
+                     (rd_nxt_state == FRAME_s) ? 1'b1 :
+                     (rd_state == FRAME_s && rd_nxt_state == HANDSHAKE_s) ? 1'b0 :
+                     (rd_nxt_state == HANDSHAKE_s) ? 1'b0 :
+                     (rd_state == FINISH_s) ? 1'b0 :
+                     (rd_state == DATA_PRELOAD1_s) ? 1'b0 : 1'b1;
 
-// rd_en is used to enable the BRAM read and load the output pipeline.
-assign rd_en = (rd_state == IDLE_s) ? 1'b0 :
-               (rd_nxt_state == FRAME_s) ? 1'b1 :
-               (rd_state == FRAME_s && rd_nxt_state == HANDSHAKE_s) ? 1'b0 :
-               (rd_nxt_state == HANDSHAKE_s) ? 1'b0 :
-               (rd_state == FINISH_s) ? 1'b0 :
-               (rd_state == DATA_PRELOAD1_s) ? 1'b0 : 1'b1;
+      // When the BRAM is being read, enable the read address to be incremented.
+      assign rd_addr_inc = rd_en;
 
-// When the BRAM is being read, enable the read address to be incremented.
-assign rd_addr_inc = rd_en;
+      assign rd_addr_reload = (rd_state != FINISH_s && rd_nxt_state == FINISH_s)
+                              ? 1'b1 : 1'b0;
 
-assign rd_addr_reload = (rd_state != FINISH_s && rd_nxt_state == FINISH_s)
-                        ? 1'b1 : 1'b0;
+      // Transmit frame pulse must never be more frequent than once per 64 clocks to
+      // allow toggle to cross clock domain.
+      assign rd_transmit_frame = (rd_state == FINISH_s && rd_nxt_state == IDLE_s)
+                                 ? 1'b1 : 1'b0;
 
-// Transmit frame pulse must never be more frequent than once per 64 clocks to
-// allow toggle to cross clock domain.
-assign rd_transmit_frame = (rd_state == FINISH_s && rd_nxt_state == IDLE_s)
-                           ? 1'b1 : 1'b0;
-
-// Unused for full duplex only.
-assign rd_start_addr_reload = 1'b0;
-assign rd_start_addr_load   = 1'b0;
-assign rd_retransmit_frame  = 1'b0;
-
-end
+      // Unused for full duplex only.
+      assign rd_start_addr_reload = 1'b0;
+      assign rd_start_addr_load   = 1'b0;
+      assign rd_retransmit_frame  = 1'b0;
+   end
 endgenerate
 
 //----------------------------------------------------------------------------
 // Decode full and half duplex control signals.
-generate if (FULL_DUPLEX_ONLY != 1) begin : gen_hd_decode
+generate if (FULL_DUPLEX_ONLY != 1)
+   begin : gen_hd_decode
+      // rd_en is used to enable the BRAM read and load the output pipeline.
+      assign rd_en = (rd_state == IDLE_s) ? 1'b0 :
+                     (rd_nxt_state == DROP_ERR_s) ? 1'b0 :
+                     (rd_nxt_state == DROP_s && rd_eof == 1'b1) ? 1'b0 :
+                     (rd_nxt_state == FRAME_s || rd_nxt_state == DATA_PRELOAD2_s) ? 1'b1 :
+                     (rd_state == DATA_PRELOAD2_s && rd_nxt_state == WAIT_HANDSHAKE_s) ? 1'b0 :
+                     (rd_state == FRAME_s && rd_nxt_state == HANDSHAKE_s) ? 1'b0 :
+                     (rd_nxt_state == HANDSHAKE_s || rd_nxt_state == WAIT_HANDSHAKE_s) ? 1'b0 :
+                     (rd_state == FINISH_s) ? 1'b0 :
+                     (rd_state == RETRANSMIT_ERR_s) ? 1'b0 :
+                     (rd_state == RETRANSMIT_s) ? 1'b0 :
+                     (rd_state == DATA_PRELOAD1_s) ? 1'b0 : 1'b1;
 
-// rd_en is used to enable the BRAM read and load the output pipeline.
-assign rd_en = (rd_state == IDLE_s) ? 1'b0 :
-               (rd_nxt_state == DROP_ERR_s) ? 1'b0 :
-               (rd_nxt_state == DROP_s && rd_eof == 1'b1) ? 1'b0 :
-               (rd_nxt_state == FRAME_s || rd_nxt_state == DATA_PRELOAD2_s) ? 1'b1 :
-               (rd_state == DATA_PRELOAD2_s && rd_nxt_state == WAIT_HANDSHAKE_s) ? 1'b0 :
-               (rd_state == FRAME_s && rd_nxt_state == HANDSHAKE_s) ? 1'b0 :
-               (rd_nxt_state == HANDSHAKE_s || rd_nxt_state == WAIT_HANDSHAKE_s) ? 1'b0 :
-               (rd_state == FINISH_s) ? 1'b0 :
-               (rd_state == RETRANSMIT_ERR_s) ? 1'b0 :
-               (rd_state == RETRANSMIT_s) ? 1'b0 :
-               (rd_state == DATA_PRELOAD1_s) ? 1'b0 : 1'b1;
+      // When the BRAM is being read, enable the read address to be incremented.
+      assign rd_addr_inc = rd_en;
 
-// When the BRAM is being read, enable the read address to be incremented.
-assign rd_addr_inc = rd_en;
+      assign rd_addr_reload = (rd_state != FINISH_s && rd_nxt_state == FINISH_s)
+                              ? 1'b1 :
+                              (rd_state == DROP_s && rd_nxt_state == IDLE_s)
+                              ? 1'b1 : 1'b0;
 
-assign rd_addr_reload = (rd_state != FINISH_s && rd_nxt_state == FINISH_s)
-                        ? 1'b1 :
-                        (rd_state == DROP_s && rd_nxt_state == IDLE_s)
-                        ? 1'b1 : 1'b0;
+      // Assertion indicates that the starting address must be reloaded to enable
+      // the current frame to be retransmitted.
+      assign rd_start_addr_reload = (rd_state == RETRANSMIT_s) ? 1'b1 : 1'b0;
 
-// Assertion indicates that the starting address must be reloaded to enable
-// the current frame to be retransmitted.
-assign rd_start_addr_reload = (rd_state == RETRANSMIT_s) ? 1'b1 : 1'b0;
+      assign rd_start_addr_load = (rd_state== WAIT_HANDSHAKE_s && rd_nxt_state == FRAME_s)
+                                 ? 1'b1 :
+                                 (rd_col_window_expire == 1'b1) ? 1'b1 : 1'b0;
 
-assign rd_start_addr_load = (rd_state== WAIT_HANDSHAKE_s && rd_nxt_state == FRAME_s)
-                           ? 1'b1 :
-                           (rd_col_window_expire == 1'b1) ? 1'b1 : 1'b0;
+      // Transmit frame pulse must never be more frequent than once per 64 clocks to
+      // allow toggle to cross clock domain.
+      assign rd_transmit_frame = (rd_state == FINISH_s && rd_nxt_state == IDLE_s)
+                                 ? 1'b1 : 1'b0;
 
-// Transmit frame pulse must never be more frequent than once per 64 clocks to
-// allow toggle to cross clock domain.
-assign rd_transmit_frame = (rd_state == FINISH_s && rd_nxt_state == IDLE_s)
-                           ? 1'b1 : 1'b0;
-
-// Retransmit frame pulse must never be more frequent than once per 16 clocks
-// to allow toggle to cross clock domain.
-assign rd_retransmit_frame = (rd_state == RETRANSMIT_s) ? 1'b1 : 1'b0;
-
-end
+      // Retransmit frame pulse must never be more frequent than once per 16 clocks
+      // to allow toggle to cross clock domain.
+      assign rd_retransmit_frame = (rd_state == RETRANSMIT_s) ? 1'b1 : 1'b0;
+   end
 endgenerate
 
 
@@ -1051,97 +1047,95 @@ end
 
 //----------------------------------------------------------------------------
 // Full duplex-only frame count.
-generate if (FULL_DUPLEX_ONLY == 1) begin : gen_fd_count
-
-// Count the number of frames in the FIFO. The counter is incremented when a
-// frame is stored and decremented when a frame is transmitted. Need to keep
-// the counter on the write clock as this is the fastest clock if they differ.
-always @(posedge tx_fifo_aclk)
-begin
-   if (tx_fifo_reset == 1'b1) begin
-      wr_frames <= 9'b0;
-   end
-   else begin
-      if ((wr_store_frame & !wr_transmit_frame) == 1'b1) begin
-         wr_frames <= wr_frames + 9'b1;
+generate if (FULL_DUPLEX_ONLY == 1)
+   begin : gen_fd_count
+      // Count the number of frames in the FIFO. The counter is incremented when a
+      // frame is stored and decremented when a frame is transmitted. Need to keep
+      // the counter on the write clock as this is the fastest clock if they differ.
+      always @(posedge tx_fifo_aclk)
+      begin
+         if (tx_fifo_reset == 1'b1) begin
+            wr_frames <= 9'b0;
+         end
+         else begin
+            if ((wr_store_frame & !wr_transmit_frame) == 1'b1) begin
+               wr_frames <= wr_frames + 9'b1;
+            end
+            else if ((!wr_store_frame & wr_transmit_frame) == 1'b1) begin
+               wr_frames <= wr_frames - 9'b1;
+            end
+         end
       end
-      else if ((!wr_store_frame & wr_transmit_frame) == 1'b1) begin
-         wr_frames <= wr_frames - 9'b1;
-      end
    end
-end
-
-end
 endgenerate
 
 //----------------------------------------------------------------------------
 // Full and half duplex frame count.
-generate if (FULL_DUPLEX_ONLY != 1) begin : gen_hd_count
-
-// Generate a toggle to indicate when a frame has been retransmitted by
-// the FIFO.
-always @(posedge tx_mac_aclk)
-begin  // process
-   if (rd_retransmit_frame == 1'b1) begin
-      rd_retran_frame_tog <= !rd_retran_frame_tog;
-   end
-end
-
-// Synchronize the read retransmit frame signal into the write clock domain.
-eth_mac_sync_block resync_rd_tran_frame_tog (
-   .clk       (tx_fifo_aclk),
-   .data_in   (rd_retran_frame_tog),
-   .data_out  (wr_retran_frame_sync)
-);
-
-// Edge detect of the resynchronized retransmit frame signal.
-
-always @(posedge tx_fifo_aclk)
-begin
-   wr_retran_frame_delay <= wr_retran_frame_sync;
-end
-
-always @(posedge tx_fifo_aclk)
-begin
-   if (tx_fifo_reset == 1'b1) begin
-      wr_retransmit_frame    <= 1'b0;
-   end
-   else begin
-      // Edge detector
-      if ((wr_retran_frame_delay ^ wr_retran_frame_sync) == 1'b1) begin
-         wr_retransmit_frame <= 1'b1;
+generate if (FULL_DUPLEX_ONLY != 1)
+   begin : gen_hd_count
+      // Generate a toggle to indicate when a frame has been retransmitted by
+      // the FIFO.
+      always @(posedge tx_mac_aclk)
+      begin  // process
+         if (rd_retransmit_frame == 1'b1) begin
+            rd_retran_frame_tog <= !rd_retran_frame_tog;
+         end
       end
-      else begin
-         wr_retransmit_frame <= 1'b0;
-      end
-   end
-end
 
-// Count the number of frames in the FIFO. The counter is incremented when a
-// frame is stored or retransmitted and decremented when a frame is
-// transmitted. Need to keep the counter on the write clock as this is the
-// fastest clock if they differ. Logic assumes transmit and retransmit cannot
-// happen at same time.
-always @(posedge tx_fifo_aclk)
-begin
-   if (tx_fifo_reset == 1'b1) begin
-      wr_frames <= 9'd0;
-   end
-   else begin
-      if ((wr_store_frame & wr_retransmit_frame) == 1'b1) begin
-         wr_frames <= wr_frames + 9'd2;
-      end
-      else if (((wr_store_frame | wr_retransmit_frame)
-               & !wr_transmit_frame) == 1'b1) begin
-         wr_frames <= wr_frames + 9'd1;
-      end
-      else if (wr_transmit_frame == 1'b1 & !wr_store_frame) begin
-         wr_frames <= wr_frames - 9'd1;
-      end
-   end
-end
+      // Synchronize the read retransmit frame signal into the write clock domain.
+      eth_mac_sync_block resync_rd_tran_frame_tog (
+         .clk       (tx_fifo_aclk),
+         .data_in   (rd_retran_frame_tog),
+         .data_out  (wr_retran_frame_sync)
+      );
 
-end
+      // Edge detect of the resynchronized retransmit frame signal.
+
+      always @(posedge tx_fifo_aclk)
+      begin
+         wr_retran_frame_delay <= wr_retran_frame_sync;
+      end
+
+      always @(posedge tx_fifo_aclk)
+      begin
+         if (tx_fifo_reset == 1'b1) begin
+            wr_retransmit_frame    <= 1'b0;
+         end
+         else begin
+            // Edge detector
+            if ((wr_retran_frame_delay ^ wr_retran_frame_sync) == 1'b1) begin
+               wr_retransmit_frame <= 1'b1;
+            end
+            else begin
+               wr_retransmit_frame <= 1'b0;
+            end
+         end
+      end
+
+      // Count the number of frames in the FIFO. The counter is incremented when a
+      // frame is stored or retransmitted and decremented when a frame is
+      // transmitted. Need to keep the counter on the write clock as this is the
+      // fastest clock if they differ. Logic assumes transmit and retransmit cannot
+      // happen at same time.
+      always @(posedge tx_fifo_aclk)
+      begin
+         if (tx_fifo_reset == 1'b1) begin
+            wr_frames <= 9'd0;
+         end
+         else begin
+            if ((wr_store_frame & wr_retransmit_frame) == 1'b1) begin
+               wr_frames <= wr_frames + 9'd2;
+            end
+            else if (((wr_store_frame | wr_retransmit_frame)
+                     & !wr_transmit_frame) == 1'b1) begin
+               wr_frames <= wr_frames + 9'd1;
+            end
+            else if (wr_transmit_frame == 1'b1 & !wr_store_frame) begin
+               wr_frames <= wr_frames - 9'd1;
+            end
+         end
+      end
+   end
 endgenerate
 
 // Generate a frame in FIFO signal for use in control logic.
@@ -1251,123 +1245,123 @@ end
 
 //----------------------------------------------------------------------------
 // Half duplex-only read address counters.
-generate if (FULL_DUPLEX_ONLY == 1) begin : gen_fd_addr
-// Read address is incremented when read enable signal has been asserted.
-always @(posedge tx_mac_aclk)
-begin
-   if (tx_mac_reset == 1'b1) begin
-      rd_addr <= 12'b0;
-   end
-   else begin
-      if (rd_addr_reload == 1'b1) begin
-         rd_addr <= rd_dec_addr;
+generate if (FULL_DUPLEX_ONLY == 1)
+   begin : gen_fd_addr
+      // Read address is incremented when read enable signal has been asserted.
+      always @(posedge tx_mac_aclk)
+      begin
+         if (tx_mac_reset == 1'b1) begin
+            rd_addr <= 12'b0;
+         end
+         else begin
+            if (rd_addr_reload == 1'b1) begin
+               rd_addr <= rd_dec_addr;
+            end
+            else if (rd_addr_inc == 1'b1) begin
+               rd_addr <= rd_addr + 12'b1;
+            end
+         end
       end
-      else if (rd_addr_inc == 1'b1) begin
-         rd_addr <= rd_addr + 12'b1;
+
+      // Do not need to keep a start address, but the address is needed to
+      // calculate FIFO occupancy.
+      always @(posedge tx_mac_aclk)
+      begin
+         if (tx_mac_reset == 1'b1) begin
+            rd_start_addr <= 12'b0;
+         end
+         else begin
+            rd_start_addr <= rd_addr;
+         end
       end
    end
-end
-
-// Do not need to keep a start address, but the address is needed to
-// calculate FIFO occupancy.
-always @(posedge tx_mac_aclk)
-begin
-   if (tx_mac_reset == 1'b1) begin
-      rd_start_addr <= 12'b0;
-   end
-   else begin
-      rd_start_addr <= rd_addr;
-   end
-end
-
-end
 endgenerate
 
 //----------------------------------------------------------------------------
 // Full and half duplex read address counters.
-generate if (FULL_DUPLEX_ONLY != 1) begin : gen_hd_addr
-// Read address is incremented when read enable signal has been asserted.
-always @(posedge tx_mac_aclk)
-begin
-   if (tx_mac_reset == 1'b1) begin
-      rd_addr <= 12'b0;
-   end
-   else begin
-      if (rd_addr_reload == 1'b1) begin
-         rd_addr <= rd_dec_addr;
+generate if (FULL_DUPLEX_ONLY != 1)
+   begin : gen_hd_addr
+      // Read address is incremented when read enable signal has been asserted.
+      always @(posedge tx_mac_aclk)
+      begin
+         if (tx_mac_reset == 1'b1) begin
+            rd_addr <= 12'b0;
+         end
+         else begin
+            if (rd_addr_reload == 1'b1) begin
+               rd_addr <= rd_dec_addr;
+            end
+            else if (rd_start_addr_reload == 1'b1) begin
+               rd_addr <= rd_start_addr;
+            end
+            else if (rd_addr_inc == 1'b1) begin
+               rd_addr <= rd_addr + 12'b1;
+            end
+         end
       end
-      else if (rd_start_addr_reload == 1'b1) begin
-         rd_addr <= rd_start_addr;
-      end
-      else if (rd_addr_inc == 1'b1) begin
-         rd_addr <= rd_addr + 12'b1;
-      end
-   end
-end
 
-always @(posedge tx_mac_aclk)
-begin
-   if (tx_mac_reset == 1'b1) begin
-      rd_start_addr <= 12'd0;
-   end
-   else begin
-      if (rd_start_addr_load == 1'b1) begin
-         rd_start_addr <= rd_addr - 12'd6;
+      always @(posedge tx_mac_aclk)
+      begin
+         if (tx_mac_reset == 1'b1) begin
+            rd_start_addr <= 12'd0;
+         end
+         else begin
+            if (rd_start_addr_load == 1'b1) begin
+               rd_start_addr <= rd_addr - 12'd6;
+            end
+         end
+      end
+
+      // Collision window expires after MAC has been transmitting for required slot
+      // time. This is 512 clock cycles at 1Gbps. Also if the end of frame has fully
+      // been transmitted by the MAC then a collision cannot occur. This collision
+      // expiration signal goes high at 768 cycles from the start of the frame.
+      // This is inefficient for short frames, however it should be enough to
+      // prevent the FIFO from locking up.
+      always @(posedge tx_mac_aclk)
+      begin
+         if (tx_mac_reset == 1'b1) begin
+            rd_col_window_expire <= 1'b0;
+         end
+         else begin
+            if (rd_transmit_frame == 1'b1) begin
+               rd_col_window_expire <= 1'b0;
+            end
+            else if (rd_slot_timer[9:7] == 3'b110) begin
+               rd_col_window_expire <= 1'b1;
+            end
+         end
+      end
+
+      assign rd_idle_state = (rd_state == IDLE_s) ? 1'b1 : 1'b0;
+
+      always @(posedge tx_mac_aclk)
+      begin
+         rd_col_window_pipe[0] <= rd_col_window_expire & rd_idle_state;
+         if (rd_txfer_en == 1'b1) begin
+            rd_col_window_pipe[1] <= rd_col_window_pipe[0];
+         end
+      end
+
+      always @(posedge tx_mac_aclk)
+      begin
+         // Will not count until after the first frame is sent.
+         if (tx_mac_reset == 1'b1) begin
+            rd_slot_timer <= 10'b1111111111;
+         end
+         else begin
+            // Reset counter.
+            if (rd_transmit_frame == 1'b1) begin
+               rd_slot_timer <= 10'b0;
+            end
+            // Do not allow counter to roll over, and
+            // only count when frame is being transmitted.
+            else if (rd_slot_timer != 10'b1111111111) begin
+               rd_slot_timer <= rd_slot_timer + 10'b1;
+            end
+         end
       end
    end
-end
-
-// Collision window expires after MAC has been transmitting for required slot
-// time. This is 512 clock cycles at 1Gbps. Also if the end of frame has fully
-// been transmitted by the MAC then a collision cannot occur. This collision
-// expiration signal goes high at 768 cycles from the start of the frame.
-// This is inefficient for short frames, however it should be enough to
-// prevent the FIFO from locking up.
-always @(posedge tx_mac_aclk)
-begin
-   if (tx_mac_reset == 1'b1) begin
-      rd_col_window_expire <= 1'b0;
-   end
-   else begin
-      if (rd_transmit_frame == 1'b1) begin
-         rd_col_window_expire <= 1'b0;
-      end
-      else if (rd_slot_timer[9:7] == 3'b110) begin
-         rd_col_window_expire <= 1'b1;
-      end
-   end
-end
-
-assign rd_idle_state = (rd_state == IDLE_s) ? 1'b1 : 1'b0;
-
-always @(posedge tx_mac_aclk)
-begin
-   rd_col_window_pipe[0] <= rd_col_window_expire & rd_idle_state;
-   if (rd_txfer_en == 1'b1) begin
-      rd_col_window_pipe[1] <= rd_col_window_pipe[0];
-   end
-end
-
-always @(posedge tx_mac_aclk)
-begin
-   // Will not count until after the first frame is sent.
-   if (tx_mac_reset == 1'b1) begin
-      rd_slot_timer <= 10'b1111111111;
-   end
-   else begin
-      // Reset counter.
-      if (rd_transmit_frame == 1'b1) begin
-         rd_slot_timer <= 10'b0;
-      end
-      // Do not allow counter to roll over, and
-      // only count when frame is being transmitted.
-      else if (rd_slot_timer != 10'b1111111111) begin
-         rd_slot_timer <= rd_slot_timer + 10'b1;
-      end
-   end
-end
-
-end
 endgenerate
 
 // Read address generation.
@@ -1476,21 +1470,22 @@ end
 
 //----------------------------------------------------------------------------
 // Half duplex-only drop and retransmission controls.
-generate if (FULL_DUPLEX_ONLY != 1) begin : gen_hd_input
-// Register the collision without retransmit signal, which is a pulse that
-// causes the FIFO to drop the frame.
-always @(posedge tx_mac_aclk)
-begin
-   rd_drop_frame <= tx_collision & !tx_retransmit;
-end
+generate if (FULL_DUPLEX_ONLY != 1)
+   begin : gen_hd_input
+      // Register the collision without retransmit signal, which is a pulse that
+      // causes the FIFO to drop the frame.
+      always @(posedge tx_mac_aclk)
+      begin
+         rd_drop_frame <= tx_collision & !tx_retransmit;
+      end
 
-// Register the collision with retransmit signal, which is a pulse that
-// causes the FIFO to retransmit the frame.
-always @(posedge tx_mac_aclk)
-begin
-   rd_retransmit <= tx_collision & tx_retransmit;
-end
-end
+      // Register the collision with retransmit signal, which is a pulse that
+      // causes the FIFO to retransmit the frame.
+      always @(posedge tx_mac_aclk)
+      begin
+         rd_retransmit <= tx_collision & tx_retransmit;
+      end
+   end
 endgenerate
 
 
@@ -1600,57 +1595,57 @@ end
 // FIFO is in an overflow state. We must accept the rest of the incoming
 // frame in overflow condition.
 
-generate if (FULL_DUPLEX_ONLY == 1) begin : gen_fd_ovflow
-   // In full duplex mode, the FIFO memory can only overflow if the FIFO goes
-   // full but there is no frame available to be retranmsitted. Therefore,
-   // prevent signal from being asserted when store_frame signal is high, as
-   // frame count is being updated.
-   assign wr_fifo_overflow = (wr_fifo_full == 1'b1 && wr_frame_in_fifo == 1'b0
-                                 && wr_eof_state == 1'b0
-                                 && wr_eof_state_reg == 1'b0)
-                              ? 1'b1 : 1'b0;
+generate if (FULL_DUPLEX_ONLY == 1)
+   begin : gen_fd_ovflow
+      // In full duplex mode, the FIFO memory can only overflow if the FIFO goes
+      // full but there is no frame available to be retranmsitted. Therefore,
+      // prevent signal from being asserted when store_frame signal is high, as
+      // frame count is being updated.
+      assign wr_fifo_overflow = (wr_fifo_full == 1'b1 && wr_frame_in_fifo == 1'b0
+                                    && wr_eof_state == 1'b0
+                                    && wr_eof_state_reg == 1'b0)
+                                 ? 1'b1 : 1'b0;
 
-   // Tie off unused half-duplex signals
-   always @(posedge tx_fifo_aclk)
-   begin
-      wr_col_window_pipe[0] <= 1'b0;
-      wr_col_window_pipe[1] <= 1'b0;
-   end
-
-end
-endgenerate
-
-generate if (FULL_DUPLEX_ONLY != 1) begin : gen_hd_ovflow
-   // In half duplex mode, register write collision window to give address
-   // counter sufficient time to update. This will prevent the signal from
-   // being asserted when the store_frame signal is high, as the frame count
-   // is being updated.
-   assign wr_fifo_overflow = (wr_fifo_full == 1'b1 && wr_frame_in_fifo == 1'b0
-                                 && wr_eof_state == 1'b0
-                                 && wr_eof_state_reg == 1'b0
-                                 && wr_col_window_expire == 1'b1)
-                              ? 1'b1 : 1'b0;
-
-   // Register rd_col_window signal.
-   // This signal is long, and will remain high until overflow functionality
-   // has finished, so save just to register once.
-   always @(posedge tx_fifo_aclk)
-   begin
-      if (tx_fifo_reset == 1'b1) begin
+      // Tie off unused half-duplex signals
+      always @(posedge tx_fifo_aclk)
+      begin
          wr_col_window_pipe[0] <= 1'b0;
          wr_col_window_pipe[1] <= 1'b0;
-         wr_col_window_expire  <= 1'b0;
-      end
-      else begin
-         if (wr_txfer_en == 1'b1) begin
-            wr_col_window_pipe[0] <= rd_col_window_pipe[1];
-         end
-         wr_col_window_pipe[1] <= wr_col_window_pipe[0];
-         wr_col_window_expire <= wr_col_window_pipe[1];
       end
    end
+endgenerate
 
-end
+generate if (FULL_DUPLEX_ONLY != 1)
+   begin : gen_hd_ovflow
+      // In half duplex mode, register write collision window to give address
+      // counter sufficient time to update. This will prevent the signal from
+      // being asserted when the store_frame signal is high, as the frame count
+      // is being updated.
+      assign wr_fifo_overflow = (wr_fifo_full == 1'b1 && wr_frame_in_fifo == 1'b0
+                                    && wr_eof_state == 1'b0
+                                    && wr_eof_state_reg == 1'b0
+                                    && wr_col_window_expire == 1'b1)
+                                 ? 1'b1 : 1'b0;
+
+      // Register rd_col_window signal.
+      // This signal is long, and will remain high until overflow functionality
+      // has finished, so save just to register once.
+      always @(posedge tx_fifo_aclk)
+      begin
+         if (tx_fifo_reset == 1'b1) begin
+            wr_col_window_pipe[0] <= 1'b0;
+            wr_col_window_pipe[1] <= 1'b0;
+            wr_col_window_expire  <= 1'b0;
+         end
+         else begin
+            if (wr_txfer_en == 1'b1) begin
+               wr_col_window_pipe[0] <= rd_col_window_pipe[1];
+            end
+            wr_col_window_pipe[1] <= wr_col_window_pipe[0];
+            wr_col_window_expire <= wr_col_window_pipe[1];
+         end
+      end
+   end
 endgenerate
 
 //----------------------------------------------------------------------------
