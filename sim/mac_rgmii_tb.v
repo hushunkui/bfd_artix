@@ -234,7 +234,9 @@ task SendTestPacket;
     input [47:0] mac_dst;
     input [47:0] mac_src;
     input err;
+    integer a;
     begin
+        a = 0;
         SendPreamble();
         SendMAC(mac_dst);
         SendMAC(mac_src);
@@ -242,9 +244,14 @@ task SendTestPacket;
         SendByte(8'h08, 1'b1);
         SendByte(8'h00, 1'b1);
         // payload
-        repeat (28) SendByte(8'h00, 1'b1);
-        // zero padding
-        repeat (18) SendByte(8'h00, 1'b1);
+        // repeat (28) SendByte(8'h00, 1'b1);
+        // // zero padding
+        // repeat (18) SendByte(8'h00, 1'b1);
+
+        repeat (28+18) begin
+            SendByte(a, 1'b1);
+            a = a + 1;
+        end
         SendCRC(err);
     end
 endtask
@@ -614,45 +621,40 @@ mac_rgmii mac(
 );
 
 eth_mac_ten_100_1g_eth_fifo eth_fifo(
-    .tx_fifo_aclk       (mac_gtx_clk),           //input             // tx fifo clock
-    .tx_fifo_resetn     (pll0_locked),           //input             // tx fifo clock synchronous reset
-    // tx fifo AXI-Stream interface
-    .tx_axis_fifo_tdata (usr_tx_tdata ), //input    [7:0]
+    //USER IF
+    .tx_fifo_aclk       (mac_gtx_clk  ), //input
+    .tx_fifo_resetn     (pll0_locked  ), //input
+    .tx_axis_fifo_tdata (usr_tx_tdata ), //input [7:0]
     .tx_axis_fifo_tvalid(usr_tx_tvalid), //input
     .tx_axis_fifo_tlast (usr_tx_tlast ), //input
     .tx_axis_fifo_tready(), //output
 
-    .rx_fifo_aclk       (mac_gtx_clk), //input                       // rx fifo clock
-    .rx_fifo_resetn     (pll0_locked), //input                      // rx fifo clock synchronous reset
-    // rx fifo AXI-Stream interface
-    .rx_axis_fifo_tdata (usr_rx_tdata ), //output   [7:0]
+    .rx_fifo_aclk       (mac_gtx_clk  ), //input
+    .rx_fifo_resetn     (pll0_locked  ), //input
+    .rx_axis_fifo_tdata (usr_rx_tdata ), //output [7:0]
     .rx_axis_fifo_tvalid(usr_rx_tvalid), //output
     .rx_axis_fifo_tlast (usr_rx_tlast ), //output
     .rx_axis_fifo_tready(1'b1), //input
 
-    .tx_mac_aclk        (mac_gtx_clk), //input                        // tx_mac clock
-    .tx_mac_resetn      (pll0_locked), //input                       // tx mac clock synchronous reset
-    // tx mac AXI-Stream interface
-    .tx_axis_mac_tdata  (mac_tx_tdata ), //output   [7:0]
+    //MAC IF
+    .tx_mac_aclk        (mac_gtx_clk  ), //input
+    .tx_mac_resetn      (pll0_locked  ), //input
+    .tx_axis_mac_tdata  (mac_tx_tdata ), //output [7:0]
     .tx_axis_mac_tvalid (mac_tx_tvalid), //output
     .tx_axis_mac_tlast  (mac_tx_tlast ), //output
     .tx_axis_mac_tready (mac_tx_tready), //input
     .tx_axis_mac_tuser  (mac_tx_tuser ), //output
-    // tx FIFO status outputs
     .tx_fifo_overflow   (), //output
     .tx_fifo_status     (), //output   [3:0]
-    // tx fifo duplex controls
     .tx_collision       (), //input
     .tx_retransmit      (), //input
 
-    .rx_mac_aclk        (mac_rx_clk), //input                        // rx mac clock
-    .rx_mac_resetn      (pll0_locked), //input                       // rx mac clock synchronous reset
-    // rx mac AXI-Stream interface
-    .rx_axis_mac_tdata  (mac_rx_tdata ), //input    [7:0]
+    .rx_mac_aclk        (mac_rx_clk   ), //input
+    .rx_mac_resetn      (pll0_locked  ), //input
+    .rx_axis_mac_tdata  (mac_rx_tdata ), //input [7:0]
     .rx_axis_mac_tvalid (mac_rx_tvalid), //input
     .rx_axis_mac_tlast  (mac_rx_tlast ), //input
     .rx_axis_mac_tuser  (mac_rx_tuser ), //input
-    // rx fifo status outputs
     .rx_fifo_status     (), //output   [3:0]
     .rx_fifo_overflow   ()  //output
 );
