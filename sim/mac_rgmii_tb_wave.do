@@ -34,17 +34,24 @@ add wave -noupdate /mac_rgmii_tb/mac/mac_rx_data_o
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_valid_o
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_sof_o
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_eof_o
+add wave -noupdate /mac_rgmii_tb/mac/mac_rx_fr_good_o
+add wave -noupdate /mac_rgmii_tb/mac/mac_rx_fr_bad_o
+add wave -noupdate /mac_rgmii_tb/mac/mac_rx_fr_err_o
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_clk_o
 add wave -noupdate /mac_rgmii_tb/mac/mac_tx_data
 add wave -noupdate /mac_rgmii_tb/mac/mac_tx_valid
 add wave -noupdate /mac_rgmii_tb/mac/mac_tx_eof
 add wave -noupdate /mac_rgmii_tb/mac/mac_tx_sof
+add wave -noupdate /mac_rgmii_tb/usr_rx_tdata
+add wave -noupdate /mac_rgmii_tb/usr_rx_tvalid
+add wave -noupdate /mac_rgmii_tb/usr_rx_tlast
+add wave -noupdate /mac_rgmii_tb/mac_gtx_clk
 add wave -noupdate /mac_rgmii_tb/mac/mac_tx_clk
 add wave -noupdate /mac_rgmii_tb/mac/phy_txd
 add wave -noupdate /mac_rgmii_tb/mac/phy_tx_ctl
 add wave -noupdate /mac_rgmii_tb/mac/phy_txc
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors
+WaveRestoreCursors {{Cursor 1} {0 ps} 0}
 quietly wave cursor active 0
 configure wave -namecolwidth 141
 configure wave -valuecolwidth 100

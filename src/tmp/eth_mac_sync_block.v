@@ -3,7 +3,7 @@
 module eth_mac_sync_block (
     input clk,
     input data_in,
-    output data_out
+    output reg data_out = 1'b0
 );
 
 // To write use port A

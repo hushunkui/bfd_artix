@@ -23,6 +23,11 @@ vlog ../src/mac_crc.v
 vlog -modelsimini $inifile ../src/mac_rgmii.v
 vlog -modelsimini $inifile ../src/core_gen/clk25_wiz0/clk25_wiz0.v
 vlog -modelsimini $inifile ../src/core_gen/clk25_wiz0/clk25_wiz0_clk_wiz.v
+vlog -modelsimini $inifile ../src/tmp/eth_mac_bram_tdp.v
+vlog -modelsimini $inifile ../src/tmp/eth_mac_sync_block.v
+vlog -modelsimini $inifile ../src/tmp/eth_mac_tx_client_fifo.v
+vlog -modelsimini $inifile ../src/tmp/eth_mac_rx_client_fifo.v
+vlog -modelsimini $inifile ../src/tmp/eth_mac_ten_100_1g_eth_fifo.v
 vlog ./mac_rgmii_tb.v
 
 vsim -modelsimini $inifile -t 1ps -novopt +notimingchecks -L unisims_ver -L secureip -lib work mac_rgmii_tb glbl
