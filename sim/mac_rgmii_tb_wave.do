@@ -42,6 +42,8 @@ add wave -noupdate /mac_rgmii_tb/mac/mac_tx_data
 add wave -noupdate /mac_rgmii_tb/mac/mac_tx_valid
 add wave -noupdate /mac_rgmii_tb/mac/mac_tx_eof
 add wave -noupdate /mac_rgmii_tb/mac/mac_tx_sof
+add wave -noupdate -color {Slate Blue} -itemcolor Gold /mac_rgmii_tb/eth_fifo/rx_fifo_i/wr_state
+add wave -noupdate -color {Slate Blue} -itemcolor Gold /mac_rgmii_tb/eth_fifo/rx_fifo_i/rd_state
 add wave -noupdate /mac_rgmii_tb/usr_rx_tdata
 add wave -noupdate /mac_rgmii_tb/usr_rx_tvalid
 add wave -noupdate /mac_rgmii_tb/usr_rx_tlast
@@ -67,4 +69,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {11974544 ps} {12748230 ps}
+WaveRestoreZoom {2032500 ps} {15682500 ps}

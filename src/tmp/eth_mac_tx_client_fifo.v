@@ -1,56 +1,3 @@
-//------------------------------------------------------------------------------
-// Title      : Transmitter FIFO with AxiStream interfaces
-// Version    : 1.3
-// Project    : Tri-Mode Ethernet MAC
-//------------------------------------------------------------------------------
-// File       : eth_mac_tx_client_fifo.v
-// Author     : Xilinx Inc.
-// -----------------------------------------------------------------------------
-// (c) Copyright 2004-2013 Xilinx, Inc. All rights reserved.
-//
-// This file contains confidential and proprietary information
-// of Xilinx, Inc. and is protected under U.S. and
-// international copyright and other intellectual property
-// laws.
-//
-// DISCLAIMER
-// This disclaimer is not a license and does not grant any
-// rights to the materials distributed herewith. Except as
-// otherwise provided in a valid license issued to you by
-// Xilinx, and to the maximum extent permitted by applicable
-// law: (1) THESE MATERIALS ARE MADE AVAILABLE "AS IS" AND
-// WITH ALL FAULTS, AND XILINX HEREBY DISCLAIMS ALL WARRANTIES
-// AND CONDITIONS, EXPRESS, IMPLIED, OR STATUTORY, INCLUDING
-// BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, NON-
-// INFRINGEMENT, OR FITNESS FOR ANY PARTICULAR PURPOSE; and
-// (2) Xilinx shall not be liable (whether in contract or tort,
-// including negligence, or under any other theory of
-// liability) for any loss or damage of any kind or nature
-// related to, arising under or in connection with these
-// materials, including for any direct, or any indirect,
-// special, incidental, or consequential loss or damage
-// (including loss of data, profits, goodwill, or any type of
-// loss or damage suffered as a result of any action brought
-// by a third party) even if such damage or loss was
-// reasonably foreseeable or Xilinx had been advised of the
-// possibility of the same.
-//
-// CRITICAL APPLICATIONS
-// Xilinx products are not designed or intended to be fail-
-// safe, or for use in any application requiring fail-safe
-// performance, such as life-support or safety devices or
-// systems, Class III medical devices, nuclear facilities,
-// applications related to the deployment of airbags, or any
-// other applications that could lead to death, personal
-// injury, or severe property or environmental damage
-// (individually and collectively, "Critical
-// Applications"). Customer assumes the sole risk and
-// liability of any use of Xilinx products in Critical
-// Applications, subject only to applicable laws and
-// regulations governing limitations on product liability.
-//
-// THIS COPYRIGHT NOTICE AND DISCLAIMER MUST BE RETAINED AS
-// PART OF THIS FILE AT ALL TIMES.
 // -----------------------------------------------------------------------------
 // Description: This is a transmitter side FIFO for the design example
 //              of the Tri-Mode Ethernet MAC core. AxiStream interfaces are used.
@@ -89,13 +36,7 @@
 //              and wr_addr signal widths, to address further BRAMs.
 //
 //------------------------------------------------------------------------------
-
 `timescale 1ps / 1ps
-
-//------------------------------------------------------------------------------
-// The module declaration for the Transmitter FIFO
-//------------------------------------------------------------------------------
-
 module eth_mac_tx_client_fifo # (
    parameter FULL_DUPLEX_ONLY = 0
 ) (
@@ -126,43 +67,65 @@ module eth_mac_tx_client_fifo # (
    input            tx_retransmit
 );
 
-
-//----------------------------------------------------------------------------
-// Define internal signals
-//----------------------------------------------------------------------------
-
 // Binary encoded read state machine states.
-localparam  IDLE_s             = 4'b0000;
-localparam  QUEUE1_s           = 4'b0001;
-localparam  QUEUE2_s           = 4'b0010;
-localparam  QUEUE3_s           = 4'b0011;
-localparam  START_DATA1_s      = 4'b0100;
-localparam  DATA_PRELOAD1_s    = 4'b0101;
-localparam  DATA_PRELOAD2_s    = 4'b0110;
-localparam  WAIT_HANDSHAKE_s   = 4'b0111;
-localparam  FRAME_s            = 4'b1000;
-localparam  HANDSHAKE_s        = 4'b1001;
-localparam  FINISH_s           = 4'b1010;
-localparam  DROP_ERR_s         = 4'b1011;
-localparam  DROP_s             = 4'b1100;
-localparam  RETRANSMIT_ERR_s   = 4'b1101;
-localparam  RETRANSMIT_s       = 4'b1111;
-
-
-reg [3:0]   rd_state;
-
-reg [3:0]   rd_nxt_state;
+`ifdef SIM_FSM
+    typedef enum int unsigned {
+        IDLE_s          ,
+        QUEUE1_s        ,
+        QUEUE2_s        ,
+        QUEUE3_s        ,
+        START_DATA1_s   ,
+        DATA_PRELOAD1_s ,
+        DATA_PRELOAD2_s ,
+        WAIT_HANDSHAKE_s,
+        FRAME_s         ,
+        HANDSHAKE_s     ,
+        FINISH_s        ,
+        DROP_ERR_s      ,
+        DROP_s          ,
+        RETRANSMIT_ERR_s,
+        RETRANSMIT_s
+    } fsm_t;
+    fsm_t rd_state = IDLE_s;
+    fsm_t rd_nxt_state = IDLE_s;
+`else
+    localparam  IDLE_s             = 4'b0000;
+    localparam  QUEUE1_s           = 4'b0001;
+    localparam  QUEUE2_s           = 4'b0010;
+    localparam  QUEUE3_s           = 4'b0011;
+    localparam  START_DATA1_s      = 4'b0100;
+    localparam  DATA_PRELOAD1_s    = 4'b0101;
+    localparam  DATA_PRELOAD2_s    = 4'b0110;
+    localparam  WAIT_HANDSHAKE_s   = 4'b0111;
+    localparam  FRAME_s            = 4'b1000;
+    localparam  HANDSHAKE_s        = 4'b1001;
+    localparam  FINISH_s           = 4'b1010;
+    localparam  DROP_ERR_s         = 4'b1011;
+    localparam  DROP_s             = 4'b1100;
+    localparam  RETRANSMIT_ERR_s   = 4'b1101;
+    localparam  RETRANSMIT_s       = 4'b1111;
+    reg [3:0]   rd_state;
+    reg [3:0]   rd_nxt_state;
+`endif
 
 // Binary encoded write state machine states.
-localparam WAIT_s   = 2'b00;
-localparam DATA_s   = 2'b01;
-localparam EOF_s    = 2'b10;
-localparam OVFLOW_s = 2'b11;
-
-
-reg  [1:0]  wr_state;
-
-reg  [1:0]  wr_nxt_state;
+`ifdef SIM_FSM
+    typedef enum int unsigned {
+        WAIT_s  ,
+        DATA_s  ,
+        EOF_s   ,
+        OVFLOW_s
+    } fsm2_t;
+    fsm2_t wr_state = WAIT_s;
+    fsm2_t wr_nxt_state = WAIT_s;
+`else
+    localparam WAIT_s   = 2'b00;
+    localparam DATA_s   = 2'b01;
+    localparam EOF_s    = 2'b10;
+    localparam OVFLOW_s = 2'b11;
+    reg  [1:0]  wr_state;
+    reg  [1:0]  wr_nxt_state;
+`endif
 
 wire [8:0]  wr_eof_data_bram;
 reg  [7:0]  wr_data_bram;
@@ -289,10 +252,6 @@ wire        tx_mac_reset;
 // invert reset sense as architecture is optimised for active high resets
 assign tx_fifo_reset = !tx_fifo_resetn;
 assign tx_mac_reset  = !tx_mac_resetn;
-
-//----------------------------------------------------------------------------
-// Begin FIFO architecture
-//----------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------
 // Write state machine and control
