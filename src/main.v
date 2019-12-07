@@ -75,6 +75,9 @@ wire [7:0]              usr_rx_tdata  [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     usr_rx_tvalid;
 wire [ETHCOUNT-1:0]     usr_rx_tlast ;
 
+wire [3:0]              rx_fifo_status  [ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0]     rx_fifo_overflow;
+
 wire mac_gtx_clk;
 wire mac_gtx_clk90;
 
@@ -443,8 +446,8 @@ eth_mac_ten_100_1g_eth_fifo eth_fifo(
     .rx_axis_mac_tvalid (mac_rx_tvalid[3]),//input
     .rx_axis_mac_tlast  (mac_rx_tlast [3]),//input
     .rx_axis_mac_tuser  (mac_rx_bd[3]),//input
-    .rx_fifo_status     (), //output   [3:0]
-    .rx_fifo_overflow   ()  //output
+    .rx_fifo_status     (rx_fifo_status[3]), //output   [3:0]
+    .rx_fifo_overflow   (rx_fifo_overflow[3])  //output
 );
 
 
@@ -502,8 +505,10 @@ generate
     for (a=3; a < ETHCOUNT; a=a+1)  begin : cnterr
         ila_0 mac_ila (
             .probe0({
+                test_err,
+                rx_fifo_status[a],
+                rx_fifo_overflow[a],
                 mac_status[a],
-                mac_rx_nreset[a],
                 mac_rx_cnterr[a],
                 mac_rx_er[a],
                 mac_rx_bd[a],
@@ -517,7 +522,7 @@ generate
         );
 
         always @(posedge mac_rx_clk[a]) begin
-            if (mac_rx_nreset[a]) begin
+            if (!mac_rx_nreset[a]) begin
                 mac_rx_cnterr[a] <= 0;
             end else if (mac_rx_bd[a] | mac_rx_er[a]) begin
                 mac_rx_cnterr[a] <= mac_rx_cnterr[a] + 1;
@@ -526,6 +531,10 @@ generate
 
         ila_0 usr_ila (
             .probe0({
+                mac_rx_tdata [2],
+                mac_rx_tvalid[2],
+                mac_rx_tuser [2],
+                mac_rx_tlast [2],
                 test_data,
                 test_err,
                 usr_rx_tdata[a] ,
