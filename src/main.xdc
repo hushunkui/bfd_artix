@@ -334,13 +334,10 @@ set_property IOSTANDARD LVDS_25 [get_ports {usr_lvds_p[12]}]
 set_property IOSTANDARD LVDS_25 [get_ports {usr_lvds_p[13]}]
 
 
-#set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[1].rgmii/phy_rxc_ibuf}]
-#set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[2].rgmii/phy_rxc_ibuf}]
-#set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[3].rgmii/phy_rxc_ibuf}]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[1].rgmii/phy_rxc_ibuf}]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[2].rgmii/phy_rxc_ibuf}]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[3].rgmii/phy_rxc_ibuf}]
 
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {rgmii_1/phy_rxc_ibuf}]
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {rgmii_2/phy_rxc_ibuf}]
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {rgmii_3/phy_rxc_ibuf}]
 
 # input      _______________________________                                  ________
 # clock    _|                               |________________________________|
@@ -390,10 +387,10 @@ set_input_delay -clock rgmii3_rx_clk -min [expr $tfco_min + $trce_dly_min] [get_
 # report_timing -rise_from [get_ports $input_ports] -max_paths 20 -nworst 2 -delay_type min_max -name sys_sync_ddr_in_rise -file sys_sync_ddr_in_rise.txt;
 # report_timing -fall_from [get_ports $input_ports] -max_paths 20 -nworst 2 -delay_type min_max -name sys_sync_ddr_in_fall -file sys_sync_ddr_in_fall.txt;
 
-set_property IDELAY_VALUE 1 [get_cells {rgmii_0/idelay_rxd[*].inst}]
-set_property IDELAY_VALUE 1 [get_cells {rgmii_1/idelay_rxd[*].inst}]
-set_property IDELAY_VALUE 1 [get_cells {rgmii_2/idelay_rxd[*].inst}]
-set_property IDELAY_VALUE 1 [get_cells {rgmii_3/idelay_rxd[*].inst}]
+set_property IDELAY_VALUE 1 [get_cells {eth[0].rgmii/idelay_rxd[*].inst}]
+set_property IDELAY_VALUE 1 [get_cells {eth[1].rgmii/idelay_rxd[*].inst}]
+set_property IDELAY_VALUE 1 [get_cells {eth[2].rgmii/idelay_rxd[*].inst}]
+set_property IDELAY_VALUE 1 [get_cells {eth[3].rgmii/idelay_rxd[*].inst}]
 
 ## Group IODELAY components
 #set_property IODELAY_GROUP iodelay_grp_eth [get_cells *idelay*]
