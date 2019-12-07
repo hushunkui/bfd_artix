@@ -53,14 +53,14 @@ wire [ETHCOUNT-1:0] mac_rx_fr_err;
 wire [ETHCOUNT-1:0] mac_rx_fr_good_dbg;
 wire [ETHCOUNT-1:0] mac_rx_fr_bad;
 
-wire [(ETHCOUNT*8)-1:0] mac_rx_tdata ;
+wire [7:0]              mac_rx_tdata [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     mac_rx_tvalid;
 wire [ETHCOUNT-1:0]     mac_rx_tlast ;
 wire [ETHCOUNT-1:0]     mac_rx_tuser ;
 wire [ETHCOUNT-1:0]     mac_rx_clk;
 wire [ETHCOUNT-1:0]     mac_rx_nreset;
 
-wire [(ETHCOUNT*8)-1:0] mac_tx_tdata ;// = 0;
+wire [7:0]              mac_tx_tdata [ETHCOUNT-1:0];// = 0;
 wire [ETHCOUNT-1:0]     mac_tx_tvalid;// = 0;
 wire [ETHCOUNT-1:0]     mac_tx_tlast ;// = 0;
 wire [ETHCOUNT-1:0]     mac_tx_tuser ;// = 0;
@@ -68,10 +68,10 @@ wire [ETHCOUNT-1:0]     mac_tx_tready;
 wire [ETHCOUNT-1:0]     mac_tx_clk;
 wire [ETHCOUNT-1:0]     mac_tx_reset;
 
-wire [(ETHCOUNT*4)-1:0] mac_fifo_status;
-wire [(ETHCOUNT*4)-1:0] mac_status;
+wire [3:0] mac_fifo_status [ETHCOUNT-1:0];
+wire [3:0] mac_status [ETHCOUNT-1:0];
 
-wire [(ETHCOUNT*8)-1:0] usr_rx_tdata ;
+wire [7:0]              usr_rx_tdata  [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     usr_rx_tvalid;
 wire [ETHCOUNT-1:0]     usr_rx_tlast ;
 
@@ -246,8 +246,8 @@ endgenerate
 
 
 mac_rgmii rgmii_0 (
-    .status_o(mac_status[(0*4) +: 4]),
-    .fifo_status(mac_fifo_status[(0*4) +: 4]),
+    .status_o(mac_status[0]),
+    .fifo_status(mac_fifo_status[0]),
     .dbg_fifo_rd(),
 
     // phy side (RGMII)
@@ -259,20 +259,20 @@ mac_rgmii rgmii_0 (
     .phy_txc   (rgmii_txc   [0]         ),
 
     // logic side
-    .mac_rx_data_o   (mac_rx_tdata [(0*8) +: 8]),
-    .mac_rx_valid_o  (mac_rx_tvalid[0]         ),
-    .mac_rx_sof_o    (mac_rx_tuser [0]         ),
-    .mac_rx_eof_o    (mac_rx_tlast [0]         ),
+    .mac_rx_data_o   (mac_rx_tdata [0]),
+    .mac_rx_valid_o  (mac_rx_tvalid[0]),
+    .mac_rx_sof_o    (mac_rx_tuser [0]),
+    .mac_rx_eof_o    (mac_rx_tlast [0]),
     .mac_rx_fr_good_o(mac_rx_fr_good[0]),
     .mac_rx_fr_err_o (mac_rx_fr_err[0]),
     .mac_rx_fr_bad_o (mac_rx_fr_bad[0]),
     .mac_rx_clk_o    (mac_rx_clk[0]),
     .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[0]),
 
-    .mac_tx_data  (mac_rx_tdata [(1*8) +: 8]),
-    .mac_tx_valid (mac_rx_tvalid[1]         ),
-    .mac_tx_sof   (mac_rx_tuser [1]         ),
-    .mac_tx_eof   (mac_rx_tlast [1]         ),
+    .mac_tx_data  (mac_rx_tdata [1]),
+    .mac_tx_valid (mac_rx_tvalid[1]),
+    .mac_tx_sof   (mac_rx_tuser [1]),
+    .mac_tx_eof   (mac_rx_tlast [1]),
     .mac_tx_clk_90(mac_gtx_clk90),
     .mac_tx_clk   (mac_gtx_clk),
 
@@ -280,8 +280,8 @@ mac_rgmii rgmii_0 (
 );
 
 mac_rgmii rgmii_1 (
-    .status_o(mac_status[(1*4) +: 4]),
-    .fifo_status(mac_fifo_status[(1*4) +: 4]),
+    .status_o(mac_status[1]),
+    .fifo_status(mac_fifo_status[1]),
     .dbg_fifo_rd(),
 
     // phy side (RGMII)
@@ -293,20 +293,20 @@ mac_rgmii rgmii_1 (
     .phy_txc   (rgmii_txc   [1]         ),
 
     // logic side
-    .mac_rx_data_o   (mac_rx_tdata [(1*8) +: 8]),
-    .mac_rx_valid_o  (mac_rx_tvalid[1]         ),
-    .mac_rx_sof_o    (mac_rx_tuser [1]         ),
-    .mac_rx_eof_o    (mac_rx_tlast [1]         ),
+    .mac_rx_data_o   (mac_rx_tdata [1]),
+    .mac_rx_valid_o  (mac_rx_tvalid[1]),
+    .mac_rx_sof_o    (mac_rx_tuser [1]),
+    .mac_rx_eof_o    (mac_rx_tlast [1]),
     .mac_rx_fr_good_o(mac_rx_fr_good[1]),
     .mac_rx_fr_err_o (mac_rx_fr_err[1]),
     .mac_rx_fr_bad_o (mac_rx_fr_bad[1]),
     .mac_rx_clk_o    (mac_rx_clk[1]),
     .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[1]),
 
-    .mac_tx_data  (mac_rx_tdata [(0*8) +: 8]),
-    .mac_tx_valid (mac_rx_tvalid[0]         ),
-    .mac_tx_sof   (mac_rx_tuser [0]         ),
-    .mac_tx_eof   (mac_rx_tlast [0]         ),
+    .mac_tx_data  (mac_rx_tdata [0]),
+    .mac_tx_valid (mac_rx_tvalid[0]),
+    .mac_tx_sof   (mac_rx_tuser [0]),
+    .mac_tx_eof   (mac_rx_tlast [0]),
     .mac_tx_clk_90(mac_gtx_clk90),
     .mac_tx_clk   (mac_gtx_clk),
 
@@ -314,8 +314,8 @@ mac_rgmii rgmii_1 (
 );
 
 mac_rgmii rgmii_2 (
-    .status_o(mac_status[(2*4) +: 4]),
-    .fifo_status(mac_fifo_status[(2*4) +: 4]),
+    .status_o(mac_status[2]),
+    .fifo_status(mac_fifo_status[2]),
     .dbg_fifo_rd(),
 
     // phy side (RGMII)
@@ -337,10 +337,10 @@ mac_rgmii rgmii_2 (
     .mac_rx_clk_o    (),
     .dbg_mac_rx_fr_good(),
 
-    .mac_tx_data  (mac_rx_tdata [(2*8) +: 8]),
-    .mac_tx_valid (mac_rx_tvalid[2]         ),
-    .mac_tx_sof   (mac_rx_tuser [2]         ),
-    .mac_tx_eof   (mac_rx_tlast [2]         ),
+    .mac_tx_data  (mac_rx_tdata [2]),
+    .mac_tx_valid (mac_rx_tvalid[2]),
+    .mac_tx_sof   (mac_rx_tuser [2]),
+    .mac_tx_eof   (mac_rx_tlast [2]),
     .mac_tx_clk_90(mac_gtx_clk90),
     .mac_tx_clk   (mac_gtx_clk),
 
@@ -349,8 +349,8 @@ mac_rgmii rgmii_2 (
 
 wire dbg_fifo_rd;
 mac_rgmii rgmii_3 (
-    .status_o(mac_status[(3*4) +: 4]),
-    .fifo_status(mac_fifo_status[(3*4) +: 4]),
+    .status_o(mac_status[3]),
+    .fifo_status(mac_fifo_status[3]),
     .dbg_fifo_rd(dbg_fifo_rd),
 
     // phy side (RGMII)
@@ -362,10 +362,10 @@ mac_rgmii rgmii_3 (
     .phy_txc   (rgmii_txc   [3]         ),
 
     // logic side
-    .mac_rx_data_o   (mac_rx_tdata [(3*8) +: 8]),
-    .mac_rx_valid_o  (mac_rx_tvalid[3]         ),
-    .mac_rx_sof_o    (mac_rx_tuser [3]         ),
-    .mac_rx_eof_o    (mac_rx_tlast [3]         ),
+    .mac_rx_data_o   (mac_rx_tdata [3]),
+    .mac_rx_valid_o  (mac_rx_tvalid[3]),
+    .mac_rx_sof_o    (mac_rx_tuser [3]),
+    .mac_rx_eof_o    (mac_rx_tlast [3]),
     .mac_rx_fr_good_o(mac_rx_fr_good[3]),
     .mac_rx_fr_err_o (mac_rx_fr_err[3]),
     .mac_rx_fr_bad_o (mac_rx_fr_bad[3]),
@@ -383,19 +383,19 @@ mac_rgmii rgmii_3 (
 );
 // assign eth_link = mac_status[12];
 // assign eth_speed = mac_status[14:13];
-assign mac_rx_nreset[3] = mac_status[12] && (mac_status[14:13] == 2'b10) && !mac_pll_locked;
+assign mac_rx_nreset[3] = mac_status[3][0] && (mac_status[3][2:1] == 2'b10) && mac_pll_locked;
 
 wire [7:0] test_data;
 test_phy test_phy (
-    .mac_tx_data  (mac_rx_tdata [(2*8) +: 8]),
-    .mac_tx_valid (mac_rx_tvalid[2]         ),
-    .mac_tx_sof   (mac_rx_tuser [2]         ),
-    .mac_tx_eof   (mac_rx_tlast [2]         ),
+    .mac_tx_data  (mac_rx_tdata [2]),
+    .mac_tx_valid (mac_rx_tvalid[2]),
+    .mac_tx_sof   (mac_rx_tuser [2]),
+    .mac_tx_eof   (mac_rx_tlast [2]),
 
-    .mac_rx_data   (usr_rx_tdata [(3*8) +: 8]),//(mac_rx_tdata [(3*8) +: 8]),
-    .mac_rx_valid  (usr_rx_tvalid[3]         ),//(mac_rx_tvalid[3]         ),
+    .mac_rx_data   (usr_rx_tdata [3]),//(mac_rx_tdata [(3*8) +: 8]),
+    .mac_rx_valid  (usr_rx_tvalid[3]),//(mac_rx_tvalid[3]         ),
     .mac_rx_sof    (1'b0),//(mac_rx_tuser [3]         ),
-    .mac_rx_eof    (usr_rx_tlast[3]          ),//(mac_rx_tlast [3]         ),
+    .mac_rx_eof    (usr_rx_tlast[3]),//(mac_rx_tlast [3]         ),
     .mac_rx_fr_good(1'b1),//(mac_rx_fr_good[3]),
     .mac_rx_fr_err (1'b0),//(mac_rx_fr_err[3]),
 
@@ -418,9 +418,9 @@ eth_mac_ten_100_1g_eth_fifo eth_fifo(
 
     .rx_fifo_aclk       (mac_gtx_clk  ), //input
     .rx_fifo_resetn     (mac_pll_locked  ), //input
-    .rx_axis_fifo_tdata (usr_rx_tdata [(3*8) +: 8]), //output [7:0]
-    .rx_axis_fifo_tvalid(usr_rx_tvalid[3]         ), //output
-    .rx_axis_fifo_tlast (usr_rx_tlast [3]         ), //output
+    .rx_axis_fifo_tdata (usr_rx_tdata [3]), //output [7:0]
+    .rx_axis_fifo_tvalid(usr_rx_tvalid[3]), //output
+    .rx_axis_fifo_tlast (usr_rx_tlast [3]), //output
     .rx_axis_fifo_tready(1'b1), //input
 
     //MAC IF
@@ -436,12 +436,12 @@ eth_mac_ten_100_1g_eth_fifo eth_fifo(
     .tx_collision       (1'b0), //input
     .tx_retransmit      (1'b0), //input
 
-    .rx_mac_aclk        (mac_rx_clk[3]   ), //input
-    .rx_mac_resetn      (mac_rx_nreset[3]), //(1'b1),// //input
-    .rx_axis_mac_tdata  (mac_rx_tdata [(3*8) +: 8]),//(mac_rx_tdata ), //input [7:0]
-    .rx_axis_mac_tvalid (mac_rx_tvalid[3]         ),//(mac_rx_tvalid), //input
-    .rx_axis_mac_tlast  (mac_rx_tlast [3]         ),//(mac_rx_tlast ), //input
-    .rx_axis_mac_tuser  (mac_rx_fr_bad[3]         ),//(mac_rx_tuser ), //input
+    .rx_mac_aclk        (mac_rx_clk[3]   ),//input
+    .rx_mac_resetn      (mac_rx_nreset[3]),//input
+    .rx_axis_mac_tdata  (mac_rx_tdata [3]),//input [7:0]
+    .rx_axis_mac_tvalid (mac_rx_tvalid[3]),//input
+    .rx_axis_mac_tlast  (mac_rx_tlast [3]),//input
+    .rx_axis_mac_tuser  (mac_rx_fr_bad[3]),//input
     .rx_fifo_status     (), //output   [3:0]
     .rx_fifo_overflow   ()  //output
 );
@@ -462,7 +462,6 @@ end
 
 assign dbg_out[0] = 1'b0;
 assign dbg_out[1] = clk20_div | sysclk25_div &
-                    |mac_rx_tdata &
                     |mac_rx_tvalid &
                     |mac_rx_tlast &
                     |mac_rx_tuser &
@@ -471,6 +470,7 @@ assign dbg_out[1] = clk20_div | sysclk25_div &
                     |mac_tx_reset
                     ;
                     // |mac_rx_reset &
+                    // |mac_rx_tdata &
 // assign dbg_led = 1'b0;
 
 wire led_blink;
@@ -494,145 +494,20 @@ assign dbg_led = led_blink & !test_gpio[0];
 
 
 
-// assign mac_tx_axis_tdata  = 0;
-// assign mac_tx_axis_tvalid = 0;
-// assign mac_tx_axis_tlast  = 0;
-// assign mac_tx_axis_tuser  = 0;
-
-// wire [7:0] mac0_rx_axis_tdata ;
-// wire       mac0_rx_axis_tvalid;
-// wire       mac0_rx_axis_tlast ;
-// wire       mac0_rx_axis_tuser ;
-// wire       mac0_rx_axis_fr_good;
-// wire       mac0_rx_axis_fr_err;
-// wire       mac0_rx_fr_good_dbg;
-
-// wire [7:0] mac1_rx_axis_tdata ;
-// wire       mac1_rx_axis_tvalid;
-// wire       mac1_rx_axis_tlast ;
-// wire       mac1_rx_axis_tuser ;
-// wire       mac1_rx_axis_fr_good;
-// wire       mac1_rx_axis_fr_err;
-// wire       mac1_rx_fr_good_dbg;
-
-// wire [7:0] mac2_rx_axis_tdata ;
-// wire       mac2_rx_axis_tvalid;
-// wire       mac2_rx_axis_tlast ;
-// wire       mac2_rx_axis_tuser ;
-// wire       mac2_rx_axis_fr_good;
-// wire       mac2_rx_axis_fr_err;
-// wire       mac2_rx_fr_good_dbg;
-
-// wire [7:0] mac3_rx_axis_tdata ;
-// wire       mac3_rx_axis_tvalid;
-// wire       mac3_rx_axis_tlast ;
-// wire       mac3_rx_axis_tuser ;
-// wire       mac3_rx_axis_fr_good;
-// wire       mac3_rx_axis_fr_err;
-// wire       mac3_rx_fr_good_dbg;
-
-// assign mac0_rx_axis_tdata   = mac_rx_axis_tdata[(2*8) +: 8];
-// assign mac0_rx_axis_tvalid  = mac_rx_axis_tvalid[2];
-// assign mac0_rx_axis_tuser   = mac_rx_axis_tuser[2];
-// assign mac0_rx_axis_tlast   = mac_rx_axis_tlast[2];
-// assign mac0_rx_axis_fr_good = mac_rx_axis_fr_good[2];
-// assign mac0_rx_axis_fr_err  = mac_rx_axis_fr_err[2];
-// assign mac0_rx_fr_good_dbg  = mac_rx_fr_good_dbg[2];
-
-// assign mac1_rx_axis_tdata   = mac_rx_axis_tdata[(3*8) +: 8];
-// assign mac1_rx_axis_tvalid  = mac_rx_axis_tvalid[3];
-// assign mac1_rx_axis_tuser   = mac_rx_axis_tuser[3];
-// assign mac1_rx_axis_tlast   = mac_rx_axis_tlast[3];
-// assign mac1_rx_axis_fr_good = mac_rx_axis_fr_good[3];
-// assign mac1_rx_axis_fr_err  = mac_rx_axis_fr_err[3];
-// assign mac1_rx_fr_good_dbg  = mac_rx_fr_good_dbg[3];
-
-// reg err_det = 1'b0;
-// reg mac0_rx_err_0 = 1'b0;
-// reg mac1_rx_err_0 = 1'b0;
-// reg mac0_rx_err = 1'b0;
-// reg mac1_rx_err = 1'b0;
-// always @(posedge mac_gtx_clk) begin
-//     mac0_rx_err_0 <= 1'b0;
-//     if (mac0_rx_axis_tlast & mac0_rx_axis_tvalid) begin
-//         mac0_rx_err_0 <= ~mac0_rx_axis_fr_good;
-//     end
-//     mac0_rx_err <= mac0_rx_err_0 | mac0_rx_axis_fr_err;
-//     err_det = mac0_rx_err;
-
-//     mac1_rx_err_0 <= 1'b0;
-//     if (mac1_rx_axis_tlast & mac1_rx_axis_tvalid) begin
-//         mac1_rx_err_0 <= ~mac1_rx_axis_fr_good;
-//     end
-//     mac1_rx_err <= mac1_rx_err_0 | mac1_rx_axis_fr_err;
-
-//     err_det = mac0_rx_err | mac1_rx_err;
-// end
-
-// ila_0 dbg_ila (
-//     .probe0({
-//         dbg_fifo_rd,
-//         mac_fifo_status[(3*4) +: 4],
-//         test_data,
-//         reg_ctrl[0],
-//         test_err,
-
-//         mac0_rx_err_0,
-//         mac0_rx_err,
-//         err_det,
-
-//         mac1_rx_err_0,
-//         mac1_rx_err,
-//         mac1_rx_fr_good_dbg,
-//         mac1_rx_axis_tdata,
-//         mac1_rx_axis_tvalid,
-//         mac1_rx_axis_tuser,
-//         mac1_rx_axis_tlast,
-//         mac1_rx_axis_fr_good,
-//         mac1_rx_axis_fr_err,
-
-//         mac0_rx_fr_good_dbg,
-//         mac0_rx_axis_tdata,
-//         mac0_rx_axis_tvalid,
-//         mac0_rx_axis_tuser,
-//         mac0_rx_axis_tlast,
-//         mac0_rx_axis_fr_good,
-//         mac0_rx_axis_fr_err
-//     }),
-//     .clk(mac_gtx_clk) //(mac_rx_aclk[0]) //
-// );
-
-
-    // .probe0({
-    //     mac1_rx_axis_tdata,
-    //     mac1_rx_axis_tvalid,
-    //     mac1_rx_axis_tuser,
-    //     mac1_rx_axis_tlast,
-    //     mac1_rx_axis_fr_good,
-    //     mac1_rx_axis_fr_err,
-
-    //     mac0_rx_axis_tdata,
-    //     mac0_rx_axis_tvalid,
-    //     mac0_rx_axis_tuser,
-    //     mac0_rx_axis_tlast,
-    //     mac0_rx_axis_fr_good,
-    //     mac0_rx_axis_fr_err
-    // }),\
 
 reg [31:0] mac_rx_cnterr [ETHCOUNT-1:0];
-wire [7:0] mac_rx_data [ETHCOUNT-1:0];
-wire [7:0] usr_rx_data [ETHCOUNT-1:0];
 genvar a;
 generate
     for (a=3; a < ETHCOUNT; a=a+1)  begin : cnterr
-        assign mac_rx_data[a] = mac_rx_tdata[(a*8):+ 8];
         ila_0 mac_ila (
             .probe0({
+                mac_status[a],
+                mac_rx_nreset[a],
                 mac_rx_cnterr[a],
                 mac_rx_fr_err[a],
                 mac_rx_fr_bad[a],
                 mac_rx_fr_good[a],
-                mac_rx_data[a],
+                mac_rx_tdata[a],
                 mac_rx_tvalid[a],
                 mac_rx_tuser[a],
                 mac_rx_tlast[a]
@@ -648,10 +523,9 @@ generate
             end
         end
 
-        assign usr_rx_data[a] = usr_rx_tdata[(a*8):+ 8];
         ila_0 usr_ila (
             .probe0({
-                usr_rx_data[a] ,
+                usr_rx_tdata[a] ,
                 usr_rx_tvalid[a],
                 usr_rx_tlast[a]
             }),
