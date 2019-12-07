@@ -2,8 +2,6 @@
 //author: Romashko Dmitry
 //
 module mac_rgmii(
-    output reg dbg_mac_rx_fr_good = 1'b0,
-    output dbg_fifo_rd,
     output [3:0] status_o, /** [0] - link up/down = 1/0
                                 [2:1] - phy_rxc speed:
                                     00 - 2.5MHz (Eth:10Mb)
@@ -11,7 +9,9 @@ module mac_rgmii(
                                     10 - 125MHz (Eth:1Gb)
                                 [3] - duplex full/half = 1/0
                             */
-    output reg [3:0] fifo_status = 0,
+    // output reg [3:0] fifo_status = 0,
+    // output reg dbg_mac_rx_fr_good = 1'b0,
+    // output dbg_fifo_rd,
 
     // receive channel, phy side (RGMII)
     input [3:0] phy_rxd   ,
@@ -23,9 +23,9 @@ module mac_rgmii(
     output reg       mac_rx_valid_o = 0,
     output reg       mac_rx_sof_o = 0,
     output reg       mac_rx_eof_o = 0,
-    output reg       mac_rx_fr_good_o = 0,  // generated only if CRC is valid
-    output reg       mac_rx_fr_err_o = 0,
-    output reg       mac_rx_fr_bad_o = 0,
+    output reg       mac_rx_ok_o = 0,  // generated only if CRC is valid
+    output reg       mac_rx_bd_o = 0,
+    output reg       mac_rx_er_o = 0,
     output           mac_rx_clk_o,      // global clock
 
     // transmit channel, phy side (RGMII)
@@ -66,7 +66,6 @@ reg       mac_rx_valid = 1'b0;
 reg       mac_rx_sof = 1'b0;
 reg       mac_rx_eof = 1'b0;
 reg       mac_rx_fr_err = 1'b0;
-reg [3:0] status = 0;
 
 wire phy_rx_ctl_delay;
 wire [3:0] phy_rxd_delay;
@@ -306,10 +305,10 @@ always @(posedge mac_rx_clk) begin
     rx_err_d <= rx_err;
 end
 
-always @(posedge mac_rx_clk) begin
-    fifo_status <= 0;
-end
-assign dbg_fifo_rd = 1'b0;
+// always @(posedge mac_rx_clk) begin
+//     fifo_status <= 0;
+// end
+// assign dbg_fifo_rd = 1'b0;
 
 
 
@@ -317,13 +316,6 @@ reg [1:0] sr_rx_dv_d = 0;
 always @(posedge mac_rx_clk) begin
     sr_rx_dv_d[0] <= rx_dv_d;
     sr_rx_dv_d[1] <= sr_rx_dv_d[0];
-end
-
-// rx channel, status registers during Interframe Gap
-always @(posedge mac_rx_clk) begin
-    if ((rx_dv_d == 1'b0) && (rx_err_d == 1'b0)) begin
-        status[3:0] <= rx_data_d[3:0];
-    end
 end
 
 // rx channel, main rx counter
@@ -371,7 +363,7 @@ always @(posedge mac_rx_clk) begin
 end
 
 
-// rx channel output buffering
+// rx channel output buffering + clipping CRC
 reg [3:0] i;
 localparam [3:0] PIPELINE = 5;
 (* ASYNC_REG = "TRUE" *) reg [7:0] sr_mac_rx_data [PIPELINE-1:0];
@@ -392,39 +384,18 @@ always @(posedge mac_rx_clk) begin
         sr_mac_rx_sof[i+1]   <= sr_mac_rx_sof[i]  ;
     end
 
-    sr_mac_rx_eof   <= mac_rx_eof  ;
+    sr_mac_rx_eof <= mac_rx_eof;
     sr_mac_rx_fr_good <= mac_rx_fr_good & mac_rx_eof;
     sr_mac_rx_fr_bad <= !mac_rx_fr_good & mac_rx_eof;
     sr_mac_rx_fr_err <= mac_rx_fr_err;
-    sr_status   <= status  ;
-    dbg_mac_rx_fr_good <= mac_rx_fr_good;
 
-    mac_rx_data_o  <= sr_mac_rx_data[4]  ;
+    mac_rx_data_o <= sr_mac_rx_data[4];
     mac_rx_valid_o <= sr_mac_rx_valid[4] & sr_mac_rx_valid[0];
-    mac_rx_sof_o   <= sr_mac_rx_sof[4]   ;
-    mac_rx_eof_o   <= sr_mac_rx_eof;
-    mac_rx_fr_good_o <= sr_mac_rx_fr_good;
-    mac_rx_fr_err_o <= sr_mac_rx_fr_err;
-    mac_rx_fr_bad_o <= sr_mac_rx_fr_bad;
-
-    // sr_mac_rx_data[0]  <= mac_rx_data ;
-    // sr_mac_rx_valid[0] <= mac_rx_valid;
-    // sr_mac_rx_sof[0]   <= mac_rx_sof  ;
-
-    // sr_mac_rx_eof   <= mac_rx_eof  ;
-    // sr_mac_rx_fr_good <= mac_rx_fr_good & mac_rx_eof;
-    // sr_mac_rx_fr_err <= mac_rx_fr_err;
-    // sr_status   <= status  ;
-    // dbg_mac_rx_fr_good <= mac_rx_fr_good;
-
-    // mac_rx_data_o  <= sr_mac_rx_data[0] ;
-    // mac_rx_valid_o <= sr_mac_rx_valid[0];
-    // mac_rx_sof_o   <= sr_mac_rx_sof[0]  ;
-    // mac_rx_eof_o   <= sr_mac_rx_eof;
-    // mac_rx_fr_good_o <= sr_mac_rx_fr_good;
-    // mac_rx_fr_err_o <= sr_mac_rx_fr_err;
-
-    // status_o   <= sr_status;
+    mac_rx_sof_o <= sr_mac_rx_sof[4];
+    mac_rx_eof_o <= sr_mac_rx_eof;
+    mac_rx_ok_o <= sr_mac_rx_fr_good;
+    mac_rx_er_o <= sr_mac_rx_fr_err;
+    mac_rx_bd_o <= sr_mac_rx_fr_bad;
 end
 
 assign mac_rx_clk_o = mac_rx_clk;

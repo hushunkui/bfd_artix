@@ -34,9 +34,9 @@ add wave -noupdate /mac_rgmii_tb/mac/mac_rx_data_o
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_valid_o
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_sof_o
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_eof_o
-add wave -noupdate /mac_rgmii_tb/mac/mac_rx_fr_good_o
-add wave -noupdate /mac_rgmii_tb/mac/mac_rx_fr_bad_o
-add wave -noupdate /mac_rgmii_tb/mac/mac_rx_fr_err_o
+add wave -noupdate /mac_rgmii_tb/mac/mac_rx_ok_o
+add wave -noupdate /mac_rgmii_tb/mac/mac_rx_bd_o
+add wave -noupdate /mac_rgmii_tb/mac/mac_rx_er_o
 add wave -noupdate /mac_rgmii_tb/mac/mac_rx_clk_o
 add wave -noupdate /mac_rgmii_tb/mac/mac_tx_data
 add wave -noupdate /mac_rgmii_tb/mac/mac_tx_valid

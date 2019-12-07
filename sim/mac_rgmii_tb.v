@@ -589,10 +589,10 @@ wire       mac_rx_tlast ;
 wire       mac_rx_tuser ;
 
 mac_rgmii mac(
-    .dbg_mac_rx_fr_good(),
-    .dbg_fifo_rd(),
     .status_o(),
-    .fifo_status(),
+    // .dbg_mac_rx_fr_good(),
+    // .dbg_fifo_rd(),
+    // .fifo_status(),
 
     .phy_rxd   (rxd   ),
     .phy_rx_ctl(rx_ctl),
@@ -601,14 +601,14 @@ mac_rgmii mac(
     .phy_tx_ctl(tx_ctl),
     .phy_txc   (txc   ),
 
-    .mac_rx_data_o   (mac_rx_tdata),
-    .mac_rx_valid_o  (mac_rx_tvalid),
-    .mac_rx_sof_o    (),
-    .mac_rx_eof_o    (mac_rx_tlast),
-    .mac_rx_fr_good_o(),
-    .mac_rx_fr_err_o (),
-    .mac_rx_fr_bad_o (mac_rx_tuser),
-    .mac_rx_clk_o    (mac_rx_clk),
+    .mac_rx_data_o  (mac_rx_tdata),
+    .mac_rx_valid_o (mac_rx_tvalid),
+    .mac_rx_sof_o   (),
+    .mac_rx_eof_o   (mac_rx_tlast),
+    .mac_rx_ok_o    (),
+    .mac_rx_bd_o    (mac_rx_tuser),
+    .mac_rx_er_o    (),
+    .mac_rx_clk_o   (mac_rx_clk),
 
     .mac_tx_data (8'd0),
     .mac_tx_valid(1'b0),

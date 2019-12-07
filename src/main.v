@@ -48,10 +48,10 @@ module main #(
 
 wire [63:0] probe;
 
-wire [ETHCOUNT-1:0] mac_rx_fr_good;
-wire [ETHCOUNT-1:0] mac_rx_fr_err;
+wire [ETHCOUNT-1:0] mac_rx_ok;
+wire [ETHCOUNT-1:0] mac_rx_bd;
+wire [ETHCOUNT-1:0] mac_rx_er;
 wire [ETHCOUNT-1:0] mac_rx_fr_good_dbg;
-wire [ETHCOUNT-1:0] mac_rx_fr_bad;
 
 wire [7:0]              mac_rx_tdata [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     mac_rx_tvalid;
@@ -68,7 +68,7 @@ wire [ETHCOUNT-1:0]     mac_tx_tready;
 wire [ETHCOUNT-1:0]     mac_tx_clk;
 wire [ETHCOUNT-1:0]     mac_tx_reset;
 
-wire [3:0] mac_fifo_status [ETHCOUNT-1:0];
+// wire [3:0] mac_fifo_status [ETHCOUNT-1:0];
 wire [3:0] mac_status [ETHCOUNT-1:0];
 
 wire [7:0]              usr_rx_tdata  [ETHCOUNT-1:0];
@@ -247,8 +247,8 @@ endgenerate
 
 mac_rgmii rgmii_0 (
     .status_o(mac_status[0]),
-    .fifo_status(mac_fifo_status[0]),
-    .dbg_fifo_rd(),
+    // .fifo_status(mac_fifo_status[0]),
+    // .dbg_fifo_rd(),
 
     // phy side (RGMII)
     .phy_rxd   (rgmii_rxd   [(0*4) +: 4]),
@@ -259,15 +259,15 @@ mac_rgmii rgmii_0 (
     .phy_txc   (rgmii_txc   [0]         ),
 
     // logic side
-    .mac_rx_data_o   (mac_rx_tdata [0]),
-    .mac_rx_valid_o  (mac_rx_tvalid[0]),
-    .mac_rx_sof_o    (mac_rx_tuser [0]),
-    .mac_rx_eof_o    (mac_rx_tlast [0]),
-    .mac_rx_fr_good_o(mac_rx_fr_good[0]),
-    .mac_rx_fr_err_o (mac_rx_fr_err[0]),
-    .mac_rx_fr_bad_o (mac_rx_fr_bad[0]),
-    .mac_rx_clk_o    (mac_rx_clk[0]),
-    .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[0]),
+    .mac_rx_data_o  (mac_rx_tdata [0]),
+    .mac_rx_valid_o (mac_rx_tvalid[0]),
+    .mac_rx_sof_o   (mac_rx_tuser [0]),
+    .mac_rx_eof_o   (mac_rx_tlast [0]),
+    .mac_rx_ok_o    (mac_rx_ok[0]),
+    .mac_rx_bd_o    (mac_rx_bd[0]),
+    .mac_rx_er_o    (mac_rx_er[0]),
+    .mac_rx_clk_o   (mac_rx_clk[0]),
+    // .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[0]),
 
     .mac_tx_data  (mac_rx_tdata [1]),
     .mac_tx_valid (mac_rx_tvalid[1]),
@@ -281,8 +281,8 @@ mac_rgmii rgmii_0 (
 
 mac_rgmii rgmii_1 (
     .status_o(mac_status[1]),
-    .fifo_status(mac_fifo_status[1]),
-    .dbg_fifo_rd(),
+    // .fifo_status(mac_fifo_status[1]),
+    // .dbg_fifo_rd(),
 
     // phy side (RGMII)
     .phy_rxd   (rgmii_rxd   [(1*4) +: 4]),
@@ -293,15 +293,15 @@ mac_rgmii rgmii_1 (
     .phy_txc   (rgmii_txc   [1]         ),
 
     // logic side
-    .mac_rx_data_o   (mac_rx_tdata [1]),
-    .mac_rx_valid_o  (mac_rx_tvalid[1]),
-    .mac_rx_sof_o    (mac_rx_tuser [1]),
-    .mac_rx_eof_o    (mac_rx_tlast [1]),
-    .mac_rx_fr_good_o(mac_rx_fr_good[1]),
-    .mac_rx_fr_err_o (mac_rx_fr_err[1]),
-    .mac_rx_fr_bad_o (mac_rx_fr_bad[1]),
-    .mac_rx_clk_o    (mac_rx_clk[1]),
-    .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[1]),
+    .mac_rx_data_o  (mac_rx_tdata [1]),
+    .mac_rx_valid_o (mac_rx_tvalid[1]),
+    .mac_rx_sof_o   (mac_rx_tuser [1]),
+    .mac_rx_eof_o   (mac_rx_tlast [1]),
+    .mac_rx_ok_o    (mac_rx_ok[1]),
+    .mac_rx_bd_o    (mac_rx_bd[1]),
+    .mac_rx_er_o    (mac_rx_er[1]),
+    .mac_rx_clk_o   (mac_rx_clk[1]),
+    // .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[1]),
 
     .mac_tx_data  (mac_rx_tdata [0]),
     .mac_tx_valid (mac_rx_tvalid[0]),
@@ -315,8 +315,8 @@ mac_rgmii rgmii_1 (
 
 mac_rgmii rgmii_2 (
     .status_o(mac_status[2]),
-    .fifo_status(mac_fifo_status[2]),
-    .dbg_fifo_rd(),
+    // .fifo_status(mac_fifo_status[2]),
+    // .dbg_fifo_rd(),
 
     // phy side (RGMII)
     .phy_rxd   (rgmii_rxd   [(2*4) +: 4]),
@@ -327,15 +327,15 @@ mac_rgmii rgmii_2 (
     .phy_txc   (rgmii_txc   [2]         ),
 
     // logic side
-    .mac_rx_data_o   (),
-    .mac_rx_valid_o  (),
-    .mac_rx_sof_o    (),
-    .mac_rx_eof_o    (),
-    .mac_rx_fr_good_o(),
-    .mac_rx_fr_err_o (),
-    .mac_rx_fr_bad_o (),
-    .mac_rx_clk_o    (),
-    .dbg_mac_rx_fr_good(),
+    .mac_rx_data_o  (),
+    .mac_rx_valid_o (),
+    .mac_rx_sof_o   (),
+    .mac_rx_eof_o   (),
+    .mac_rx_ok_o    (),
+    .mac_rx_bd_o    (),
+    .mac_rx_er_o    (),
+    .mac_rx_clk_o   (),
+    // .dbg_mac_rx_fr_good(),
 
     .mac_tx_data  (mac_rx_tdata [2]),
     .mac_tx_valid (mac_rx_tvalid[2]),
@@ -347,11 +347,11 @@ mac_rgmii rgmii_2 (
     .rst(~mac_pll_locked)
 );
 
-wire dbg_fifo_rd;
+// wire dbg_fifo_rd;
 mac_rgmii rgmii_3 (
     .status_o(mac_status[3]),
-    .fifo_status(mac_fifo_status[3]),
-    .dbg_fifo_rd(dbg_fifo_rd),
+    // .fifo_status(mac_fifo_status[3]),
+    // .dbg_fifo_rd(dbg_fifo_rd),
 
     // phy side (RGMII)
     .phy_rxd   (rgmii_rxd   [(3*4) +: 4]),
@@ -362,15 +362,15 @@ mac_rgmii rgmii_3 (
     .phy_txc   (rgmii_txc   [3]         ),
 
     // logic side
-    .mac_rx_data_o   (mac_rx_tdata [3]),
-    .mac_rx_valid_o  (mac_rx_tvalid[3]),
-    .mac_rx_sof_o    (mac_rx_tuser [3]),
-    .mac_rx_eof_o    (mac_rx_tlast [3]),
-    .mac_rx_fr_good_o(mac_rx_fr_good[3]),
-    .mac_rx_fr_err_o (mac_rx_fr_err[3]),
-    .mac_rx_fr_bad_o (mac_rx_fr_bad[3]),
-    .mac_rx_clk_o    (mac_rx_clk[3]),
-    .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[3]),
+    .mac_rx_data_o  (mac_rx_tdata [3]),
+    .mac_rx_valid_o (mac_rx_tvalid[3]),
+    .mac_rx_sof_o   (mac_rx_tuser [3]),
+    .mac_rx_eof_o   (mac_rx_tlast [3]),
+    .mac_rx_ok_o    (mac_rx_ok[3]),
+    .mac_rx_bd_o    (mac_rx_bd[3]),
+    .mac_rx_er_o    (mac_rx_er[3]),
+    .mac_rx_clk_o   (mac_rx_clk[3]),
+    // .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[3]),
 
     .mac_tx_data  (0   ),//(mac_rx_axis_tdata [(2*8) +: 8]),
     .mac_tx_valid (1'b0),//(mac_rx_axis_tvalid[2]         ),
@@ -381,8 +381,9 @@ mac_rgmii rgmii_3 (
 
     .rst(~mac_pll_locked)
 );
-// assign eth_link = mac_status[12];
-// assign eth_speed = mac_status[14:13];
+// bit[0] - link
+// bit[1:0] - speed
+//work only if link up 1Gb!!!
 assign mac_rx_nreset[3] = mac_status[3][0] && (mac_status[3][2:1] == 2'b10) && mac_pll_locked;
 
 wire [7:0] test_data;
@@ -396,8 +397,8 @@ test_phy test_phy (
     .mac_rx_valid  (usr_rx_tvalid[3]),//(mac_rx_tvalid[3]         ),
     .mac_rx_sof    (1'b0),//(mac_rx_tuser [3]         ),
     .mac_rx_eof    (usr_rx_tlast[3]),//(mac_rx_tlast [3]         ),
-    .mac_rx_fr_good(1'b1),//(mac_rx_fr_good[3]),
-    .mac_rx_fr_err (1'b0),//(mac_rx_fr_err[3]),
+    .mac_rx_fr_good(1'b1),//(mac_rx_ok[3]),
+    .mac_rx_fr_err (1'b0),//(mac_rx_er[3]),
 
     .start(reg_ctrl[0]),
     .err(test_err),
@@ -441,7 +442,7 @@ eth_mac_ten_100_1g_eth_fifo eth_fifo(
     .rx_axis_mac_tdata  (mac_rx_tdata [3]),//input [7:0]
     .rx_axis_mac_tvalid (mac_rx_tvalid[3]),//input
     .rx_axis_mac_tlast  (mac_rx_tlast [3]),//input
-    .rx_axis_mac_tuser  (mac_rx_fr_bad[3]),//input
+    .rx_axis_mac_tuser  (mac_rx_bd[3]),//input
     .rx_fifo_status     (), //output   [3:0]
     .rx_fifo_overflow   ()  //output
 );
@@ -490,7 +491,7 @@ fpga_test_01 #(
     .p_in_rst   (~mac_pll_locked)
 );
 
-assign dbg_led = led_blink & !test_gpio[0];
+assign dbg_led = led_blink & !test_gpio[0] & test_err;
 
 
 
@@ -504,9 +505,9 @@ generate
                 mac_status[a],
                 mac_rx_nreset[a],
                 mac_rx_cnterr[a],
-                mac_rx_fr_err[a],
-                mac_rx_fr_bad[a],
-                mac_rx_fr_good[a],
+                mac_rx_er[a],
+                mac_rx_bd[a],
+                mac_rx_ok[a],
                 mac_rx_tdata[a],
                 mac_rx_tvalid[a],
                 mac_rx_tuser[a],
@@ -518,13 +519,15 @@ generate
         always @(posedge mac_rx_clk[a]) begin
             if (mac_rx_nreset[a]) begin
                 mac_rx_cnterr[a] <= 0;
-            end else if (mac_rx_fr_bad[a] | mac_rx_fr_err[a]) begin
+            end else if (mac_rx_bd[a] | mac_rx_er[a]) begin
                 mac_rx_cnterr[a] <= mac_rx_cnterr[a] + 1;
             end
         end
 
         ila_0 usr_ila (
             .probe0({
+                test_data,
+                test_err,
                 usr_rx_tdata[a] ,
                 usr_rx_tvalid[a],
                 usr_rx_tlast[a]
