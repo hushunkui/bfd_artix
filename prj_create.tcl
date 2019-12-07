@@ -273,6 +273,15 @@ add_files -norecurse $script_folder/src/mac_crc.v
 add_files -norecurse $script_folder/src/vicg_common_pkg.vhd
 add_files -norecurse $script_folder/src/time_gen.vhd
 add_files -norecurse $script_folder/src/fpga_test_01.vhd
+add_files -norecurse $script_folder/src/sata_scrambler.vhd
+add_files -norecurse $script_folder/src/test_rx.v
+add_files -norecurse $script_folder/src/test_tx.v
+add_files -norecurse $script_folder/src/test_phy.v
+add_files -norecurse $script_folder/src/tmp/eth_mac_bram_tdp.v
+add_files -norecurse $script_folder/src/tmp/eth_mac_sync_block.v
+add_files -norecurse $script_folder/src/tmp/eth_mac_rx_client_fifo.v
+add_files -norecurse $script_folder/src/tmp/eth_mac_tx_client_fifo.v
+add_files -norecurse $script_folder/src/tmp/eth_mac_ten_100_1g_eth_fifo.v
 add_files -norecurse $script_folder/src/core_gen/eth_mac/eth_mac.xci
 add_files -norecurse $script_folder/src/core_gen/clk25_wiz0/clk25_wiz0.xci
 add_files -norecurse $script_folder/src/core_gen/ila_0/ila_0.xci

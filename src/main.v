@@ -1,6 +1,7 @@
 
-
-
+//
+// author: Golovachenko Viktor
+//
 `timescale 1ns / 1ps
 
 module main #(
@@ -57,7 +58,7 @@ wire [ETHCOUNT-1:0]     mac_rx_tvalid;
 wire [ETHCOUNT-1:0]     mac_rx_tlast ;
 wire [ETHCOUNT-1:0]     mac_rx_tuser ;
 wire [ETHCOUNT-1:0]     mac_rx_clk;
-wire [ETHCOUNT-1:0]     mac_rx_reset;
+wire [ETHCOUNT-1:0]     mac_rx_nreset;
 
 wire [(ETHCOUNT*8)-1:0] mac_tx_tdata ;// = 0;
 wire [ETHCOUNT-1:0]     mac_tx_tvalid;// = 0;
@@ -69,6 +70,10 @@ wire [ETHCOUNT-1:0]     mac_tx_reset;
 
 wire [(ETHCOUNT*4)-1:0] mac_fifo_status;
 wire [(ETHCOUNT*4)-1:0] mac_status;
+
+wire [7:0] usr_rx_tdata ;
+wire       usr_rx_tvalid;
+wire       usr_rx_tlast ;
 
 wire mac_gtx_clk;
 wire mac_gtx_clk90;
@@ -384,12 +389,12 @@ test_phy test_phy (
     .mac_tx_sof   (mac_rx_tuser [2]         ),
     .mac_tx_eof   (mac_rx_tlast [2]         ),
 
-    .mac_rx_data   (mac_rx_tdata [(3*8) +: 8]),
-    .mac_rx_valid  (mac_rx_tvalid[3]         ),
-    .mac_rx_sof    (mac_rx_tuser [3]         ),
-    .mac_rx_eof    (mac_rx_tlast [3]         ),
-    .mac_rx_fr_good(mac_rx_fr_good[3]),
-    .mac_rx_fr_err (mac_rx_fr_err[3]),
+    .mac_rx_data   (usr_rx_tdata),//(mac_rx_tdata [(3*8) +: 8]),
+    .mac_rx_valid  (usr_rx_tvalid),//(mac_rx_tvalid[3]         ),
+    .mac_rx_sof    (1'b0),//(mac_rx_tuser [3]         ),
+    .mac_rx_eof    (usr_rx_tlast),//(mac_rx_tlast [3]         ),
+    .mac_rx_fr_good(1'b1),//(mac_rx_fr_good[3]),
+    .mac_rx_fr_err (1'b0),//(mac_rx_fr_err[3]),
 
     .start(reg_ctrl[0]),
     .err(test_err),
@@ -397,6 +402,45 @@ test_phy test_phy (
 
     .clk(mac_gtx_clk),
     .rst(~mac_pll_locked)
+);
+
+eth_mac_ten_100_1g_eth_fifo eth_fifo(
+    //USER IF
+    .tx_fifo_aclk       (mac_gtx_clk  ), //input
+    .tx_fifo_resetn     (mac_pll_locked  ), //input
+    .tx_axis_fifo_tdata (8'd0),//(usr_tx_tdata ), //input [7:0]
+    .tx_axis_fifo_tvalid(1'b0),//(usr_tx_tvalid), //input
+    .tx_axis_fifo_tlast (1'b0),//(usr_tx_tlast ), //input
+    .tx_axis_fifo_tready(), //output
+
+    .rx_fifo_aclk       (mac_gtx_clk  ), //input
+    .rx_fifo_resetn     (mac_pll_locked  ), //input
+    .rx_axis_fifo_tdata (usr_rx_tdata ), //output [7:0]
+    .rx_axis_fifo_tvalid(usr_rx_tvalid), //output
+    .rx_axis_fifo_tlast (usr_rx_tlast ), //output
+    .rx_axis_fifo_tready(1'b1), //input
+
+    //MAC IF
+    .tx_mac_aclk        (mac_gtx_clk  ), //input
+    .tx_mac_resetn      (mac_pll_locked  ), //input
+    .tx_axis_mac_tdata  (),//(mac_tx_tdata ), //output [7:0]
+    .tx_axis_mac_tvalid (),//(mac_tx_tvalid), //output
+    .tx_axis_mac_tlast  (),//(mac_tx_tlast ), //output
+    .tx_axis_mac_tready (1'b1),//(mac_tx_tready), //input
+    .tx_axis_mac_tuser  (),//(mac_tx_tuser ), //output
+    .tx_fifo_overflow   (), //output
+    .tx_fifo_status     (), //output   [3:0]
+    .tx_collision       (1'b0), //input
+    .tx_retransmit      (1'b0), //input
+
+    .rx_mac_aclk        (mac_rx_clk[3]   ), //input
+    .rx_mac_resetn      (1'b1),//(mac_rx_nreset[3]), //input
+    .rx_axis_mac_tdata  (mac_rx_tdata [(3*8) +: 8]),//(mac_rx_tdata ), //input [7:0]
+    .rx_axis_mac_tvalid (mac_rx_tvalid[3]         ),//(mac_rx_tvalid), //input
+    .rx_axis_mac_tlast  (mac_rx_tlast [3]         ),//(mac_rx_tlast ), //input
+    .rx_axis_mac_tuser  (mac_rx_fr_bad[3]         ),//(mac_rx_tuser ), //input
+    .rx_fifo_status     (), //output   [3:0]
+    .rx_fifo_overflow   ()  //output
 );
 
 
@@ -419,12 +463,11 @@ assign dbg_out[1] = clk20_div | sysclk25_div &
                     |mac_rx_tvalid &
                     |mac_rx_tlast &
                     |mac_rx_tuser &
-                    |mac_rx_reset &
                     |mac_tx_tready &
                     |mac_tx_clk &
                     |mac_tx_reset
                     ;
-
+                    // |mac_rx_reset &
 // assign dbg_led = 1'b0;
 
 wire led_blink;
@@ -573,6 +616,18 @@ assign dbg_led = led_blink & !test_gpio[0];
     //     mac0_rx_axis_fr_err
     // }),\
 
+ila_0 dbg_ila (
+    .probe0({
+        mac_rx_fr_err[3],
+        mac_rx_fr_bad[3],
+        mac_rx_fr_good[3],
+        mac_rx_tdata[31:24],
+        mac_rx_tvalid[3],
+        mac_rx_tuser[3],
+        mac_rx_tlast[3]
+    }),
+    .clk(mac_rx_clk[3]) //(mac_gtx_clk) //
+);
 
 endmodule
 
