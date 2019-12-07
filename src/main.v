@@ -71,9 +71,9 @@ wire [ETHCOUNT-1:0]     mac_tx_reset;
 wire [(ETHCOUNT*4)-1:0] mac_fifo_status;
 wire [(ETHCOUNT*4)-1:0] mac_status;
 
-wire [7:0] usr_rx_tdata ;
-wire       usr_rx_tvalid;
-wire       usr_rx_tlast ;
+wire [(ETHCOUNT*8)-1:0] usr_rx_tdata ;
+wire [ETHCOUNT-1:0]     usr_rx_tvalid;
+wire [ETHCOUNT-1:0]     usr_rx_tlast ;
 
 wire mac_gtx_clk;
 wire mac_gtx_clk90;
@@ -381,6 +381,9 @@ mac_rgmii rgmii_3 (
 
     .rst(~mac_pll_locked)
 );
+// assign eth_link = mac_status[12];
+// assign eth_speed = mac_status[14:13];
+assign mac_rx_nreset[3] = mac_status[12] && (mac_status[14:13] == 2'b10) && !mac_pll_locked;
 
 wire [7:0] test_data;
 test_phy test_phy (
@@ -389,10 +392,10 @@ test_phy test_phy (
     .mac_tx_sof   (mac_rx_tuser [2]         ),
     .mac_tx_eof   (mac_rx_tlast [2]         ),
 
-    .mac_rx_data   (usr_rx_tdata),//(mac_rx_tdata [(3*8) +: 8]),
-    .mac_rx_valid  (usr_rx_tvalid),//(mac_rx_tvalid[3]         ),
+    .mac_rx_data   (usr_rx_tdata [(3*8) +: 8]),//(mac_rx_tdata [(3*8) +: 8]),
+    .mac_rx_valid  (usr_rx_tvalid[3]         ),//(mac_rx_tvalid[3]         ),
     .mac_rx_sof    (1'b0),//(mac_rx_tuser [3]         ),
-    .mac_rx_eof    (usr_rx_tlast),//(mac_rx_tlast [3]         ),
+    .mac_rx_eof    (usr_rx_tlast[3]          ),//(mac_rx_tlast [3]         ),
     .mac_rx_fr_good(1'b1),//(mac_rx_fr_good[3]),
     .mac_rx_fr_err (1'b0),//(mac_rx_fr_err[3]),
 
@@ -415,9 +418,9 @@ eth_mac_ten_100_1g_eth_fifo eth_fifo(
 
     .rx_fifo_aclk       (mac_gtx_clk  ), //input
     .rx_fifo_resetn     (mac_pll_locked  ), //input
-    .rx_axis_fifo_tdata (usr_rx_tdata ), //output [7:0]
-    .rx_axis_fifo_tvalid(usr_rx_tvalid), //output
-    .rx_axis_fifo_tlast (usr_rx_tlast ), //output
+    .rx_axis_fifo_tdata (usr_rx_tdata [(3*8) +: 8]), //output [7:0]
+    .rx_axis_fifo_tvalid(usr_rx_tvalid[3]         ), //output
+    .rx_axis_fifo_tlast (usr_rx_tlast [3]         ), //output
     .rx_axis_fifo_tready(1'b1), //input
 
     //MAC IF
@@ -434,7 +437,7 @@ eth_mac_ten_100_1g_eth_fifo eth_fifo(
     .tx_retransmit      (1'b0), //input
 
     .rx_mac_aclk        (mac_rx_clk[3]   ), //input
-    .rx_mac_resetn      (1'b1),//(mac_rx_nreset[3]), //input
+    .rx_mac_resetn      (mac_rx_nreset[3]), //(1'b1),// //input
     .rx_axis_mac_tdata  (mac_rx_tdata [(3*8) +: 8]),//(mac_rx_tdata ), //input [7:0]
     .rx_axis_mac_tvalid (mac_rx_tvalid[3]         ),//(mac_rx_tvalid), //input
     .rx_axis_mac_tlast  (mac_rx_tlast [3]         ),//(mac_rx_tlast ), //input
@@ -616,18 +619,47 @@ assign dbg_led = led_blink & !test_gpio[0];
     //     mac0_rx_axis_fr_err
     // }),\
 
-ila_0 dbg_ila (
-    .probe0({
-        mac_rx_fr_err[3],
-        mac_rx_fr_bad[3],
-        mac_rx_fr_good[3],
-        mac_rx_tdata[31:24],
-        mac_rx_tvalid[3],
-        mac_rx_tuser[3],
-        mac_rx_tlast[3]
-    }),
-    .clk(mac_rx_clk[3]) //(mac_gtx_clk) //
-);
+reg [31:0] mac_rx_cnterr [ETHCOUNT-1:0];
+wire [7:0] mac_rx_data [ETHCOUNT-1:0];
+wire [7:0] usr_rx_data [ETHCOUNT-1:0];
+genvar a;
+generate
+    for (a=3; a < ETHCOUNT; a=a+1)  begin : cnterr
+        assign mac_rx_data[a] = mac_rx_tdata[(a*8):+ 8];
+        ila_0 mac_ila (
+            .probe0({
+                mac_rx_cnterr[a],
+                mac_rx_fr_err[a],
+                mac_rx_fr_bad[a],
+                mac_rx_fr_good[a],
+                mac_rx_data[a],
+                mac_rx_tvalid[a],
+                mac_rx_tuser[a],
+                mac_rx_tlast[a]
+            }),
+            .clk(mac_rx_clk[a])
+        );
+
+        always @(posedge mac_rx_clk[a]) begin
+            if (mac_rx_nreset[a]) begin
+                mac_rx_cnterr[a] <= 0;
+            end else if (mac_rx_fr_bad[a] | mac_rx_fr_err[a]) begin
+                mac_rx_cnterr[a] <= mac_rx_cnterr[a] + 1;
+            end
+        end
+
+        assign usr_rx_data[a] = usr_rx_tdata[(a*8):+ 8];
+        ila_0 usr_ila (
+            .probe0({
+                usr_rx_data[a] ,
+                usr_rx_tvalid[a],
+                usr_rx_tlast[a]
+            }),
+            .clk(mac_gtx_clk)
+        );
+    end
+endgenerate
+
 
 endmodule
 
