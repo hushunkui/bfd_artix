@@ -114,6 +114,9 @@ proc convert_fpga_reg_v_2_fpga_reg_h {} {
     close $wfile
 }
 
+
+set_param general.maxThreads 4
+
 # Comment out this line to prevent the process from automatically executing when the file is sourced:
 generateFirmwareRevisionUpdate
 
