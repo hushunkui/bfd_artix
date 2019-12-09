@@ -339,7 +339,6 @@ add_files -norecurse $script_folder/src/mac_fifo_sync_block.v
 add_files -norecurse $script_folder/src/mac_fifo_rx.v
 add_files -norecurse $script_folder/src/mac_fifo_tx.v
 add_files -norecurse $script_folder/src/mac_fifo.v
-add_files -norecurse $script_folder/src/core_gen/eth_mac/eth_mac.xci
 add_files -norecurse $script_folder/src/core_gen/clk25_wiz0/clk25_wiz0.xci
 add_files -norecurse $script_folder/src/core_gen/ila_0/ila_0.xci
 add_files -norecurse $script_folder/src/core_gen/aurora_rx_fifo/aurora_rx_fifo.xci
