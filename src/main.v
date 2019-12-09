@@ -40,6 +40,14 @@ module main #(
 //    input mgt_ext_clk125_n,
 //    input mgt_clk125_p,
 //    input mgt_clk125_n,
+
+    input [0:0] aurora_gt_rx_rxn,
+    input [0:0] aurora_gt_rx_rxp,
+    output [0:0] aurora_gt_tx_txn,
+    output [0:0] aurora_gt_tx_txp,
+    input aurora_gt_refclk_clk_n,
+    input aurora_gt_refclk_clk_p,
+
     input clk20_p,
     input clk20_n,
 
@@ -94,6 +102,31 @@ wire mac_gtx_clk90;
 
 // wire [31:0] firmware_date;
 // wire [31:0] firmware_time;
+
+wire [0:15]aurora_axi_rx_tdata;
+wire [0:1]aurora_axi_rx_tkeep;
+wire aurora_axi_rx_tlast;
+wire aurora_axi_rx_tvalid;
+wire [0:15]aurora_axi_tx_tdata;
+wire [0:1]aurora_axi_tx_tkeep;
+wire aurora_axi_tx_tlast;
+wire aurora_axi_tx_tready;
+wire aurora_axi_tx_tvalid;
+wire aurora_gt_rst;
+wire aurora_status_channel_up;
+wire aurora_status_frame_err;
+wire aurora_status_hard_err;
+wire [0:0]aurora_status_lane_up;
+wire aurora_status_pll_not_locked_out;
+wire aurora_status_rx_resetdone_out;
+wire aurora_status_soft_err;
+wire aurora_status_tx_lock;
+wire aurora_status_tx_resetdone_out;
+wire aurora_sysrst;
+wire aurora_usr_clk;
+
+wire [31:0] aurora_fifo_di;
+wire [31:0] aurora_fifo_do;
 
 wire [31:0] M_AXI_0_awaddr ;
 wire [2:0]  M_AXI_0_awprot ;
@@ -153,6 +186,34 @@ clk25_wiz0 pll0(
 );
 
 system system_i(
+    .aurora_gt_refclk_clk_n(aurora_gt_refclk_clk_n),
+    .aurora_gt_refclk_clk_p(aurora_gt_refclk_clk_p),
+    .aurora_gt_rst(1'b0), //(aurora_gt_rst),
+    .aurora_gt_rx_rxn(aurora_gt_rx_rxn),
+    .aurora_gt_rx_rxp(aurora_gt_rx_rxp),
+    .aurora_gt_tx_txn(aurora_gt_tx_txn),
+    .aurora_gt_tx_txp(aurora_gt_tx_txp),
+    .aurora_axi_rx_tdata(aurora_axi_rx_tdata), //output
+    .aurora_axi_rx_tkeep(aurora_axi_rx_tkeep), //output
+    .aurora_axi_rx_tvalid(aurora_axi_rx_tvalid),//output
+    .aurora_axi_rx_tlast(aurora_axi_rx_tlast), //output
+    .aurora_axi_tx_tready(aurora_axi_tx_tready),//output
+    .aurora_axi_tx_tdata(aurora_axi_tx_tdata), //input
+    .aurora_axi_tx_tkeep(aurora_axi_tx_tkeep), //input
+    .aurora_axi_tx_tvalid(aurora_axi_tx_tvalid), //input
+    .aurora_axi_tx_tlast(aurora_axi_tx_tlast), //input
+    .aurora_status_channel_up(), //(aurora_status_channel_up),
+    .aurora_status_frame_err(), //(aurora_status_frame_err),
+    .aurora_status_hard_err(), //(aurora_status_hard_err),
+    .aurora_status_lane_up(), //(aurora_status_lane_up),
+    .aurora_status_pll_not_locked_out(), //(aurora_status_pll_not_locked_out),
+    .aurora_status_rx_resetdone_out(), //(aurora_status_rx_resetdone_out),
+    .aurora_status_soft_err(), //(aurora_status_soft_err),
+    .aurora_status_tx_lock(), //(aurora_status_tx_lock),
+    .aurora_status_tx_resetdone_out(), //(aurora_status_tx_resetdone_out),
+    .aurora_sysrst(aurora_sysrst),
+    .aurora_usr_clk(aurora_usr_clk),
+
     .M_AXI_0_awaddr  (M_AXI_0_awaddr ),
     .M_AXI_0_awprot  (M_AXI_0_awprot ),
     .M_AXI_0_awready (M_AXI_0_awready),
@@ -210,6 +271,83 @@ usr_logic #(
     .s_axi_resetn (mac_pll_locked),
     .s_axi_clk (mac_gtx_clk)
 );
+
+assign aurora_fifo_di[0] = aurora_axi_rx_tdata[0];
+assign aurora_fifo_di[1] = aurora_axi_rx_tdata[1];
+assign aurora_fifo_di[2] = aurora_axi_rx_tdata[2];
+assign aurora_fifo_di[3] = aurora_axi_rx_tdata[3];
+assign aurora_fifo_di[4] = aurora_axi_rx_tdata[4];
+assign aurora_fifo_di[5] = aurora_axi_rx_tdata[5];
+assign aurora_fifo_di[6] = aurora_axi_rx_tdata[6];
+assign aurora_fifo_di[7] = aurora_axi_rx_tdata[7];
+assign aurora_fifo_di[8] = aurora_axi_rx_tdata[8];
+assign aurora_fifo_di[9] = aurora_axi_rx_tdata[9];
+assign aurora_fifo_di[10] = aurora_axi_rx_tdata[10];
+assign aurora_fifo_di[11] = aurora_axi_rx_tdata[11];
+assign aurora_fifo_di[12] = aurora_axi_rx_tdata[12];
+assign aurora_fifo_di[13] = aurora_axi_rx_tdata[13];
+assign aurora_fifo_di[14] = aurora_axi_rx_tdata[14];
+assign aurora_fifo_di[15] = aurora_axi_rx_tdata[15];
+assign aurora_fifo_di[16] = aurora_axi_rx_tkeep[0];
+assign aurora_fifo_di[17] = aurora_axi_rx_tkeep[1];
+assign aurora_fifo_di[18] = aurora_axi_rx_tlast;
+assign aurora_fifo_di[19] = aurora_axi_rx_tvalid;
+assign aurora_fifo_di[31:20] = 0;
+aurora_rx_fifo aurora_rx_fifo (
+    .din   (aurora_fifo_di),                 // input wire [31 : 0] din
+    .wr_en (aurora_axi_rx_tvalid),
+    .wr_clk(aurora_usr_clk),
+
+    .dout  (aurora_usr_data),                // output wire [15 : 0] dout
+    .rd_en (~aurora_rx_fifo_empty),
+    .rd_clk(mac_gtx_clk),
+
+    .full(aurora_rx_fifo_full),
+    .empty(aurora_rx_fifo_empty),
+    .wr_rst_busy(),
+    .rd_rst_busy(),
+
+    .rst(rst)
+);
+
+aurora_tx_fifo aurora_tx_fifo (
+    .din   (aurora_usr_data),                 // input wire [15 : 0] din
+    .wr_en (~aurora_rx_fifo_empty),
+    .wr_clk(mac_gtx_clk),
+
+    .dout  (aurora_fifo_do),                // output wire [31 : 0] dout
+    .rd_en (~aurora_tx_empty & aurora_axi_tx_tready),
+    .rd_clk(aurora_usr_clk),
+
+    .full(aurora_tx_full),
+    .empty(aurora_tx_empty),
+    .wr_rst_busy(),
+    .rd_rst_busy(),
+
+    .rst(rst)
+);
+    // .aurora_axi_tx_tready(aurora_axi_tx_tready),//output
+assign aurora_axi_tx_tdata[0]  = aurora_fifo_do[0] ;
+assign aurora_axi_tx_tdata[1]  = aurora_fifo_do[1] ;
+assign aurora_axi_tx_tdata[2]  = aurora_fifo_do[2] ;
+assign aurora_axi_tx_tdata[3]  = aurora_fifo_do[3] ;
+assign aurora_axi_tx_tdata[4]  = aurora_fifo_do[4] ;
+assign aurora_axi_tx_tdata[5]  = aurora_fifo_do[5] ;
+assign aurora_axi_tx_tdata[6]  = aurora_fifo_do[6] ;
+assign aurora_axi_tx_tdata[7]  = aurora_fifo_do[7] ;
+assign aurora_axi_tx_tdata[8]  = aurora_fifo_do[8] ;
+assign aurora_axi_tx_tdata[9]  = aurora_fifo_do[9] ;
+assign aurora_axi_tx_tdata[10] = aurora_fifo_do[10];
+assign aurora_axi_tx_tdata[11] = aurora_fifo_do[11];
+assign aurora_axi_tx_tdata[12] = aurora_fifo_do[12];
+assign aurora_axi_tx_tdata[13] = aurora_fifo_do[13];
+assign aurora_axi_tx_tdata[14] = aurora_fifo_do[14];
+assign aurora_axi_tx_tdata[15] = aurora_fifo_do[15];
+assign aurora_axi_tx_tkeep[0] = aurora_fifo_do[16];
+assign aurora_axi_tx_tkeep[1] = aurora_fifo_do[17];
+assign aurora_axi_tx_tlast = aurora_fifo_do[18];
+assign aurora_axi_rx_tvalid = ~aurora_tx_empty;
+
 
 assign mgt_pwr_en = 1'b1;
 
@@ -341,7 +479,8 @@ test_phy test_phy (
 );
 
 
-eth_mac_ten_100_1g_eth_fifo eth_fifo(
+// eth_mac_ten_100_1g_eth_fifo eth_fifo(
+mac_fifo eth_fifo(
     //USER IF
     .tx_fifo_aclk       (mac_gtx_clk  ), //input
     .tx_fifo_resetn     (mac_pll_locked  ), //input
