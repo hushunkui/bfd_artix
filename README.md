@@ -23,3 +23,5 @@
 * `pwd`
 * `cd d:/Work/xxx/BFD/artix`
 * `write_bd_tcl -force -no_ip_version ./prj_create.tcl`
+* `set_param general.maxThreads 8`
+* `set_property {STEPS.PLACE_DESIGN.ARGS.MORE OPTIONS} {set_param general.maxThreads 8} [get_runs impl_1]`

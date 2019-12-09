@@ -10,6 +10,10 @@ set_property PACKAGE_PIN D10 [get_ports {dbg_out[1]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {dbg_out[0]}]
 set_property IOSTANDARD LVCMOS33 [get_ports {dbg_out[1]}]
 
+set_property PACKAGE_PIN D6 [get_ports aurora_gt_refclk_clk_p]
+set_property PACKAGE_PIN D2 [get_ports {aurora_gt_tx_txp[0]}]
+#set_property PACKAGE_PIN B2 [get_ports {aurora_gt_tx_txp[1]}]
+
 set_property PACKAGE_PIN T14 [get_ports sysclk25]
 set_property IOSTANDARD LVCMOS33 [get_ports sysclk25]
 create_clock -period 40.000 -name sysclk25 -waveform {0.000 20.000} [get_ports sysclk25]
