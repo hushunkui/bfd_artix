@@ -601,7 +601,7 @@ wire [7:0] mac_tx_tdata ;
 wire       mac_tx_tvalid;
 wire       mac_tx_tlast ;
 wire       mac_tx_tready;
-wire [1:0] mac_tx_tuser ;
+wire       mac_tx_tuser ;
 
 wire [7:0] mac_rx_tdata ;
 wire       mac_rx_tvalid;

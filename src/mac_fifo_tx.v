@@ -55,7 +55,7 @@ module mac_fifo_tx # (
    output reg       tx_axis_mac_tvalid,
    output reg       tx_axis_mac_tlast,
    input            tx_axis_mac_tready,
-   output reg [1:0] tx_axis_mac_tuser,
+   output reg       tx_axis_mac_tuser,
 
    // FIFO status and overflow indication,
    // synchronous to write-side (tx_user_aclk) interface
@@ -776,13 +776,10 @@ always @(posedge tx_mac_aclk)
 begin
     if (rd_nxt_state == FRAME_s || rd_nxt_state == DATA_PRELOAD2_s) begin
         tx_axis_mac_tvalid <= 1'b1;
-        tx_axis_mac_tuser[1] <= 1'b1;
     end else if (rd_nxt_state == RETRANSMIT_ERR_s || rd_nxt_state == DROP_ERR_s) begin
         tx_axis_mac_tvalid <= 1'b1;
-        tx_axis_mac_tuser[1] <= 1'b0;
     end else
     begin
-        tx_axis_mac_tuser[1] <= 1'b0;
         case (rd_state)
             START_DATA1_s :
             tx_axis_mac_tvalid <= 1'b1;
@@ -852,16 +849,16 @@ assign tx_axis_mac_tuser_int_retransmit = (rd_nxt_state == RETRANSMIT_s) ?
 always @(posedge tx_mac_aclk)
 begin
     if (rd_nxt_state == RETRANSMIT_ERR_s || rd_nxt_state == DROP_ERR_s)
-        tx_axis_mac_tuser[0] <= 1'b1;
+        tx_axis_mac_tuser <= 1'b1;
     else
     begin
         case (rd_state)
             DROP_ERR_s :
-            tx_axis_mac_tuser[0] <= tx_axis_mac_tuser_int_droperr;
+            tx_axis_mac_tuser <= tx_axis_mac_tuser_int_droperr;
             RETRANSMIT_ERR_s :
-            tx_axis_mac_tuser[0] <= tx_axis_mac_tuser_int_retransmit;
+            tx_axis_mac_tuser <= tx_axis_mac_tuser_int_retransmit;
             default :
-            tx_axis_mac_tuser[0] <= 1'b0;
+            tx_axis_mac_tuser <= 1'b0;
         endcase
     end
 end

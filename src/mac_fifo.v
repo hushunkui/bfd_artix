@@ -18,7 +18,7 @@ module mac_fifo # (
     output            tx_axis_mac_tvalid,
     output            tx_axis_mac_tlast,
     input             tx_axis_mac_tready,
-    output   [1:0]    tx_axis_mac_tuser,
+    output            tx_axis_mac_tuser,
     // tx FIFO status outputs
     output            tx_fifo_overflow,
     output   [3:0]    tx_fifo_status,
