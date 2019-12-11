@@ -513,10 +513,17 @@ task SendTestPKT;
     end
 endtask
 
+reg [7:0] usr_tx_tdata = 0;
+reg       usr_tx_tvalid = 1'b0;
+reg       usr_tx_tlast = 1'b0;
 reg rst = 1'b0;
 initial begin
     // $dumpfile("icarus/dump.fst");
     // $dumpvars;
+
+    usr_tx_tdata = 0;
+    usr_tx_tvalid = 1'b0;
+    usr_tx_tlast = 1'b0;
 
     rst = 1'b0;
     #500;
@@ -536,6 +543,23 @@ initial begin
     #100;
     SendTestPacket(48'hAAAA_FFFF_BBBB, 48'h0102_0304_0506, 1'b1);
     #100;
+
+    @(posedge rxc);
+    usr_tx_tdata = 0;
+    usr_tx_tvalid = 1'b1;
+    usr_tx_tlast = 1'b0;
+    repeat (64) begin
+        @(posedge rxc);
+        usr_tx_tdata = 0;
+        usr_tx_tvalid = 1'b1;
+        usr_tx_tlast = 1'b0;
+    end
+    @(posedge rxc);
+    usr_tx_tvalid = 1'b1;
+    usr_tx_tlast = 1'b1;
+    @(posedge rxc);
+    usr_tx_tvalid = 1'b0;
+    usr_tx_tlast = 1'b0;
 
     #30_000;
     SendGVCP_Ack();
@@ -569,10 +593,6 @@ wire txc;
 wire tx_ctl;
 wire [3:0] txd;
 
-reg [7:0] usr_tx_tdata = 0;
-reg       usr_tx_tvalid = 1'b0;
-reg       usr_tx_tlast = 1'b0;
-
 wire [7:0] usr_rx_tdata;
 wire       usr_rx_tvalid;
 wire       usr_rx_tlast;
@@ -581,7 +601,7 @@ wire [7:0] mac_tx_tdata ;
 wire       mac_tx_tvalid;
 wire       mac_tx_tlast ;
 wire       mac_tx_tready;
-wire       mac_tx_tuser ;
+wire [1:0] mac_tx_tuser ;
 
 wire [7:0] mac_rx_tdata ;
 wire       mac_rx_tvalid;
@@ -642,7 +662,7 @@ mac_fifo eth_fifo(
     .tx_axis_mac_tdata  (mac_tx_tdata ), //output [7:0]
     .tx_axis_mac_tvalid (mac_tx_tvalid), //output
     .tx_axis_mac_tlast  (mac_tx_tlast ), //output
-    .tx_axis_mac_tready (mac_tx_tready), //input
+    .tx_axis_mac_tready (1'b1),//(mac_tx_tready), //input
     .tx_axis_mac_tuser  (mac_tx_tuser ), //output
     .tx_fifo_overflow   (), //output
     .tx_fifo_status     (), //output   [3:0]
