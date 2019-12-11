@@ -214,8 +214,12 @@ proc create_root_design { parentCell } {
    CONFIG.PROTOCOL {AXI4LITE} \
    ] $M_AXI_0
   set aurora_axi_rx [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:axis_rtl:1.0 aurora_axi_rx ]
+  set_property -dict [ list \
+   CONFIG.FREQ_HZ {156250000} \
+   ] $aurora_axi_rx
   set aurora_axi_tx [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:axis_rtl:1.0 aurora_axi_tx ]
   set_property -dict [ list \
+   CONFIG.FREQ_HZ {156250000} \
    CONFIG.HAS_TKEEP {1} \
    CONFIG.HAS_TLAST {1} \
    CONFIG.HAS_TREADY {1} \
@@ -245,8 +249,9 @@ proc create_root_design { parentCell } {
   set aurora_sysrst [ create_bd_port -dir O -type rst aurora_sysrst ]
   set aurora_usr_clk [ create_bd_port -dir O -type clk aurora_usr_clk ]
   set_property -dict [ list \
-   CONFIG.ASSOCIATED_BUSIF {aurora_axi_rx:aurora_axi_tx} \
+   CONFIG.ASSOCIATED_BUSIF {aurora_axi_tx:aurora_axi_rx} \
    CONFIG.ASSOCIATED_RESET {aurora_sysrst} \
+   CONFIG.FREQ_HZ {156250000} \
  ] $aurora_usr_clk
 
   # Create instance: aurora_8b10b_0, and set properties
