@@ -602,6 +602,7 @@ wire       mac_tx_tvalid;
 wire       mac_tx_tlast ;
 wire       mac_tx_tready;
 wire       mac_tx_tuser ;
+wire       mac_tx_sof ;
 
 wire [7:0] mac_rx_tdata ;
 wire       mac_rx_tvalid;
@@ -664,6 +665,7 @@ mac_fifo eth_fifo(
     .tx_axis_mac_tlast  (mac_tx_tlast ), //output
     .tx_axis_mac_tready (1'b1),//(mac_tx_tready), //input
     .tx_axis_mac_tuser  (mac_tx_tuser ), //output
+    .tx_axis_mac_sof    (mac_tx_sof ), //output
     .tx_fifo_overflow   (), //output
     .tx_fifo_status     (), //output   [3:0]
     .tx_collision       (), //input

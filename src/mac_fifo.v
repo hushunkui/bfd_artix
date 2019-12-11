@@ -19,6 +19,7 @@ module mac_fifo # (
     output            tx_axis_mac_tlast,
     input             tx_axis_mac_tready,
     output            tx_axis_mac_tuser,
+    output            tx_axis_mac_sof,
     // tx FIFO status outputs
     output            tx_fifo_overflow,
     output   [3:0]    tx_fifo_status,
@@ -70,6 +71,12 @@ mac_fifo_tx # (
     .tx_collision       (tx_collision),
     .tx_retransmit      (tx_retransmit)
 );
+
+reg sr_tx_axis_mac_tvalid = 1'b0;
+always @(posedge tx_mac_aclk) begin
+    sr_tx_axis_mac_tvalid <= tx_axis_mac_tvalid;
+end
+assign tx_axis_mac_sof = !sr_tx_axis_mac_tvalid & tx_axis_mac_tvalid;
 
 mac_fifo_rx rx_fifo_i
 (

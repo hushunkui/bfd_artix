@@ -52,6 +52,19 @@ add wave -noupdate /mac_rgmii_tb/mac/mac_tx_clk
 add wave -noupdate /mac_rgmii_tb/mac/phy_txd
 add wave -noupdate /mac_rgmii_tb/mac/phy_tx_ctl
 add wave -noupdate /mac_rgmii_tb/mac/phy_txc
+add wave -noupdate /mac_rgmii_tb/usr_tx_tdata
+add wave -noupdate /mac_rgmii_tb/usr_tx_tlast
+add wave -noupdate /mac_rgmii_tb/usr_tx_tvalid
+add wave -noupdate /mac_rgmii_tb/eth_fifo/tx_fifo_i/tx_fifo_aclk
+add wave -noupdate -color {Slate Blue} -itemcolor Gold /mac_rgmii_tb/eth_fifo/tx_fifo_i/wr_state
+add wave -noupdate /mac_rgmii_tb/eth_fifo/tx_fifo_i/tx_mac_aclk
+add wave -noupdate -color {Slate Blue} -itemcolor Gold /mac_rgmii_tb/eth_fifo/tx_fifo_i/rd_state
+add wave -noupdate /mac_rgmii_tb/eth_fifo/tx_axis_mac_tready
+add wave -noupdate /mac_rgmii_tb/eth_fifo/tx_axis_mac_tdata
+add wave -noupdate /mac_rgmii_tb/eth_fifo/tx_axis_mac_tvalid
+add wave -noupdate /mac_rgmii_tb/mac_tx_sof
+add wave -noupdate /mac_rgmii_tb/eth_fifo/tx_axis_mac_tlast
+add wave -noupdate /mac_rgmii_tb/eth_fifo/tx_axis_mac_tuser
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {0 ps} 0}
 quietly wave cursor active 0
@@ -69,4 +82,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {2032500 ps} {15682500 ps}
+WaveRestoreZoom {12320414 ps} {14445266 ps}
