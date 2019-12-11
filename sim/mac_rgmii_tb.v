@@ -620,7 +620,7 @@ mac_rgmii mac(
     .rst(~pll0_locked) //(1'b0) //
 );
 
-eth_mac_ten_100_1g_eth_fifo eth_fifo(
+mac_fifo eth_fifo(
     //USER IF
     .tx_fifo_aclk       (mac_gtx_clk  ), //input
     .tx_fifo_resetn     (pll0_locked  ), //input
