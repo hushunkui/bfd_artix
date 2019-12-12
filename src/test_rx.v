@@ -2,8 +2,10 @@
 // author: Golovachenko Viktor
 //
 
-module test_rx (
-    input [7:0] mac_rx_data,
+module test_rx #(
+    parameter TEST_DATA_WIDTH = 32
+)(
+    input [TEST_DATA_WIDTH-1:0] mac_rx_data,
     input mac_rx_valid,
     input mac_rx_sof,
     input mac_rx_eof,
@@ -12,7 +14,7 @@ module test_rx (
 
     input start,
     output reg err = 1'b0,
-    output [7:0] test_data,
+    output [TEST_DATA_WIDTH-1:0] test_data,
 
     input clk,
     input rst
@@ -41,7 +43,7 @@ reg srcambler_sof = 1'b0;
 
 sata_scrambler #(
     .G_INIT_VAL (16'h55AA)
-) test_data (
+) scrambler (
     .p_in_SOF    (srcambler_sof),
     .p_in_en     (mac_rx_valid),
     .p_out_result(data),
@@ -50,7 +52,7 @@ sata_scrambler #(
     .p_in_rst(rst)
 );
 
-assign test_data = data[7:0];
+assign test_data[TEST_DATA_WIDTH-1:0] = data[TEST_DATA_WIDTH-1:0];
 
 always @(posedge clk) begin
     case (fsm_cs)

@@ -2,13 +2,15 @@
 // author: Golovachenko Viktor
 //
 
-module test_phy (
-    output [7:0] mac_tx_data,
+module test_phy #(
+    parameter TEST_DATA_WIDTH = 8
+)(
+    output [TEST_DATA_WIDTH-1:0] mac_tx_data,
     output mac_tx_valid,
     output mac_tx_sof,
     output mac_tx_eof,
 
-    input [7:0] mac_rx_data,
+    input [TEST_DATA_WIDTH-1:0] mac_rx_data,
     input mac_rx_valid,
     input mac_rx_sof,
     input mac_rx_eof,
@@ -17,13 +19,15 @@ module test_phy (
 
     input start,
     output err,
-    output [7:0] test_data,
+    output [TEST_DATA_WIDTH-1:0] test_data,
 
     input clk,
     input rst
 );
 
-test_tx test_tx (
+test_tx #(
+    .TEST_DATA_WIDTH(TEST_DATA_WIDTH)
+) test_tx (
     .mac_tx_data (mac_tx_data ),
     .mac_tx_valid(mac_tx_valid),
     .mac_tx_sof  (mac_tx_sof  ),
@@ -37,7 +41,9 @@ test_tx test_tx (
     .rst(rst)
 );
 
-test_rx test_rx (
+test_rx #(
+    .TEST_DATA_WIDTH(TEST_DATA_WIDTH)
+)  test_rx (
     .mac_rx_data   (mac_rx_data   ),
     .mac_rx_valid  (mac_rx_valid  ),
     .mac_rx_sof    (mac_rx_sof    ),

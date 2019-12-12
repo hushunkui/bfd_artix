@@ -2,8 +2,10 @@
 // author: Golovachenko Viktor
 //
 
-module test_tx (
-    output [7:0] mac_tx_data,
+module test_tx #(
+    parameter TEST_DATA_WIDTH = 32
+)(
+    output [TEST_DATA_WIDTH-1:0] mac_tx_data,
     output reg mac_tx_valid = 1'b0,
     output reg mac_tx_sof = 1'b0,
     output reg mac_tx_eof = 1'b0,
@@ -35,11 +37,11 @@ reg srcambler_sof = 1'b0;
     reg [1:0] fsm_cs = IDLE;
 `endif
 
-assign mac_tx_data = data[7:0];
+assign mac_tx_data[TEST_DATA_WIDTH-1:0] = data[TEST_DATA_WIDTH-1:0];
 
 sata_scrambler #(
     .G_INIT_VAL (16'h55AA)
-) test_data (
+) scrambler (
     .p_in_SOF    (srcambler_sof),
     .p_in_en     (mac_tx_valid),
     .p_out_result(data),
