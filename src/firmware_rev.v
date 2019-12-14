@@ -1,7 +1,7 @@
 // Build ID Verilog Module
 //
 // Date:             14122019
-// Time:             122541
+// Time:             175743
 
 module firmware_rev
 (
@@ -10,6 +10,6 @@ module firmware_rev
 );
 
    assign firmware_date = 32'h14122019;
-   assign firmware_time = 32'h122541;
+   assign firmware_time = 32'h175743;
 
 endmodule

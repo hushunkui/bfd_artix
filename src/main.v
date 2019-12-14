@@ -8,10 +8,8 @@ module main #(
     parameter ETHCOUNT = 4, //max 4
     parameter SIM = 0
 ) (
-    output mgt_pwr_en,
-
-    output [13:0] usr_lvds_p,
-    output [13:0] usr_lvds_n,
+    input [13:0] usr_lvds_p,
+    input [13:0] usr_lvds_n,
 
     output [(ETHCOUNT*4)-1:0] rgmii_txd   ,
     output [ETHCOUNT-1:0]     rgmii_tx_ctl,
@@ -25,6 +23,16 @@ module main #(
     inout                     eth_phy_mdio,
     output                    eth_phy_mdc ,
 
+    input [0:0] gt_rx_rxn,
+    input [0:0] gt_rx_rxp,
+    output [0:0] gt_tx_txn,
+    output [0:0] gt_tx_txp,
+    input gt_refclk_n,
+    input gt_refclk_p,
+    output mgt_pwr_en,
+//    input mgt_clk125_p,
+//    input mgt_clk125_n,
+
     input  uart_rx,
     output uart_tx,
 
@@ -35,18 +43,6 @@ module main #(
 
     output dbg_led,
     output [1:0] dbg_out,
-
-//    input mgt_ext_clk125_p,
-//    input mgt_ext_clk125_n,
-//    input mgt_clk125_p,
-//    input mgt_clk125_n,
-
-    input [0:0] aurora_gt_rx_rxn,
-    input [0:0] aurora_gt_rx_rxp,
-    output [0:0] aurora_gt_tx_txn,
-    output [0:0] aurora_gt_tx_txp,
-    input aurora_gt_refclk_clk_n,
-    input aurora_gt_refclk_clk_p,
 
     input clk20_p,
     input clk20_n,
@@ -112,7 +108,10 @@ wire [3:0]aurora_axi_tx_tkeep;
 wire [ETHCOUNT-1:0] aurora_axi_tx_tlast;
 wire aurora_axi_tx_tready;
 wire [ETHCOUNT-1:0] aurora_axi_tx_tvalid;
-wire aurora_gt_rst;
+wire gt_rst;
+wire aurora_rst;
+wire [2:0]aurora_control_loopback;
+wire aurora_control_power_down;
 wire aurora_status_channel_up;
 wire aurora_status_frame_err;
 wire aurora_status_hard_err;
@@ -122,7 +121,6 @@ wire aurora_status_rx_resetdone_out;
 wire aurora_status_soft_err;
 wire aurora_status_tx_lock;
 wire aurora_status_tx_resetdone_out;
-wire aurora_sysrst;
 wire aurora_usr_clk;
 
 wire [31:0] aurora_fifo_di;
@@ -185,14 +183,22 @@ clk25_wiz0 pll0(
     .reset(sysrst)
 );
 
+// IBUFDS_GTE2 #(
+//     .CLKCM_CFG("TRUE"),   // Refer to Transceiver User Guide
+//     .CLKRCV_TRST("TRUE"), // Refer to Transceiver User Guide
+//     .CLKSWING_CFG(2'b11)  // Refer to Transceiver User Guide
+// ) gtrefclk_buf (
+//     .O(gt_refclk), // 1-bit output: Refer to Transceiver User Guide
+//     .ODIV2(aurora_init_clk), // 1-bit output: Refer to Transceiver User Guide
+//     .CEB(1'b0),          // 1-bit input: Refer to Transceiver User Guide
+//     .I(gt_refclk_p),  // 1-bit input: Refer to Transceiver User Guide
+//     .IB(gt_refclk_n)  // 1-bit input: Refer to Transceiver User Guide
+// );
+// BUFG bufg_gtrefclk_div2 (
+//     .I (aurora_init_clk), .O(aurora_init_clkg)
+// );
+
 system system_i(
-    .aurora_gt_refclk_clk_n(aurora_gt_refclk_clk_n),
-    .aurora_gt_refclk_clk_p(aurora_gt_refclk_clk_p),
-    // .aurora_gt_rst(1'b0), //(aurora_gt_rst),
-    .aurora_gt_rx_rxn(aurora_gt_rx_rxn),
-    .aurora_gt_rx_rxp(aurora_gt_rx_rxp),
-    .aurora_gt_tx_txn(aurora_gt_tx_txn),
-    .aurora_gt_tx_txp(aurora_gt_tx_txp),
     .aurora_axi_rx_tdata(aurora_axi_rx_tdata), //output
     .aurora_axi_rx_tkeep(aurora_axi_rx_tkeep), //output
     .aurora_axi_rx_tvalid(aurora_axi_rx_tvalid),//output
@@ -202,6 +208,8 @@ system system_i(
     .aurora_axi_tx_tkeep(4'hF),//(aurora_axi_tx_tkeep), //input
     .aurora_axi_tx_tvalid(aurora_axi_tx_tvalid[0]), //input
     .aurora_axi_tx_tlast(aurora_axi_tx_tlast[0]), //input
+    .aurora_control_loopback(3'd0),
+    .aurora_control_power_down(1'b0),
     .aurora_status_channel_up(aurora_status_channel_up),
     .aurora_status_frame_err(aurora_status_frame_err),
     .aurora_status_hard_err(aurora_status_hard_err),
@@ -217,7 +225,15 @@ system system_i(
     // .aurora_drp_if_do(),//(aurora_drp_if_do),
     // .aurora_drp_if_drdy(),//(aurora_drp_if_drdy),
     // .aurora_drp_if_dwe(1'b0),//(aurora_drp_if_dwe),
-    .aurora_sysrst(aurora_sysrst),//~mac_pll_locked),//(
+    .aurora_gt_rx_rxn(gt_rx_rxn),
+    .aurora_gt_rx_rxp(gt_rx_rxp),
+    .aurora_gt_tx_txn(gt_tx_txn),
+    .aurora_gt_tx_txp(gt_tx_txp),
+    .aurora_gt_refclk_clk_n(gt_refclk_n),
+    .aurora_gt_refclk_clk_p(gt_refclk_p),
+    .aurora_gt_rst(gt_rst),
+    .aurora_init_clk(mac_gtx_clk),
+    .aurora_rst(aurora_rst),
     .aurora_usr_clk(aurora_usr_clk),
 
     .M_AXI_0_awaddr  (M_AXI_0_awaddr ),
@@ -373,26 +389,26 @@ assign  spi_miso = 1'bz;
 assign eth_phy_mdio = 1'bz;
 assign eth_phy_mdc = 1'b0;
 
-wire [13:0] usr_lvds_io;
+wire [13:0] usr_lvds;
 genvar i;
 generate
     for (i=0; i < 14; i=i+1) begin
-        // IBUFDS usr_lvds_ibuf_diff (
-        //     .I (usr_lvds_p[i]), .IB(usr_lvds_n[i]), .O(usr_lvds_io[i])
-        // );
-        OBUFDS usr_lvds_obuf_diff (
-            .O (usr_lvds_p[i]), .OB(usr_lvds_n[i]), .I(usr_lvds_io[i])
+        IBUFDS buf_diff_usr_lvds (
+            .I (usr_lvds_p[i]), .IB(usr_lvds_n[i]), .O(usr_lvds[i])
         );
+        // OBUFDS buf_diff_usr_lvds (
+        //     .O (usr_lvds_p[i]), .OB(usr_lvds_n[i]), .I(usr_lvds[i])
+        // );
     end
 endgenerate
 
-wire [13:0] usr_lvds;
-assign usr_lvds_io = usr_lvds;
-assign usr_lvds = 14'h2AAA;
+// assign usr_lvds = 14'h2AAA;
 // always @(posedge mac_gtx_clk) begin
 //     usr_lvds_io <= usr_lvds_io + 1;
 // end
 
+assign gt_rst = ~usr_lvds[0];
+assign aurora_rst = ~usr_lvds[1];
 
 IDELAYCTRL idelayctrl (
     .RDY(),
@@ -585,7 +601,7 @@ always @(posedge sysclk25_g) begin
 end
 
 assign dbg_out[0] = 1'b0;
-assign dbg_out[1] = clk20_div | sysclk25_div;// &
+assign dbg_out[1] = clk20_div | sysclk25_div | led_blink;// &
                     // |mac_rx_tvalid &
                     // |mac_rx_tlast &
                     // |mac_rx_tuser &
@@ -614,7 +630,7 @@ fpga_test_01 #(
     .p_in_rst   (~mac_pll_locked)
 );
 
-assign dbg_led = led_blink & !test_gpio[0];// & test_err;
+assign dbg_led = led_blink & !gt_rst;// !test_gpio[0] & !aurora_gt_rst;// & test_err;
 
 
 
