@@ -511,6 +511,18 @@ generate
     end
 endgenerate
 
+ila_1 aurora_ila (
+    .probe0({
+        aurora_status_tx_lock,
+        aurora_status_lane_up,
+        aurora_status_channel_up,
+        aurora_status_frame_err,
+        aurora_status_hard_err,
+        aurora_status_soft_err
+    }),
+    .clk(aurora_usr_clk)
+);
+
 
 // wire [7:0] test_data;
 
