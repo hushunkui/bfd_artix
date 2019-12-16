@@ -8,8 +8,9 @@ module main #(
     parameter ETHCOUNT = 4, //max 4
     parameter SIM = 0
 ) (
-    input [13:0] usr_lvds_p,
-    input [13:0] usr_lvds_n,
+    // input [13:0] usr_lvds_p,
+    // input [13:0] usr_lvds_n,
+    output [9:0] usr_lvds_p,
 
     output [(ETHCOUNT*4)-1:0] rgmii_txd   ,
     output [ETHCOUNT-1:0]     rgmii_tx_ctl,
@@ -27,11 +28,11 @@ module main #(
     input [0:0] gt_rx_rxp,
     output [0:0] gt_tx_txn,
     output [0:0] gt_tx_txp,
-    input gt_refclk_n,
-    input gt_refclk_p,
+    // input gt_refclk_n,
+    // input gt_refclk_p,
     output mgt_pwr_en,
-//    input mgt_clk125_p,
-//    input mgt_clk125_n,
+    input mgt_refclk_n,
+    input mgt_refclk_p,
 
     input  uart_rx,
     output uart_tx,
@@ -111,7 +112,7 @@ wire [ETHCOUNT-1:0] aurora_axi_tx_tvalid;
 wire gt_rst;
 wire aurora_rst;
 wire [2:0]aurora_control_loopback;
-wire aurora_control_power_down;
+wire aurora_control_pwd;
 wire aurora_status_channel_up;
 wire aurora_status_frame_err;
 wire aurora_status_hard_err;
@@ -208,8 +209,8 @@ system system_i(
     .aurora_axi_tx_tkeep(4'hF),//(aurora_axi_tx_tkeep), //input
     .aurora_axi_tx_tvalid(aurora_axi_tx_tvalid[0]), //input
     .aurora_axi_tx_tlast(aurora_axi_tx_tlast[0]), //input
-    .aurora_control_loopback(3'd0),
-    .aurora_control_power_down(1'b0),
+    .aurora_control_loopback(aurora_control_loopback),
+    .aurora_control_power_down(aurora_control_pwd),
     .aurora_status_lane_up(aurora_status_lane_up),
     .aurora_status_channel_up(aurora_status_channel_up),
     .aurora_status_frame_err(aurora_status_frame_err),
@@ -230,8 +231,8 @@ system system_i(
     .aurora_gt_tx_txn(gt_tx_txn),
     .aurora_gt_tx_txp(gt_tx_txp),
 
-    .aurora_gt_refclk_clk_n(gt_refclk_n),
-    .aurora_gt_refclk_clk_p(gt_refclk_p),
+    .aurora_gt_refclk_clk_n(mgt_refclk_n),//(gt_refclk_n),
+    .aurora_gt_refclk_clk_p(mgt_refclk_p),//(gt_refclk_p),
     .aurora_gt_rst(gt_rst),
     .aurora_init_clk(mac_gtx_clk),
     .aurora_rst(aurora_rst),
@@ -390,26 +391,28 @@ assign  spi_miso = 1'bz;
 assign eth_phy_mdio = 1'bz;
 assign eth_phy_mdc = 1'b0;
 
-wire [13:0] usr_lvds;
-genvar i;
-generate
-    for (i=0; i < 14; i=i+1) begin
-        IBUFDS buf_diff_usr_lvds (
-            .I (usr_lvds_p[i]), .IB(usr_lvds_n[i]), .O(usr_lvds[i])
-        );
-        // OBUFDS buf_diff_usr_lvds (
-        //     .O (usr_lvds_p[i]), .OB(usr_lvds_n[i]), .I(usr_lvds[i])
-        // );
-    end
-endgenerate
+// wire [13:0] usr_lvds;
+// genvar i;
+// generate
+//     for (i=0; i < 14; i=i+1) begin
+//         IBUFDS buf_diff_usr_lvds (
+//             .I (usr_lvds_p[i]), .IB(usr_lvds_n[i]), .O(usr_lvds[i])
+//         );
+//         // OBUFDS buf_diff_usr_lvds (
+//         //     .O (usr_lvds_p[i]), .OB(usr_lvds_n[i]), .I(usr_lvds[i])
+//         // );
+//     end
+// endgenerate
 
 // assign usr_lvds = 14'h2AAA;
 // always @(posedge mac_gtx_clk) begin
 //     usr_lvds_io <= usr_lvds_io + 1;
 // end
 
-assign gt_rst = ~usr_lvds[0];
-assign aurora_rst = ~usr_lvds[1];
+assign gt_rst = usr_lvds_p[0];
+assign aurora_rst = usr_lvds_p[1];
+assign aurora_control_loopback[2:0] = usr_lvds_p[7:5]; //aurora_control_loopback_ext
+assign aurora_control_pwd = usr_lvds_p[8];
 
 IDELAYCTRL idelayctrl (
     .RDY(),
