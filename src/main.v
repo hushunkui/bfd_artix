@@ -10,7 +10,7 @@ module main #(
 ) (
     // input [13:0] usr_lvds_p,
     // input [13:0] usr_lvds_n,
-    output [9:0] usr_lvds_p,
+    input [9:0] usr_lvds_p,
 
     output [(ETHCOUNT*4)-1:0] rgmii_txd   ,
     output [ETHCOUNT-1:0]     rgmii_tx_ctl,
