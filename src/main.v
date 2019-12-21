@@ -5,7 +5,8 @@
 `timescale 1ns / 1ps
 
 module main #(
-    parameter ETHCOUNT = 1, //max 4
+    parameter ETHCOUNT = 2, //max 4
+    parameter AURORA_CHCOUNT = 2,
     parameter SIM = 0
 ) (
     // input [13:0] usr_lvds_p,
@@ -24,10 +25,10 @@ module main #(
     inout                     eth_phy_mdio,
     output                    eth_phy_mdc ,
 
-    input [0:0] gt_rx_rxn,
-    input [0:0] gt_rx_rxp,
-    output [0:0] gt_tx_txn,
-    output [0:0] gt_tx_txp,
+    input [AURORA_CHCOUNT-1:0] gt_rx_rxn,
+    input [AURORA_CHCOUNT-1:0] gt_rx_rxp,
+    output [AURORA_CHCOUNT-1:0] gt_tx_txn,
+    output [AURORA_CHCOUNT-1:0] gt_tx_txp,
     input gt_refclk_n,
     input gt_refclk_p,
     output mgt_pwr_en,
@@ -99,28 +100,26 @@ wire mac_gtx_clk90;
 
 // wire [31:0] firmware_date;
 // wire [31:0] firmware_time;
-
-wire [31:0]aurora_axi_rx_tdata;
-wire [3:0]aurora_axi_rx_tkeep;
-wire aurora_axi_rx_tlast;
-wire aurora_axi_rx_tvalid;
-wire [31:0]aurora_axi_tx_tdata;
-wire [3:0]aurora_axi_tx_tkeep;
-wire aurora_axi_tx_tlast;
-wire aurora_axi_tx_tready;
-wire aurora_axi_tx_tvalid;
+wire [31:0] aurora_axi_rx_tdata [AURORA_CHCOUNT-1:0];
+wire [3:0] aurora_axi_rx_tkeep [AURORA_CHCOUNT-1:0];
+wire [AURORA_CHCOUNT-1:0] aurora_axi_rx_tlast;
+wire [AURORA_CHCOUNT-1:0] aurora_axi_rx_tvalid;
+wire [31:0]aurora_axi_tx_tdata [AURORA_CHCOUNT-1:0];
+wire [3:0]aurora_axi_tx_tkeep [AURORA_CHCOUNT-1:0];
+wire [AURORA_CHCOUNT-1:0] aurora_axi_tx_tlast;
+wire [AURORA_CHCOUNT-1:0] aurora_axi_tx_tready;
+wire [AURORA_CHCOUNT-1:0] aurora_axi_tx_tvalid;
 wire gt_rst;
 wire aurora_rst;
-wire aurora_control_pwd;
-wire aurora_status_channel_up;
-wire aurora_status_frame_err;
-wire aurora_status_hard_err;
-wire [0:0]aurora_status_lane_up;
-wire aurora_status_pll_not_locked_out;
-wire aurora_status_rx_resetdone_out;
-wire aurora_status_soft_err;
-wire aurora_status_tx_lock;
-wire aurora_status_tx_resetdone_out;
+wire [AURORA_CHCOUNT-1:0] aurora_control_pwd;
+wire [AURORA_CHCOUNT-1:0] aurora_status_channel_up;
+wire [AURORA_CHCOUNT-1:0] aurora_status_frame_err;
+wire [AURORA_CHCOUNT-1:0] aurora_status_hard_err;
+wire [0:0]aurora_status_lane_up [AURORA_CHCOUNT-1:0];
+wire [AURORA_CHCOUNT-1:0] aurora_status_rx_resetdone_out;
+wire [AURORA_CHCOUNT-1:0] aurora_status_soft_err;
+wire [AURORA_CHCOUNT-1:0] aurora_status_tx_lock;
+wire [AURORA_CHCOUNT-1:0] aurora_status_tx_resetdone_out;
 wire aurora_usr_clk;
 
 wire [31:0] aurora_fifo_di;
@@ -199,29 +198,51 @@ clk25_wiz0 pll0(
 // );
 
 system system_i(
-    .aurora_axi_rx_tdata(aurora_axi_rx_tdata), //output
-    .aurora_axi_rx_tkeep(aurora_axi_rx_tkeep), //output
-    .aurora_axi_rx_tvalid(aurora_axi_rx_tvalid),//output
-    .aurora_axi_rx_tlast(aurora_axi_rx_tlast), //output
-    .aurora_axi_tx_tready(aurora_axi_tx_tready),//output
-    .aurora_axi_tx_tdata(aurora_axi_tx_tdata), //input
-    .aurora_axi_tx_tkeep(4'hF),//(aurora_axi_tx_tkeep), //input
-    .aurora_axi_tx_tvalid(aurora_axi_tx_tvalid), //input
-    .aurora_axi_tx_tlast(aurora_axi_tx_tlast), //input
-    .aurora_control_power_down(aurora_control_pwd),
-    .aurora_status_lane_up(aurora_status_lane_up),
-    .aurora_status_channel_up(aurora_status_channel_up),
-    .aurora_status_frame_err(aurora_status_frame_err),
-    .aurora_status_hard_err(aurora_status_hard_err),
-    .aurora_status_soft_err(aurora_status_soft_err),
-    .aurora_status_pll_not_locked_out(aurora_status_pll_not_locked_out),
-    .aurora_status_tx_lock(aurora_status_tx_lock),
-    .aurora_status_tx_resetdone_out(aurora_status_tx_resetdone_out),
-    .aurora_status_rx_resetdone_out(aurora_status_rx_resetdone_out),
-    .aurora_gt_rx_rxn(gt_rx_rxn),
-    .aurora_gt_rx_rxp(gt_rx_rxp),
-    .aurora_gt_tx_txn(gt_tx_txn),
-    .aurora_gt_tx_txp(gt_tx_txp),
+    .aurora0_axi_rx_tdata(aurora_axi_rx_tdata[0]), //output
+    .aurora0_axi_rx_tkeep(aurora_axi_rx_tkeep[0]), //output
+    .aurora0_axi_rx_tvalid(aurora_axi_rx_tvalid[0]),//output
+    .aurora0_axi_rx_tlast(aurora_axi_rx_tlast[0]), //output
+    .aurora0_axi_tx_tready(aurora_axi_tx_tready[0]),//output
+    .aurora0_axi_tx_tdata(aurora_axi_tx_tdata[0]), //input
+    .aurora0_axi_tx_tkeep(aurora_axi_tx_tkeep[0]), //input
+    .aurora0_axi_tx_tvalid(aurora_axi_tx_tvalid[0]), //input
+    .aurora0_axi_tx_tlast(aurora_axi_tx_tlast[0]), //input
+    .aurora0_control_power_down(aurora_control_pwd),
+    .aurora0_status_lane_up(aurora_status_lane_up[0]),
+    .aurora0_status_channel_up(aurora_status_channel_up[0]),
+    .aurora0_status_frame_err(aurora_status_frame_err[0]),
+    .aurora0_status_hard_err(aurora_status_hard_err[0]),
+    .aurora0_status_soft_err(aurora_status_soft_err[0]),
+    .aurora0_status_tx_lock(aurora_status_tx_lock[0]),
+    .aurora0_status_tx_resetdone_out(aurora_status_tx_resetdone_out[0]),
+    .aurora0_status_rx_resetdone_out(aurora_status_rx_resetdone_out[0]),
+    .aurora0_gt_rx_rxn(gt_rx_rxn[0:0]),
+    .aurora0_gt_rx_rxp(gt_rx_rxp[0:0]),
+    .aurora0_gt_tx_txn(gt_tx_txn[0:0]),
+    .aurora0_gt_tx_txp(gt_tx_txp[0:0]),
+
+    .aurora1_axi_rx_tdata(aurora_axi_rx_tdata[1]), //output
+    .aurora1_axi_rx_tkeep(aurora_axi_rx_tkeep[1]), //output
+    .aurora1_axi_rx_tvalid(aurora_axi_rx_tvalid[1]),//output
+    .aurora1_axi_rx_tlast(aurora_axi_rx_tlast[1]), //output
+    .aurora1_axi_tx_tready(aurora_axi_tx_tready[1]),//output
+    .aurora1_axi_tx_tdata(aurora_axi_tx_tdata[1]), //input
+    .aurora1_axi_tx_tkeep(aurora_axi_tx_tkeep[1]), //input
+    .aurora1_axi_tx_tvalid(aurora_axi_tx_tvalid[1]), //input
+    .aurora1_axi_tx_tlast(aurora_axi_tx_tlast[1]), //input
+    .aurora1_control_power_down(aurora_control_pwd),
+    .aurora1_status_lane_up(aurora_status_lane_up[1]),
+    .aurora1_status_channel_up(aurora_status_channel_up[1]),
+    .aurora1_status_frame_err(aurora_status_frame_err[1]),
+    .aurora1_status_hard_err(aurora_status_hard_err[1]),
+    .aurora1_status_soft_err(aurora_status_soft_err[1]),
+    .aurora1_status_tx_lock(aurora_status_tx_lock[1]),
+    .aurora1_status_tx_resetdone_out(aurora_status_tx_resetdone_out[1]),
+    .aurora1_status_rx_resetdone_out(aurora_status_rx_resetdone_out[1]),
+    .aurora1_gt_rx_rxn(gt_rx_rxn[1:1]),
+    .aurora1_gt_rx_rxp(gt_rx_rxp[1:1]),
+    .aurora1_gt_tx_txn(gt_tx_txn[1:1]),
+    .aurora1_gt_tx_txp(gt_tx_txp[1:1]),
 
     .aurora_gt_refclk_clk_n(gt_refclk_n),//(mgt_refclk_n),//
     .aurora_gt_refclk_clk_p(gt_refclk_p),//(mgt_refclk_p),//
@@ -457,18 +478,18 @@ generate
         mac_fifo fifo(
             //USER IF
             .tx_fifo_aclk       (aurora_usr_clk), //input
-            .tx_fifo_resetn     (aurora_status_tx_lock           ), //input
-            .tx_axis_fifo_tdata (aurora_axi_rx_tdata [(0*8) +: 8]),//(usr_tx_tdata ), //input [7:0]
-            .tx_axis_fifo_tvalid(aurora_axi_rx_tvalid            ),//(usr_tx_tvalid), //input
-            .tx_axis_fifo_tlast (aurora_axi_rx_tlast             ),//(usr_tx_tlast ), //input
+            .tx_fifo_resetn     (aurora_status_tx_lock[x]            ), //input
+            .tx_axis_fifo_tdata (aurora_axi_rx_tdata  [x][(0*8) +: 8]),//(usr_tx_tdata ), //input [7:0]
+            .tx_axis_fifo_tvalid(aurora_axi_rx_tvalid [x]            ),//(usr_tx_tvalid), //input
+            .tx_axis_fifo_tlast (aurora_axi_rx_tlast  [x]            ),//(usr_tx_tlast ), //input
             .tx_axis_fifo_tready(), //output
 
             .rx_fifo_aclk       (aurora_usr_clk), //input
-            .rx_fifo_resetn     (aurora_status_tx_lock), //input
-            .rx_axis_fifo_tready(aurora_axi_tx_tready           ), //input
-            .rx_axis_fifo_tdata (aurora_axi_tx_tdata[(0*8) +: 8]), //output [7:0]
-            .rx_axis_fifo_tvalid(aurora_axi_tx_tvalid           ), //output
-            .rx_axis_fifo_tlast (aurora_axi_tx_tlast            ), //output
+            .rx_fifo_resetn     (aurora_status_tx_lock[x]), //input
+            .rx_axis_fifo_tready(aurora_axi_tx_tready [x]            ), //input
+            .rx_axis_fifo_tdata (aurora_axi_tx_tdata  [x][(0*8) +: 8]), //output [7:0]
+            .rx_axis_fifo_tvalid(aurora_axi_tx_tvalid [x]            ), //output
+            .rx_axis_fifo_tlast (aurora_axi_tx_tlast  [x]            ), //output
 
             //MAC IF
             .tx_mac_aclk        (mac_gtx_clk  ), //input
