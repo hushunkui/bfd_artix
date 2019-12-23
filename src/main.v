@@ -106,12 +106,15 @@ wire [AURORA_CHCOUNT-1:0] aurora_axi_rx_tlast;
 wire [AURORA_CHCOUNT-1:0] aurora_axi_rx_tvalid;
 wire [31:0]aurora_axi_tx_tdata [AURORA_CHCOUNT-1:0];
 wire [3:0]aurora_axi_tx_tkeep [AURORA_CHCOUNT-1:0];
+genvar i;
+generate
+    for (i=0; i < AURORA_CHCOUNT; i=i+1) begin
+        assign aurora_axi_tx_tkeep[i] = 4'h1;
+    end
+endgenerate
 wire [AURORA_CHCOUNT-1:0] aurora_axi_tx_tlast;
 wire [AURORA_CHCOUNT-1:0] aurora_axi_tx_tready;
 wire [AURORA_CHCOUNT-1:0] aurora_axi_tx_tvalid;
-wire gt_rst;
-wire aurora_rst;
-wire [AURORA_CHCOUNT-1:0] aurora_control_pwd;
 wire [AURORA_CHCOUNT-1:0] aurora_status_channel_up;
 wire [AURORA_CHCOUNT-1:0] aurora_status_frame_err;
 wire [AURORA_CHCOUNT-1:0] aurora_status_hard_err;
@@ -120,7 +123,20 @@ wire [AURORA_CHCOUNT-1:0] aurora_status_rx_resetdone_out;
 wire [AURORA_CHCOUNT-1:0] aurora_status_soft_err;
 wire [AURORA_CHCOUNT-1:0] aurora_status_tx_lock;
 wire [AURORA_CHCOUNT-1:0] aurora_status_tx_resetdone_out;
+// wire [8:0] aurora_drp_if_daddr  [AURORA_CHCOUNT-1:0];
+// wire [AURORA_CHCOUNT-1:0] aurora_drp_if_den;
+// wire [15:0] aurora_drp_if_di [AURORA_CHCOUNT-1:0];
+// wire [15:0] aurora_drp_if_do [AURORA_CHCOUNT-1:0];
+// wire [AURORA_CHCOUNT-1:0] aurora_drp_if_drdy;
+// wire [AURORA_CHCOUNT-1:0] aurora_drp_if_dwe;
+
+wire aurora_control_pwd;
+wire gt_rst;
+wire aurora_rst;
 wire aurora_usr_clk;
+
+wire [1:0] sel_eth_ch;
+wire  sel_aurora_ch;
 
 wire [31:0] aurora_fifo_di;
 wire [31:0] aurora_fifo_do;
@@ -198,6 +214,12 @@ clk25_wiz0 pll0(
 // );
 
 system system_i(
+    // .aurora0_drp_if_daddr(aurora_drp_if_daddr[0]);
+    // .aurora0_drp_if_den  (aurora_drp_if_den  [0]);
+    // .aurora0_drp_if_di   (aurora_drp_if_di   [0]);
+    // .aurora0_drp_if_do   (aurora_drp_if_do   [0]);
+    // .aurora0_drp_if_drdy (aurora_drp_if_drdy [0]);
+    // .aurora0_drp_if_dwe  (aurora_drp_if_dwe  [0]);
     .aurora0_axi_rx_tdata(aurora_axi_rx_tdata[0]), //output
     .aurora0_axi_rx_tkeep(aurora_axi_rx_tkeep[0]), //output
     .aurora0_axi_rx_tvalid(aurora_axi_rx_tvalid[0]),//output
@@ -221,6 +243,12 @@ system system_i(
     .aurora0_gt_tx_txn(gt_tx_txn[0:0]),
     .aurora0_gt_tx_txp(gt_tx_txp[0:0]),
 
+    // .aurora1_drp_if_daddr(aurora_drp_if_daddr[1]);
+    // .aurora1_drp_if_den  (aurora_drp_if_den  [1]);
+    // .aurora1_drp_if_di   (aurora_drp_if_di   [1]);
+    // .aurora1_drp_if_do   (aurora_drp_if_do   [1]);
+    // .aurora1_drp_if_drdy (aurora_drp_if_drdy [1]);
+    // .aurora1_drp_if_dwe  (aurora_drp_if_dwe  [1]);
     .aurora1_axi_rx_tdata(aurora_axi_rx_tdata[1]), //output
     .aurora1_axi_rx_tkeep(aurora_axi_rx_tkeep[1]), //output
     .aurora1_axi_rx_tvalid(aurora_axi_rx_tvalid[1]),//output
@@ -424,7 +452,20 @@ assign eth_phy_mdc = 1'b0;
 
 assign gt_rst = usr_lvds_p[0];
 assign aurora_rst = usr_lvds_p[1];
+assign sel_eth_ch = usr_lvds_p[3:2];
+assign sel_aurora_ch = usr_lvds_p[4];
 assign aurora_control_pwd = usr_lvds_p[8];
+
+
+// assign aurora_drp_if_daddr[0] = reg_ctrl[8:0];
+// assign aurora_drp_if_den  [0] = reg_ctrl[9];
+// assign aurora_drp_if_di   [0] = reg_ctrl[31:16];
+// assign aurora_drp_if_dwe  [0] = reg_ctrl[10];
+
+// assign aurora_drp_if_daddr[1] = reg_ctrl[8:0];
+// assign aurora_drp_if_den  [1] = reg_ctrl[9];
+// assign aurora_drp_if_di   [1] = reg_ctrl[31:16];
+// assign aurora_drp_if_dwe  [1] = reg_ctrl[10];
 
 IDELAYCTRL idelayctrl (
     .RDY(),
