@@ -5,8 +5,9 @@
 `timescale 1ns / 1ps
 
 module main #(
-    parameter ETHCOUNT = 2, //max 4
-    parameter AURORA_CHCOUNT = 2,
+    parameter ETHCOUNT = 1, //max 4
+    parameter AURORA_CHCOUNT = 1,
+    parameter AURORA_LANE_COUNT = 2,
     parameter SIM = 0
 ) (
     // input [13:0] usr_lvds_p,
@@ -25,10 +26,10 @@ module main #(
     inout                     eth_phy_mdio,
     output                    eth_phy_mdc ,
 
-    input [AURORA_CHCOUNT-1:0] gt_rx_rxn,
-    input [AURORA_CHCOUNT-1:0] gt_rx_rxp,
-    output [AURORA_CHCOUNT-1:0] gt_tx_txn,
-    output [AURORA_CHCOUNT-1:0] gt_tx_txp,
+    input [0:(AURORA_CHCOUNT*AURORA_LANE_COUNT)-1] gt_rx_rxn,
+    input [0:(AURORA_CHCOUNT*AURORA_LANE_COUNT)-1] gt_rx_rxp,
+    output [0:(AURORA_CHCOUNT*AURORA_LANE_COUNT)-1] gt_tx_txn,
+    output [0:(AURORA_CHCOUNT*AURORA_LANE_COUNT)-1] gt_tx_txp,
     input gt_refclk_n,
     input gt_refclk_p,
     output mgt_pwr_en,
@@ -238,39 +239,39 @@ system system_i(
     .aurora0_status_tx_lock(aurora_status_tx_lock[0]),
     .aurora0_status_tx_resetdone_out(aurora_status_tx_resetdone_out[0]),
     .aurora0_status_rx_resetdone_out(aurora_status_rx_resetdone_out[0]),
-    .aurora0_gt_rx_rxn(gt_rx_rxn[0:0]),
-    .aurora0_gt_rx_rxp(gt_rx_rxp[0:0]),
-    .aurora0_gt_tx_txn(gt_tx_txn[0:0]),
-    .aurora0_gt_tx_txp(gt_tx_txp[0:0]),
+    .aurora0_gt_rx_rxn(gt_rx_rxn[0:1]),
+    .aurora0_gt_rx_rxp(gt_rx_rxp[0:1]),
+    .aurora0_gt_tx_txn(gt_tx_txn[0:1]),
+    .aurora0_gt_tx_txp(gt_tx_txp[0:1]),
 
-    // .aurora1_drp_if_daddr(aurora_drp_if_daddr[1]);
-    // .aurora1_drp_if_den  (aurora_drp_if_den  [1]);
-    // .aurora1_drp_if_di   (aurora_drp_if_di   [1]);
-    // .aurora1_drp_if_do   (aurora_drp_if_do   [1]);
-    // .aurora1_drp_if_drdy (aurora_drp_if_drdy [1]);
-    // .aurora1_drp_if_dwe  (aurora_drp_if_dwe  [1]);
-    .aurora1_axi_rx_tdata(aurora_axi_rx_tdata[1]), //output
-    .aurora1_axi_rx_tkeep(aurora_axi_rx_tkeep[1]), //output
-    .aurora1_axi_rx_tvalid(aurora_axi_rx_tvalid[1]),//output
-    .aurora1_axi_rx_tlast(aurora_axi_rx_tlast[1]), //output
-    .aurora1_axi_tx_tready(aurora_axi_tx_tready[1]),//output
-    .aurora1_axi_tx_tdata(aurora_axi_tx_tdata[1]), //input
-    .aurora1_axi_tx_tkeep(aurora_axi_tx_tkeep[1]), //input
-    .aurora1_axi_tx_tvalid(aurora_axi_tx_tvalid[1]), //input
-    .aurora1_axi_tx_tlast(aurora_axi_tx_tlast[1]), //input
-    .aurora1_control_power_down(aurora_control_pwd),
-    .aurora1_status_lane_up(aurora_status_lane_up[1]),
-    .aurora1_status_channel_up(aurora_status_channel_up[1]),
-    .aurora1_status_frame_err(aurora_status_frame_err[1]),
-    .aurora1_status_hard_err(aurora_status_hard_err[1]),
-    .aurora1_status_soft_err(aurora_status_soft_err[1]),
-    .aurora1_status_tx_lock(aurora_status_tx_lock[1]),
-    .aurora1_status_tx_resetdone_out(aurora_status_tx_resetdone_out[1]),
-    .aurora1_status_rx_resetdone_out(aurora_status_rx_resetdone_out[1]),
-    .aurora1_gt_rx_rxn(gt_rx_rxn[1:1]),
-    .aurora1_gt_rx_rxp(gt_rx_rxp[1:1]),
-    .aurora1_gt_tx_txn(gt_tx_txn[1:1]),
-    .aurora1_gt_tx_txp(gt_tx_txp[1:1]),
+    // // .aurora1_drp_if_daddr(aurora_drp_if_daddr[1]);
+    // // .aurora1_drp_if_den  (aurora_drp_if_den  [1]);
+    // // .aurora1_drp_if_di   (aurora_drp_if_di   [1]);
+    // // .aurora1_drp_if_do   (aurora_drp_if_do   [1]);
+    // // .aurora1_drp_if_drdy (aurora_drp_if_drdy [1]);
+    // // .aurora1_drp_if_dwe  (aurora_drp_if_dwe  [1]);
+    // .aurora1_axi_rx_tdata(aurora_axi_rx_tdata[1]), //output
+    // .aurora1_axi_rx_tkeep(aurora_axi_rx_tkeep[1]), //output
+    // .aurora1_axi_rx_tvalid(aurora_axi_rx_tvalid[1]),//output
+    // .aurora1_axi_rx_tlast(aurora_axi_rx_tlast[1]), //output
+    // .aurora1_axi_tx_tready(aurora_axi_tx_tready[1]),//output
+    // .aurora1_axi_tx_tdata(aurora_axi_tx_tdata[1]), //input
+    // .aurora1_axi_tx_tkeep(aurora_axi_tx_tkeep[1]), //input
+    // .aurora1_axi_tx_tvalid(aurora_axi_tx_tvalid[1]), //input
+    // .aurora1_axi_tx_tlast(aurora_axi_tx_tlast[1]), //input
+    // .aurora1_control_power_down(aurora_control_pwd),
+    // .aurora1_status_lane_up(aurora_status_lane_up[1]),
+    // .aurora1_status_channel_up(aurora_status_channel_up[1]),
+    // .aurora1_status_frame_err(aurora_status_frame_err[1]),
+    // .aurora1_status_hard_err(aurora_status_hard_err[1]),
+    // .aurora1_status_soft_err(aurora_status_soft_err[1]),
+    // .aurora1_status_tx_lock(aurora_status_tx_lock[1]),
+    // .aurora1_status_tx_resetdone_out(aurora_status_tx_resetdone_out[1]),
+    // .aurora1_status_rx_resetdone_out(aurora_status_rx_resetdone_out[1]),
+    // .aurora1_gt_rx_rxn(gt_rx_rxn[1:1]),
+    // .aurora1_gt_rx_rxp(gt_rx_rxp[1:1]),
+    // .aurora1_gt_tx_txn(gt_tx_txn[1:1]),
+    // .aurora1_gt_tx_txp(gt_tx_txp[1:1]),
 
     .aurora_gt_refclk_clk_n(gt_refclk_n),//(mgt_refclk_n),//
     .aurora_gt_refclk_clk_p(gt_refclk_p),//(mgt_refclk_p),//
