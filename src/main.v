@@ -459,11 +459,11 @@ assign eth_phy_mdc = 1'b0;
 //     usr_lvds_io <= usr_lvds_io + 1;
 // end
 
-assign gt_rst = usr_lvds_p[0];
-assign aurora_rst = usr_lvds_p[1];
-assign sel_eth_ch = usr_lvds_p[3:2];
-assign sel_aurora_ch = usr_lvds_p[4];
-assign aurora_control_pwd = usr_lvds_p[8];
+assign aurora_control_pwd = usr_lvds_p[0];
+assign gt_rst = usr_lvds_p[1];
+assign aurora_rst = usr_lvds_p[2];
+assign sel_eth_ch = usr_lvds_p[4:3];
+assign sel_aurora_ch = usr_lvds_p[5];
 
 //connect ETH to AURORA
 assign mac_fifo_resetn[3] = (sel_aurora_ch & (sel_eth_ch == 2'd3)) ? aurora_status_tx_lock[0] : 1'b0;
