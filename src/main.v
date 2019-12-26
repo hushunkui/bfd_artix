@@ -12,7 +12,8 @@ module main #(
 ) (
     // input [13:0] usr_lvds_p,
     // input [13:0] usr_lvds_n,
-    input [9:0] usr_lvds_p,
+    input [5:0] usr_lvds_p,
+    output [3:0] usr_lvds_p_o,
 
     output [(ETHCOUNT*4)-1:0] rgmii_txd   ,
     output [ETHCOUNT-1:0]     rgmii_tx_ctl,
@@ -79,6 +80,7 @@ wire [ETHCOUNT-1:0]     mac_fifo_resetn;
 
 // wire [3:0] mac_fifo_status [ETHCOUNT-1:0];
 wire [3:0] mac_status [ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0]     mac_link;
 
 wire [7:0]              usr_rx_tdata  [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     usr_rx_tvalid;
@@ -464,18 +466,13 @@ assign gt_rst = usr_lvds_p[1];
 assign aurora_rst = usr_lvds_p[2];
 assign sel_eth_ch = usr_lvds_p[4:3];
 assign sel_aurora_ch = usr_lvds_p[5];
+assign usr_lvds_p_o[0] = mac_link[0];
+assign usr_lvds_p_o[1] = mac_link[1];
+assign usr_lvds_p_o[2] = mac_link[2];
+assign usr_lvds_p_o[3] = mac_link[3];
+
 
 //connect ETH to AURORA
-assign mac_fifo_resetn[3] = (sel_aurora_ch & (sel_eth_ch == 2'd3)) ? aurora_status_tx_lock[0] : 1'b0;
-assign mac_fifo_resetn[2] = (sel_aurora_ch & (sel_eth_ch == 2'd2)) ? aurora_status_tx_lock[0] : 1'b0;
-assign mac_fifo_resetn[1] = (sel_aurora_ch & (sel_eth_ch == 2'd1)) ? aurora_status_tx_lock[0] : 1'b0;
-assign mac_fifo_resetn[0] = (sel_aurora_ch & (sel_eth_ch == 2'd0)) ? aurora_status_tx_lock[0] : 1'b0;
-
-assign aurora_axi_tx_tready_eth [3] = (sel_eth_ch == 2'd3) ? aurora_axi_tx_tready[0] : 1'b0;
-assign aurora_axi_tx_tready_eth [2] = (sel_eth_ch == 2'd2) ? aurora_axi_tx_tready[0] : 1'b0;
-assign aurora_axi_tx_tready_eth [1] = (sel_eth_ch == 2'd1) ? aurora_axi_tx_tready[0] : 1'b0;
-assign aurora_axi_tx_tready_eth [0] = (sel_eth_ch == 2'd0) ? aurora_axi_tx_tready[0] : 1'b0;
-
 assign aurora_axi_tx_tdata [0][(0*8) +: 8] = (sel_eth_ch == 2'd3) ? aurora_axi_tx_tdata_eth[3][(0*8) +: 8] :
                                              (sel_eth_ch == 2'd1) ? aurora_axi_tx_tdata_eth[2][(0*8) +: 8] :
                                              (sel_eth_ch == 2'd1) ? aurora_axi_tx_tdata_eth[1][(0*8) +: 8] :
@@ -491,21 +488,31 @@ assign aurora_axi_tx_tlast [0] = (sel_eth_ch == 2'd3) ? aurora_axi_tx_tlast_eth[
                                  (sel_eth_ch == 2'd1) ? aurora_axi_tx_tlast_eth[1] :
                                                         aurora_axi_tx_tlast_eth[0];
 
-assign aurora_axi_rx_tdata_eth  [3][(0*8) +: 8] = aurora_axi_rx_tdata [0][(0*8) +: 8];
-assign aurora_axi_rx_tvalid_eth [3]             = (sel_eth_ch == 2'd3) ? aurora_axi_rx_tvalid[0] : 1'b0;
-assign aurora_axi_rx_tlast_eth  [3]             = (sel_eth_ch == 2'd3) ? aurora_axi_rx_tvalid[0] : 1'b0;
+// assign aurora_axi_rx_tdata_eth  [3][(0*8) +: 8] = aurora_axi_rx_tdata [0][(0*8) +: 8];
+// assign aurora_axi_rx_tvalid_eth [3]             = (sel_eth_ch == 2'd3) ? aurora_axi_rx_tvalid[0] : 1'b0;
+// assign aurora_axi_rx_tlast_eth  [3]             = (sel_eth_ch == 2'd3) ? aurora_axi_rx_tvalid[0] : 1'b0;
 
-assign aurora_axi_rx_tdata_eth  [2][(0*8) +: 8] = aurora_axi_rx_tdata [0][(0*8) +: 8];
-assign aurora_axi_rx_tvalid_eth [2]             = (sel_eth_ch == 2'd2) ? aurora_axi_rx_tvalid[0] : 1'b0;
-assign aurora_axi_rx_tlast_eth  [2]             = (sel_eth_ch == 2'd2) ? aurora_axi_rx_tvalid[0] : 1'b0;
+// assign aurora_axi_rx_tdata_eth  [2][(0*8) +: 8] = aurora_axi_rx_tdata [0][(0*8) +: 8];
+// assign aurora_axi_rx_tvalid_eth [2]             = (sel_eth_ch == 2'd2) ? aurora_axi_rx_tvalid[0] : 1'b0;
+// assign aurora_axi_rx_tlast_eth  [2]             = (sel_eth_ch == 2'd2) ? aurora_axi_rx_tvalid[0] : 1'b0;
 
-assign aurora_axi_rx_tdata_eth  [1][(0*8) +: 8] = aurora_axi_rx_tdata [0][(0*8) +: 8];
-assign aurora_axi_rx_tvalid_eth [1]             = (sel_eth_ch == 2'd1) ? aurora_axi_rx_tvalid[0] : 1'b0;
-assign aurora_axi_rx_tlast_eth  [1]             = (sel_eth_ch == 2'd1) ? aurora_axi_rx_tvalid[0] : 1'b0;
+// assign aurora_axi_rx_tdata_eth  [1][(0*8) +: 8] = aurora_axi_rx_tdata [0][(0*8) +: 8];
+// assign aurora_axi_rx_tvalid_eth [1]             = (sel_eth_ch == 2'd1) ? aurora_axi_rx_tvalid[0] : 1'b0;
+// assign aurora_axi_rx_tlast_eth  [1]             = (sel_eth_ch == 2'd1) ? aurora_axi_rx_tvalid[0] : 1'b0;
 
-assign aurora_axi_rx_tdata_eth  [0][(0*8) +: 8] = aurora_axi_rx_tdata [0][(0*8) +: 8];
-assign aurora_axi_rx_tvalid_eth [0]             = (sel_eth_ch == 2'd0) ? aurora_axi_rx_tvalid[0] : 1'b0;
-assign aurora_axi_rx_tlast_eth  [0]             = (sel_eth_ch == 2'd0) ? aurora_axi_rx_tvalid[0] : 1'b0;
+// assign aurora_axi_rx_tdata_eth  [0][(0*8) +: 8] = aurora_axi_rx_tdata [0][(0*8) +: 8];
+// assign aurora_axi_rx_tvalid_eth [0]             = (sel_eth_ch == 2'd0) ? aurora_axi_rx_tvalid[0] : 1'b0;
+// assign aurora_axi_rx_tlast_eth  [0]             = (sel_eth_ch == 2'd0) ? aurora_axi_rx_tvalid[0] : 1'b0;
+
+// assign aurora_axi_tx_tready_eth [3] = (sel_eth_ch == 2'd3) ? aurora_axi_tx_tready[0] : 1'b0;
+// assign aurora_axi_tx_tready_eth [2] = (sel_eth_ch == 2'd2) ? aurora_axi_tx_tready[0] : 1'b0;
+// assign aurora_axi_tx_tready_eth [1] = (sel_eth_ch == 2'd1) ? aurora_axi_tx_tready[0] : 1'b0;
+// assign aurora_axi_tx_tready_eth [0] = (sel_eth_ch == 2'd0) ? aurora_axi_tx_tready[0] : 1'b0;
+
+// assign mac_fifo_resetn[3] = (sel_aurora_ch & (sel_eth_ch == 2'd3)) ? aurora_status_tx_lock[0] : 1'b0;
+// assign mac_fifo_resetn[2] = (sel_aurora_ch & (sel_eth_ch == 2'd2)) ? aurora_status_tx_lock[0] : 1'b0;
+// assign mac_fifo_resetn[1] = (sel_aurora_ch & (sel_eth_ch == 2'd1)) ? aurora_status_tx_lock[0] : 1'b0;
+// assign mac_fifo_resetn[0] = (sel_aurora_ch & (sel_eth_ch == 2'd0)) ? aurora_status_tx_lock[0] : 1'b0;
 
 
 IDELAYCTRL idelayctrl (
@@ -555,19 +562,27 @@ generate
         // bit[0] - link
         // bit[1:0] - speed
         //work only if link up 1Gb!!!
-        assign mac_rx_nreset[x] = mac_status[x][0] && (mac_status[x][2:1] == 2'b10) && mac_pll_locked;
+        assign mac_link[x] = mac_status[x][0] && (mac_status[x][2:1] == 2'b10);
+        assign mac_rx_nreset[x] = mac_link[x] && mac_pll_locked;
+
+        assign aurora_axi_rx_tdata_eth  [x][(0*8) +: 8] = aurora_axi_rx_tdata [0][(0*8) +: 8];
+        assign aurora_axi_rx_tvalid_eth [x] = (sel_eth_ch == x) ? aurora_axi_rx_tvalid[0] : 1'b0;
+        assign aurora_axi_rx_tlast_eth  [x] = (sel_eth_ch == x) ? aurora_axi_rx_tvalid[0] : 1'b0;
+
+        assign aurora_axi_tx_tready_eth [x] = (sel_eth_ch == x) ? aurora_axi_tx_tready[0] : 1'b0;
+        assign mac_fifo_resetn[x] = (sel_aurora_ch & (sel_eth_ch == x)) ? aurora_status_tx_lock[0] : 1'b0;
 
         mac_fifo fifo(
             //USER IF
             .tx_fifo_aclk       (aurora_usr_clk), //input
-            .tx_fifo_resetn     (mac_fifo_resetn[x]), //input
+            .tx_fifo_resetn     ((mac_rx_nreset[x] & mac_fifo_resetn[x]) ), //input
             .tx_axis_fifo_tdata (aurora_axi_rx_tdata_eth  [x][(0*8) +: 8]), //input [7:0]
             .tx_axis_fifo_tvalid(aurora_axi_rx_tvalid_eth [x]            ), //input
             .tx_axis_fifo_tlast (aurora_axi_rx_tlast_eth  [x]            ), //input
             .tx_axis_fifo_tready(), //output
 
             .rx_fifo_aclk       (aurora_usr_clk), //input
-            .rx_fifo_resetn     (mac_fifo_resetn[x]), //input
+            .rx_fifo_resetn     ((mac_rx_nreset[x] & mac_fifo_resetn[x]) ), //input
             .rx_axis_fifo_tready(aurora_axi_tx_tready_eth [x]            ), //input
             .rx_axis_fifo_tdata (aurora_axi_tx_tdata_eth  [x][(0*8) +: 8]), //output [7:0]
             .rx_axis_fifo_tvalid(aurora_axi_tx_tvalid_eth [x]            ), //output
