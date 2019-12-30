@@ -7,7 +7,7 @@
 module main #(
     parameter ETHCOUNT = 4, //max 4
     parameter AURORA_CHCOUNT = 1,
-    parameter AURORA_LANE_COUNT = 2,
+    parameter AURORA_LANE_COUNT = 1,
     parameter SIM = 0
 ) (
     // input [13:0] usr_lvds_p,
@@ -256,10 +256,10 @@ system system_i(
     .aurora0_status_tx_lock(aurora_status_tx_lock[0]),
     .aurora0_status_tx_resetdone_out(aurora_status_tx_resetdone_out[0]),
     .aurora0_status_rx_resetdone_out(aurora_status_rx_resetdone_out[0]),
-    .aurora0_gt_rx_rxn(gt_rx_rxn[0:1]),
-    .aurora0_gt_rx_rxp(gt_rx_rxp[0:1]),
-    .aurora0_gt_tx_txn(gt_tx_txn[0:1]),
-    .aurora0_gt_tx_txp(gt_tx_txp[0:1]),
+    .aurora0_gt_rx_rxn(gt_rx_rxn[0:0]),
+    .aurora0_gt_rx_rxp(gt_rx_rxp[0:0]),
+    .aurora0_gt_tx_txn(gt_tx_txn[0:0]),
+    .aurora0_gt_tx_txp(gt_tx_txp[0:0]),
 
     // .aurora1_axi_rx_tdata(aurora_axi_rx_tdata[1]), //output
     // .aurora1_axi_rx_tkeep(aurora_axi_rx_tkeep[1]), //output
