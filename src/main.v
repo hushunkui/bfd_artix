@@ -10,7 +10,8 @@ module main #(
 ) (
     // input [13:0] usr_lvds_p,
     // input [13:0] usr_lvds_n,
-    input [9:0] usr_lvds_p,
+    input [5:0] usr_lvds_p,
+    output [3:0] usr_lvds_p_o,
 
     output [(ETHCOUNT*4)-1:0] rgmii_txd   ,
     output [ETHCOUNT-1:0]     rgmii_tx_ctl,
@@ -75,6 +76,7 @@ wire [ETHCOUNT-1:0]     mac_tx_reset;
 
 // wire [3:0] mac_fifo_status [ETHCOUNT-1:0];
 wire [3:0] mac_status [ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0]     mac_link;
 
 wire [7:0]              usr_rx_tdata  [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     usr_rx_tvalid;
@@ -403,7 +405,11 @@ assign eth_phy_mdc = 1'b0;
 
 assign gt_rst = usr_lvds_p[0];
 assign aurora_rst = usr_lvds_p[1];
-assign aurora_control_pwd = usr_lvds_p[8];
+assign aurora_control_pwd = usr_lvds_p[2];
+assign usr_lvds_p_o[0] = mac_link[0];
+assign usr_lvds_p_o[1] = mac_link[1];
+assign usr_lvds_p_o[2] = mac_link[2];
+assign usr_lvds_p_o[3] = mac_link[3];
 
 IDELAYCTRL idelayctrl (
     .RDY(),
@@ -452,7 +458,8 @@ generate
         // bit[0] - link
         // bit[1:0] - speed
         //work only if link up 1Gb!!!
-        assign mac_rx_nreset[x] = mac_status[x][0] && (mac_status[x][2:1] == 2'b10) && mac_pll_locked;
+        assign mac_rx_nreset[x] = mac_link[x] && mac_pll_locked;
+        assign mac_link[x] = mac_status[x][0] && (mac_status[x][2:1] == 2'b10);
 
         mac_fifo fifo(
             //USER IF
