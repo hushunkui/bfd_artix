@@ -5,7 +5,7 @@
 `timescale 1ns / 1ps
 
 module main #(
-    parameter ETHCOUNT = 1, //max 4
+    parameter ETHCOUNT = 2, //max 4
     parameter SIM = 0
 ) (
     // input [13:0] usr_lvds_p,
@@ -85,6 +85,9 @@ wire [ETHCOUNT-1:0]     usr_rx_tlast ;
 wire [3:0]              rx_fifo_status  [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     rx_fifo_overflow;
 
+wire [3:0]              tx_fifo_status  [ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0]     tx_fifo_overflow;
+
 wire [7:0]              test_tx_tdata [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     test_tx_tvalid;
 wire [ETHCOUNT-1:0]     test_tx_tuser ;
@@ -108,6 +111,7 @@ wire aurora_axi_rx_tlast;
 wire aurora_axi_rx_tvalid;
 wire [31:0]aurora_axi_tx_tdata;
 wire [3:0]aurora_axi_tx_tkeep;
+// assign aurora_axi_tx_tkeep = 4'hF;
 wire aurora_axi_tx_tlast;
 wire aurora_axi_tx_tready;
 wire aurora_axi_tx_tvalid;
@@ -154,6 +158,25 @@ wire [31:0] reg_ctrl;
 wire test_err;
 
 
+wire eth0_axi_rx_tready;
+wire [7:0] eth0_axi_rx_tdata;
+wire eth0_axi_rx_tvalid;
+wire eth0_axi_rx_tlast;
+
+wire eth0_axi_tx_tready;
+wire [7:0] eth0_axi_tx_tdata;
+wire eth0_axi_tx_tvalid;
+wire eth0_axi_tx_tlast;
+
+wire eth1_axi_rx_tready;
+wire [7:0] eth1_axi_rx_tdata;
+wire eth1_axi_rx_tvalid;
+wire eth1_axi_rx_tlast;
+
+wire eth1_axi_tx_tready;
+wire [7:0] eth1_axi_tx_tdata;
+wire eth1_axi_tx_tvalid;
+wire eth1_axi_tx_tlast;
 
 
 wire clk20_i;
@@ -207,7 +230,7 @@ system system_i(
     .aurora_axi_rx_tlast(aurora_axi_rx_tlast), //output
     .aurora_axi_tx_tready(aurora_axi_tx_tready),//output
     .aurora_axi_tx_tdata(aurora_axi_tx_tdata), //input
-    .aurora_axi_tx_tkeep(4'hF),//(aurora_axi_tx_tkeep), //input
+    .aurora_axi_tx_tkeep(aurora_axi_tx_tkeep), //input
     .aurora_axi_tx_tvalid(aurora_axi_tx_tvalid), //input
     .aurora_axi_tx_tlast(aurora_axi_tx_tlast), //input
     .aurora_control_power_down(aurora_control_pwd),
@@ -255,6 +278,23 @@ system system_i(
 
     .aclk(mac_gtx_clk),
     .areset_n(mac_pll_locked)
+);
+
+aurora_rx_fifo aurora_loopback_fifo (
+  .wr_rst_busy(),      // output wire wr_rst_busy
+  .rd_rst_busy(),      // output wire rd_rst_busy
+  .s_aclk(aurora_usr_clk),                // input wire s_aclk
+  .s_aresetn(mac_pll_locked),          // input wire s_aresetn
+  .s_axis_tvalid(aurora_axi_rx_tvalid),  // input wire s_axis_tvalid
+  .s_axis_tready(),  // output wire s_axis_tready
+  .s_axis_tdata(aurora_axi_rx_tdata),    // input wire [31 : 0] s_axis_tdata
+  .s_axis_tkeep(aurora_axi_rx_tkeep),    // input wire [3 : 0] s_axis_tkeep
+  .s_axis_tlast(aurora_axi_rx_tlast),    // input wire s_axis_tlast
+  .m_axis_tvalid(aurora_axi_tx_tvalid),  // output wire m_axis_tvalid
+  .m_axis_tready(aurora_axi_tx_tready),  // input wire m_axis_tready
+  .m_axis_tdata(aurora_axi_tx_tdata),    // output wire [31 : 0] m_axis_tdata
+  .m_axis_tkeep(aurora_axi_tx_tkeep),    // output wire [3 : 0] m_axis_tkeep
+  .m_axis_tlast(aurora_axi_tx_tlast)    // output wire m_axis_tlast
 );
 
 usr_logic #(
@@ -422,112 +462,343 @@ generate
     for (x=0; x < ETHCOUNT; x=x+1)  begin : eth
         assign eth_phy_rst[x] = mac_pll_locked;
 
-        mac_rgmii rgmii (
-            .status_o(mac_status[x]),
-            // .fifo_status(mac_fifo_status[x]),
-            // .dbg_fifo_rd(dbg_fifo_rd),
+        // mac_rgmii rgmii (
+        //     .status_o(mac_status[x]),
+        //     // .fifo_status(mac_fifo_status[x]),
+        //     // .dbg_fifo_rd(dbg_fifo_rd),
 
-            // phy side (RGMII)
-            .phy_rxd   (rgmii_rxd   [(x*4) +: 4]),
-            .phy_rx_ctl(rgmii_rx_ctl[x]         ),
-            .phy_rxc   (rgmii_rxc   [x]         ),
-            .phy_txd   (rgmii_txd   [(x*4) +: 4]),
-            .phy_tx_ctl(rgmii_tx_ctl[x]         ),
-            .phy_txc   (rgmii_txc   [x]         ),
+        //     // phy side (RGMII)
+        //     .phy_rxd   (rgmii_rxd   [(x*4) +: 4]),
+        //     .phy_rx_ctl(rgmii_rx_ctl[x]         ),
+        //     .phy_rxc   (rgmii_rxc   [x]         ),
+        //     .phy_txd   (rgmii_txd   [(x*4) +: 4]),
+        //     .phy_tx_ctl(rgmii_tx_ctl[x]         ),
+        //     .phy_txc   (rgmii_txc   [x]         ),
 
-            // logic side
-            .mac_rx_data_o  (mac_rx_tdata [x]),
-            .mac_rx_valid_o (mac_rx_tvalid[x]),
-            .mac_rx_sof_o   (mac_rx_tuser [x]),
-            .mac_rx_eof_o   (mac_rx_tlast [x]),
-            .mac_rx_ok_o    (mac_rx_ok[x]),
-            .mac_rx_bd_o    (mac_rx_bd[x]),
-            .mac_rx_er_o    (mac_rx_er[x]),
-            .mac_rx_clk_o   (mac_rx_clk[x]),
-            // .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[x]),
+        //     // logic side
+        //     .mac_rx_data_o  (mac_rx_tdata [x]),
+        //     .mac_rx_valid_o (mac_rx_tvalid[x]),
+        //     .mac_rx_sof_o   (mac_rx_tuser [x]),
+        //     .mac_rx_eof_o   (mac_rx_tlast [x]),
+        //     .mac_rx_ok_o    (mac_rx_ok[x]),
+        //     .mac_rx_bd_o    (mac_rx_bd[x]),
+        //     .mac_rx_er_o    (mac_rx_er[x]),
+        //     .mac_rx_clk_o   (mac_rx_clk[x]),
+        //     // .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[x]),
 
-            .mac_tx_data  (mac_tx_tdata [x]),
-            .mac_tx_valid (mac_tx_tvalid[x]),
-            .mac_tx_sof   (mac_tx_tuser [x]),
-            .mac_tx_eof   (mac_tx_tlast [x]),
-            .mac_tx_clk_90(mac_gtx_clk90),
-            .mac_tx_clk   (mac_gtx_clk),
+        //     .mac_tx_data  (mac_tx_tdata [x]),
+        //     .mac_tx_valid (mac_tx_tvalid[x]),
+        //     .mac_tx_sof   (mac_tx_tuser [x]),
+        //     .mac_tx_eof   (mac_tx_tlast [x]),
+        //     .mac_tx_clk_90(mac_gtx_clk90),
+        //     .mac_tx_clk   (mac_gtx_clk),
 
-            .rst(~mac_pll_locked)
-        );
-        // bit[0] - link
-        // bit[1:0] - speed
-        //work only if link up 1Gb!!!
-        assign mac_rx_nreset[x] = mac_link[x] && mac_pll_locked;
-        assign mac_link[x] = mac_status[x][0] && (mac_status[x][2:1] == 2'b10);
+        //     .rst(~mac_pll_locked)
+        // );
+        // // bit[0] - link
+        // // bit[1:0] - speed
+        // //work only if link up 1Gb!!!
+        // assign mac_rx_nreset[x] = mac_link[x] && mac_pll_locked;
+        // assign mac_link[x] = mac_status[x][0] && (mac_status[x][2:1] == 2'b10);
 
-        mac_fifo fifo(
-            //USER IF
-            .tx_fifo_aclk       (aurora_usr_clk), //input
-            .tx_fifo_resetn     (aurora_status_tx_lock           ), //input
-            .tx_axis_fifo_tdata (aurora_axi_rx_tdata [(0*8) +: 8]),//(usr_tx_tdata ), //input [7:0]
-            .tx_axis_fifo_tvalid(aurora_axi_rx_tvalid            ),//(usr_tx_tvalid), //input
-            .tx_axis_fifo_tlast (aurora_axi_rx_tlast             ),//(usr_tx_tlast ), //input
-            .tx_axis_fifo_tready(), //output
+        // mac_fifo fifo(
+        //     //USER IF
+        //     .tx_fifo_aclk       (aurora_usr_clk), //input
+        //     .tx_fifo_resetn     (aurora_status_tx_lock           ), //input
+        //     .tx_axis_fifo_tdata (aurora_axi_rx_tdata [(0*8) +: 8]),//(usr_tx_tdata ), //input [7:0]
+        //     .tx_axis_fifo_tvalid(aurora_axi_rx_tvalid            ),//(usr_tx_tvalid), //input
+        //     .tx_axis_fifo_tlast (aurora_axi_rx_tlast             ),//(usr_tx_tlast ), //input
+        //     .tx_axis_fifo_tready(), //output
 
-            .rx_fifo_aclk       (aurora_usr_clk), //input
-            .rx_fifo_resetn     (aurora_status_tx_lock), //input
-            .rx_axis_fifo_tready(aurora_axi_tx_tready           ), //input
-            .rx_axis_fifo_tdata (aurora_axi_tx_tdata[(0*8) +: 8]), //output [7:0]
-            .rx_axis_fifo_tvalid(aurora_axi_tx_tvalid           ), //output
-            .rx_axis_fifo_tlast (aurora_axi_tx_tlast            ), //output
+        //     .rx_fifo_aclk       (aurora_usr_clk), //input
+        //     .rx_fifo_resetn     (aurora_status_tx_lock), //input
+        //     .rx_axis_fifo_tready(aurora_axi_tx_tready           ), //input
+        //     .rx_axis_fifo_tdata (aurora_axi_tx_tdata[(0*8) +: 8]), //output [7:0]
+        //     .rx_axis_fifo_tvalid(aurora_axi_tx_tvalid           ), //output
+        //     .rx_axis_fifo_tlast (aurora_axi_tx_tlast            ), //output
 
-            //MAC IF
-            .tx_mac_aclk        (mac_gtx_clk  ), //input
-            .tx_mac_resetn      (mac_pll_locked  ), //input
-            .tx_axis_mac_tdata  (mac_tx_tdata [x]), //output [7:0]
-            .tx_axis_mac_tvalid (mac_tx_tvalid[x]), //output
-            .tx_axis_mac_tlast  (mac_tx_tlast [x]), //output
-            .tx_axis_mac_tready (1'b1),//(mac_tx_tready), //input
-            .tx_axis_mac_tuser  (),//(mac_tx_tuser ), //output
-            .tx_axis_mac_sof    (mac_tx_tuser [x]),
-            .tx_fifo_overflow   (), //output
-            .tx_fifo_status     (), //output   [3:0]
-            .tx_collision       (1'b0), //input
-            .tx_retransmit      (1'b0), //input
+        //     //MAC IF
+        //     .tx_mac_aclk        (mac_gtx_clk  ), //input
+        //     .tx_mac_resetn      (mac_pll_locked  ), //input
+        //     .tx_axis_mac_tdata  (mac_tx_tdata [x]), //output [7:0]
+        //     .tx_axis_mac_tvalid (mac_tx_tvalid[x]), //output
+        //     .tx_axis_mac_tlast  (mac_tx_tlast [x]), //output
+        //     .tx_axis_mac_tready (1'b1),//(mac_tx_tready), //input
+        //     .tx_axis_mac_tuser  (),//(mac_tx_tuser ), //output
+        //     .tx_axis_mac_sof    (mac_tx_tuser [x]),
+        //     .tx_fifo_overflow   (), //output
+        //     .tx_fifo_status     (), //output   [3:0]
+        //     .tx_collision       (1'b0), //input
+        //     .tx_retransmit      (1'b0), //input
 
-            .rx_mac_aclk        (mac_rx_clk[x]   ),//input
-            .rx_mac_resetn      (mac_rx_nreset[x]),//input
-            .rx_axis_mac_tdata  (mac_rx_tdata [x]),//input [7:0]
-            .rx_axis_mac_tvalid (mac_rx_tvalid[x]),//input
-            .rx_axis_mac_tlast  (mac_rx_tlast [x]),//input
-            .rx_axis_mac_tuser  (mac_rx_bd[x]),//input
-            .rx_fifo_status     (rx_fifo_status[x]), //output   [3:0]
-            .rx_fifo_overflow   (rx_fifo_overflow[x])  //output
-        );
+        //     .rx_mac_aclk        (mac_rx_clk[x]   ),//input
+        //     .rx_mac_resetn      (mac_rx_nreset[x]),//input
+        //     .rx_axis_mac_tdata  (mac_rx_tdata [x]),//input [7:0]
+        //     .rx_axis_mac_tvalid (mac_rx_tvalid[x]),//input
+        //     .rx_axis_mac_tlast  (mac_rx_tlast [x]),//input
+        //     .rx_axis_mac_tuser  (mac_rx_bd[x]),//input
+        //     .rx_fifo_status     (rx_fifo_status[x]), //output   [3:0]
+        //     .rx_fifo_overflow   (rx_fifo_overflow[x])  //output
+        // );
 
-        ila_0 rx_ila (
-            .probe0({
-                rx_fifo_status[x],
-                rx_fifo_overflow[x],
-                mac_status[x],
-                mac_rx_er[x],
-                mac_rx_bd[x],
-                mac_rx_ok[x],
-                mac_rx_tdata[x],
-                mac_rx_tvalid[x],
-                mac_rx_tuser[x],
-                mac_rx_tlast[x]
-            }),
-            .clk(mac_rx_clk[x])
-        );
+        // ila_0 rx_ila (
+        //     .probe0({
+        //         rx_fifo_status[x],
+        //         rx_fifo_overflow[x],
+        //         mac_status[x],
+        //         mac_rx_er[x],
+        //         mac_rx_bd[x],
+        //         mac_rx_ok[x],
+        //         mac_rx_tdata[x],
+        //         mac_rx_tvalid[x],
+        //         mac_rx_tuser[x],
+        //         mac_rx_tlast[x]
+        //     }),
+        //     .clk(mac_rx_clk[x])
+        // );
 
-        ila_0 tx_ila (
-            .probe0({
-                mac_tx_tdata [x],
-                mac_tx_tvalid[x],
-                mac_tx_tlast [x],
-                mac_tx_tuser [x]
-            }),
-            .clk(mac_gtx_clk)
-        );
+        // ila_0 tx_ila (
+        //     .probe0({
+        //         mac_tx_tdata [x],
+        //         mac_tx_tvalid[x],
+        //         mac_tx_tlast [x],
+        //         mac_tx_tuser [x]
+        //     }),
+        //     .clk(mac_gtx_clk)
+        // );
     end
 endgenerate
+
+mac_rgmii rgmii_0 (
+    .status_o(mac_status[0]),
+    // .fifo_status(mac_fifo_status[x]),
+    // .dbg_fifo_rd(dbg_fifo_rd),
+
+    // phy side (RGMII)
+    .phy_rxd   (rgmii_rxd   [(0*4) +: 4]),
+    .phy_rx_ctl(rgmii_rx_ctl[0]         ),
+    .phy_rxc   (rgmii_rxc   [0]         ),
+    .phy_txd   (rgmii_txd   [(0*4) +: 4]),
+    .phy_tx_ctl(rgmii_tx_ctl[0]         ),
+    .phy_txc   (rgmii_txc   [0]         ),
+
+    // logic side
+    .mac_rx_data_o  (mac_rx_tdata [0]),
+    .mac_rx_valid_o (mac_rx_tvalid[0]),
+    .mac_rx_sof_o   (mac_rx_tuser [0]),
+    .mac_rx_eof_o   (mac_rx_tlast [0]),
+    .mac_rx_ok_o    (mac_rx_ok[0]),
+    .mac_rx_bd_o    (mac_rx_bd[0]),
+    .mac_rx_er_o    (mac_rx_er[0]),
+    .mac_rx_clk_o   (mac_rx_clk[0]),
+    // .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[x]),
+
+    .mac_tx_data  (mac_tx_tdata [0]),
+    .mac_tx_valid (mac_tx_tvalid[0]),
+    .mac_tx_sof   (mac_tx_tuser [0]),
+    .mac_tx_eof   (mac_tx_tlast [0]),
+    .mac_tx_clk_90(mac_gtx_clk90),
+    .mac_tx_clk   (mac_gtx_clk),
+
+    .rst(~mac_pll_locked)
+);
+// bit[0] - link
+// bit[1:0] - speed
+//work only if link up 1Gb!!!
+assign mac_rx_nreset[0] = mac_link[0] && mac_pll_locked;
+assign mac_link[0] = mac_status[0][0] && (mac_status[0][2:1] == 2'b10);
+
+mac_fifo rgmii_0_fifo(
+    //USER IF
+    .tx_fifo_aclk       (mac_gtx_clk),//(aurora_usr_clk), //input
+    .tx_fifo_resetn     (mac_link[0]), //input
+    .tx_axis_fifo_tdata (eth0_axi_rx_tdata ),//(usr_tx_tdata ), //input [7:0]
+    .tx_axis_fifo_tvalid(eth0_axi_rx_tvalid),//(usr_tx_tvalid), //input
+    .tx_axis_fifo_tlast (eth0_axi_rx_tlast ),//(usr_tx_tlast ), //input
+    .tx_axis_fifo_tready(eth0_axi_rx_tready), //output
+
+    .rx_fifo_aclk       (mac_gtx_clk),//(aurora_usr_clk), //input
+    .rx_fifo_resetn     (mac_link[0]), //input
+    .rx_axis_fifo_tready(eth0_axi_tx_tready), //input
+    .rx_axis_fifo_tdata (eth0_axi_tx_tdata ), //output [7:0]
+    .rx_axis_fifo_tvalid(eth0_axi_tx_tvalid), //output
+    .rx_axis_fifo_tlast (eth0_axi_tx_tlast ), //output
+
+    //MAC IF
+    .tx_mac_aclk        (mac_gtx_clk  ), //input
+    .tx_mac_resetn      (mac_link[0]),//(mac_pll_locked  ), //input
+    .tx_axis_mac_tdata  (mac_tx_tdata [0]), //output [7:0]
+    .tx_axis_mac_tvalid (mac_tx_tvalid[0]), //output
+    .tx_axis_mac_tlast  (mac_tx_tlast [0]), //output
+    .tx_axis_mac_tready (1'b1),//(mac_tx_tready), //input
+    .tx_axis_mac_tuser  (),//(mac_tx_tuser ), //output
+    .tx_axis_mac_sof    (mac_tx_tuser [0]),
+    .tx_fifo_overflow   (tx_fifo_overflow[0]), //output
+    .tx_fifo_status     (tx_fifo_status[0]), //output   [3:0]
+    .tx_collision       (1'b0), //input
+    .tx_retransmit      (1'b0), //input
+
+    .rx_mac_aclk        (mac_rx_clk[0]   ),//input
+    .rx_mac_resetn      (mac_link[0]),//input
+    .rx_axis_mac_tdata  (mac_rx_tdata [0]),//input [7:0]
+    .rx_axis_mac_tvalid (mac_rx_tvalid[0]),//input
+    .rx_axis_mac_tlast  (mac_rx_tlast [0]),//input
+    .rx_axis_mac_tuser  (mac_rx_bd[0]),//input
+    .rx_fifo_status     (rx_fifo_status[0]), //output   [3:0]
+    .rx_fifo_overflow   (rx_fifo_overflow[0])  //output
+);
+
+
+mac_rgmii rgmii_1 (
+    .status_o(mac_status[1]),
+    // .fifo_status(mac_fifo_status[x]),
+    // .dbg_fifo_rd(dbg_fifo_rd),
+
+    // phy side (RGMII)
+    .phy_rxd   (rgmii_rxd   [(1*4) +: 4]),
+    .phy_rx_ctl(rgmii_rx_ctl[1]         ),
+    .phy_rxc   (rgmii_rxc   [1]         ),
+    .phy_txd   (rgmii_txd   [(1*4) +: 4]),
+    .phy_tx_ctl(rgmii_tx_ctl[1]         ),
+    .phy_txc   (rgmii_txc   [1]         ),
+
+    // logic side
+    .mac_rx_data_o  (mac_rx_tdata [1]),
+    .mac_rx_valid_o (mac_rx_tvalid[1]),
+    .mac_rx_sof_o   (mac_rx_tuser [1]),
+    .mac_rx_eof_o   (mac_rx_tlast [1]),
+    .mac_rx_ok_o    (mac_rx_ok[1]),
+    .mac_rx_bd_o    (mac_rx_bd[1]),
+    .mac_rx_er_o    (mac_rx_er[1]),
+    .mac_rx_clk_o   (mac_rx_clk[1]),
+    // .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[x]),
+
+    .mac_tx_data  (mac_tx_tdata [1]),
+    .mac_tx_valid (mac_tx_tvalid[1]),
+    .mac_tx_sof   (mac_tx_tuser [1]),
+    .mac_tx_eof   (mac_tx_tlast [1]),
+    .mac_tx_clk_90(mac_gtx_clk90),
+    .mac_tx_clk   (mac_gtx_clk),
+
+    .rst(~mac_pll_locked)
+);
+// bit[0] - link
+// bit[1:0] - speed
+//work only if link up 1Gb!!!
+assign mac_rx_nreset[1] = mac_link[1] && mac_pll_locked;
+assign mac_link[1] = mac_status[1][0] && (mac_status[1][2:1] == 2'b10);
+
+mac_fifo rgmii_1fifo(
+    //USER IF
+    .tx_fifo_aclk       (mac_gtx_clk),//(aurora_usr_clk), //input
+    .tx_fifo_resetn     (mac_link[1]), //input
+    .tx_axis_fifo_tdata (eth1_axi_rx_tdata ),//(usr_tx_tdata ), //input [7:0]
+    .tx_axis_fifo_tvalid(eth1_axi_rx_tvalid),//(usr_tx_tvalid), //input
+    .tx_axis_fifo_tlast (eth1_axi_rx_tlast ),//(usr_tx_tlast ), //input
+    .tx_axis_fifo_tready(eth1_axi_rx_tready), //output
+
+    .rx_fifo_aclk       (mac_gtx_clk),//(aurora_usr_clk), //input
+    .rx_fifo_resetn     (mac_link[1]), //input
+    .rx_axis_fifo_tready(eth1_axi_tx_tready), //input
+    .rx_axis_fifo_tdata (eth1_axi_tx_tdata ), //output [7:0]
+    .rx_axis_fifo_tvalid(eth1_axi_tx_tvalid), //output
+    .rx_axis_fifo_tlast (eth1_axi_tx_tlast ), //output
+
+    //MAC IF
+    .tx_mac_aclk        (mac_gtx_clk  ), //input
+    .tx_mac_resetn      (mac_link[1]),//(mac_pll_locked  ), //input
+    .tx_axis_mac_tdata  (mac_tx_tdata [1]), //output [7:0]
+    .tx_axis_mac_tvalid (mac_tx_tvalid[1]), //output
+    .tx_axis_mac_tlast  (mac_tx_tlast [1]), //output
+    .tx_axis_mac_tready (1'b1),//(mac_tx_tready), //input
+    .tx_axis_mac_tuser  (),//(mac_tx_tuser ), //output
+    .tx_axis_mac_sof    (mac_tx_tuser [1]),
+    .tx_fifo_overflow   (tx_fifo_overflow[1]), //output
+    .tx_fifo_status     (tx_fifo_status[1]), //output   [3:0]
+    .tx_collision       (1'b0), //input
+    .tx_retransmit      (1'b0), //input
+
+    .rx_mac_aclk        (mac_rx_clk[1]   ),//input
+    .rx_mac_resetn      (mac_link[1]),//input
+    .rx_axis_mac_tdata  (mac_rx_tdata [1]),//input [7:0]
+    .rx_axis_mac_tvalid (mac_rx_tvalid[1]),//input
+    .rx_axis_mac_tlast  (mac_rx_tlast [1]),//input
+    .rx_axis_mac_tuser  (mac_rx_bd[1]),//input
+    .rx_fifo_status     (rx_fifo_status[1]), //output   [3:0]
+    .rx_fifo_overflow   (rx_fifo_overflow[1])  //output
+);
+
+
+assign eth1_axi_rx_tdata  = eth0_axi_tx_tdata ;
+assign eth1_axi_rx_tvalid = eth0_axi_tx_tvalid;
+assign eth1_axi_rx_tlast  = eth0_axi_tx_tlast ;
+
+assign eth0_axi_rx_tdata  = eth1_axi_tx_tdata ;
+assign eth0_axi_rx_tvalid = eth1_axi_tx_tvalid;
+assign eth0_axi_rx_tlast  = eth1_axi_tx_tlast ;
+
+assign eth1_axi_tx_tready = eth0_axi_rx_tready;
+assign eth0_axi_tx_tready = eth1_axi_rx_tready;
+
+ila_0 rx0_ila (
+    .probe0({
+        mac_link[0],
+        rx_fifo_status[0],
+        rx_fifo_overflow[0],
+        mac_status[0],
+        mac_rx_er[0],
+        mac_rx_bd[0],
+        mac_rx_ok[0],
+        mac_rx_tdata[0],
+        mac_rx_tvalid[0],
+        mac_rx_tuser[0],
+        mac_rx_tlast[0]
+    }),
+    .clk(mac_rx_clk[0])
+);
+
+ila_0 tx0_ila (
+    .probe0({
+        mac_link[0],
+        tx_fifo_overflow[0],
+        tx_fifo_status[0],
+        mac_tx_tdata [0],
+        mac_tx_tvalid[0],
+        mac_tx_tlast [0],
+        mac_tx_tuser [0]
+    }),
+    .clk(mac_gtx_clk)
+);
+
+ila_0 rx1_ila (
+    .probe0({
+        mac_link[1],
+        rx_fifo_status[1],
+        rx_fifo_overflow[1],
+        mac_status[1],
+        mac_rx_er[1],
+        mac_rx_bd[1],
+        mac_rx_ok[1],
+        mac_rx_tdata[1],
+        mac_rx_tvalid[1],
+        mac_rx_tuser[1],
+        mac_rx_tlast[1]
+    }),
+    .clk(mac_rx_clk[1])
+);
+
+ila_0 tx1_ila (
+    .probe0({
+        mac_link[1],
+        tx_fifo_overflow[0],
+        tx_fifo_status[0],
+        mac_tx_tdata [1],
+        mac_tx_tvalid[1],
+        mac_tx_tlast [1],
+        mac_tx_tuser [1]
+    }),
+    .clk(mac_gtx_clk)
+);
 
 // ila_1 aurora_ila (
 //     .probe0({
@@ -602,19 +873,6 @@ always @(posedge sysclk25_g) begin
     sysclk25_div <= ~sysclk25_div;
 end
 
-assign dbg_out[0] = 1'b0;
-assign dbg_out[1] = clk20_div | sysclk25_div | led_blink | reg_ctrl[0];// &
-                    // |mac_rx_tvalid &
-                    // |mac_rx_tlast &
-                    // |mac_rx_tuser &
-                    // |mac_tx_tready &
-                    // |mac_tx_clk &
-                    // |mac_tx_reset
-                    // ;
-                    // |mac_rx_reset &
-                    // |mac_rx_tdata &
-// assign dbg_led = 1'b0;
-
 wire led_blink;
 fpga_test_01 #(
     .G_BLINK_T05(125),  // -- 1/2 ïåðèîäà ìèãàíèÿ ñâåòîäèîäà.(âðåìÿ â ms)
@@ -635,6 +893,18 @@ fpga_test_01 #(
 assign dbg_led = led_blink & !gt_rst;// !test_gpio[0] & !aurora_gt_rst;// & test_err;
 
 
+assign dbg_out[0] = 1'b0;
+assign dbg_out[1] = clk20_div | sysclk25_div | led_blink | reg_ctrl[0];// &
+                    // |mac_rx_tvalid &
+                    // |mac_rx_tlast &
+                    // |mac_rx_tuser &
+                    // |mac_tx_tready &
+                    // |mac_tx_clk &
+                    // |mac_tx_reset
+                    // ;
+                    // |mac_rx_reset &
+                    // |mac_rx_tdata &
+// assign dbg_led = 1'b0;
 
 
 // reg [31:0] mac_rx_cnterr [ETHCOUNT-1:0];
