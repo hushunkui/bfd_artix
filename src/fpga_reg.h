@@ -9,3 +9,6 @@
 #define UREG_TEST0            0x0C
 #define UREG_TEST1            0x10
 
+#define UREG_STATUS_AURORA    0x14
+#define UREG_STATUS_ETH       0x18
+

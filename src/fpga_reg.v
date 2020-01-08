@@ -8,3 +8,6 @@
 `define UREG_CTRL             32'h08
 `define UREG_TEST0            32'h0C
 `define UREG_TEST1            32'h10
+
+`define UREG_STATUS_AURORA    32'h14
+`define UREG_STATUS_ETH       32'h18
