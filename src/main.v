@@ -5,7 +5,7 @@
 `timescale 1ns / 1ps
 
 module main #(
-    parameter ETHCOUNT = 1, //max 4
+    parameter ETHCOUNT = 4, //max 4
     parameter SIM = 0
 ) (
     // input [13:0] usr_lvds_p,
@@ -164,6 +164,9 @@ wire [0:0] test_gpio;
 wire [31:0] reg_ctrl;
 wire test_err;
 
+wire [1:0] eth_ch_num;
+wire [3:0] eth_ch_en;
+wire  module_en;
 
 
 
@@ -419,22 +422,28 @@ assign eth_phy_mdc = 1'b0;
 assign gt_rst = usr_lvds_p[0];
 assign aurora_rst = usr_lvds_p[1];
 assign aurora_control_pwd = usr_lvds_p[2];
+assign eth_ch_num = usr_lvds_p[4:3];
+assign module_en = usr_lvds_p[5];
+
 assign usr_lvds_p_o[0] = mac_link[0];
 assign usr_lvds_p_o[1] = mac_link[1];
 assign usr_lvds_p_o[2] = mac_link[2];
 assign usr_lvds_p_o[3] = mac_link[3];
 
-assign aurora_status_channel_up_eth[0] = aurora_status_channel_up;
 
-assign aurora_axi_rx_tdata_eth[0][(0*8) +: 8] = aurora_axi_rx_tdata[(0*8) +: 8];//(usr_tx_tdata ), //input [7:0]
-assign aurora_axi_rx_tvalid_eth[0]            = aurora_axi_rx_tvalid          ;//(usr_tx_tvalid), //input
-assign aurora_axi_rx_tlast_eth[0]             = aurora_axi_rx_tlast           ;//(usr_tx_tlast ), //input
+assign aurora_axi_tx_tdata  = (module_en && (eth_ch_num == 2'd0)) ? aurora_axi_tx_tdata_eth[0][(0*8) +: 8] :
+                            (module_en && (eth_ch_num == 2'd1)) ? aurora_axi_tx_tdata_eth[1][(0*8) +: 8] :
+                            (module_en && (eth_ch_num == 2'd2)) ? aurora_axi_tx_tdata_eth[2][(0*8) +: 8] : aurora_axi_tx_tdata_eth[3][(0*8) +: 8];
 
-assign aurora_axi_tx_tready_eth[0]  = aurora_axi_tx_tready; //input
-assign aurora_axi_tx_tdata  = aurora_axi_tx_tdata_eth[0][(0*8) +: 8]; //output [7:0]
-assign aurora_axi_tx_tvalid = aurora_axi_tx_tvalid_eth[0]           ; //output
-assign aurora_axi_tx_tlast  = aurora_axi_tx_tlast_eth[0]            ; //output
+assign aurora_axi_tx_tvalid = (module_en && (eth_ch_num == 2'd0)) ? aurora_axi_tx_tvalid_eth[0] :
+                            (module_en && (eth_ch_num == 2'd1)) ? aurora_axi_tx_tvalid_eth[1] :
+                            (module_en && (eth_ch_num == 2'd2)) ? aurora_axi_tx_tvalid_eth[2] :
+                            (module_en && (eth_ch_num == 2'd3)) ? aurora_axi_tx_tvalid_eth[3] : 1'b0;
 
+assign aurora_axi_tx_tlast = (module_en && (eth_ch_num == 2'd0)) ? aurora_axi_tx_tlast_eth[0] :
+                            (module_en && (eth_ch_num == 2'd1)) ? aurora_axi_tx_tlast_eth[1] :
+                            (module_en && (eth_ch_num == 2'd2)) ? aurora_axi_tx_tlast_eth[2] :
+                            (module_en && (eth_ch_num == 2'd3)) ? aurora_axi_tx_tlast_eth[3] : 1'b0;
 
 IDELAYCTRL idelayctrl (
     .RDY(),
@@ -448,7 +457,7 @@ generate
         assign eth_phy_rst[x] = mac_pll_locked;
 
         mac_rgmii rgmii (
-            .status_o(mac_status[x]),
+            .status_o(mac_status[x]),//output [3:0]
             // .fifo_status(mac_fifo_status[x]),
             // .dbg_fifo_rd(dbg_fifo_rd),
 
@@ -484,15 +493,23 @@ generate
         // bit[1:0] - speed
         //work only if link up 1Gb!!!
         assign mac_link[x] = mac_status[x][0] && (mac_status[x][2:1] == 2'b10) && mac_pll_locked;
-        assign mac_fifo_resetn[x] = mac_link[x] && aurora_status_channel_up_eth[x];
+        assign mac_fifo_resetn[x] = mac_link[x] && aurora_status_channel_up && eth_ch_en[x];
+
+        assign eth_ch_en[x] = module_en && (eth_ch_num == x);
+
+        assign aurora_axi_rx_tdata_eth[x][(0*8) +: 8] = aurora_axi_rx_tdata[(0*8) +: 8];//input [7:0]
+        assign aurora_axi_rx_tvalid_eth[x]            = aurora_axi_rx_tvalid;//input
+        assign aurora_axi_rx_tlast_eth[x]             = aurora_axi_rx_tlast;//input
+
+        assign aurora_axi_tx_tready_eth[x]  = aurora_axi_tx_tready; //input
 
         mac_fifo fifo(
             //USER IF
             .tx_fifo_aclk       (aurora_usr_clk), //input
             .tx_fifo_resetn     (mac_fifo_resetn[x]), //input
-            .tx_axis_fifo_tdata (aurora_axi_rx_tdata_eth[x][(0*8) +: 8]),//(usr_tx_tdata ), //input [7:0]
-            .tx_axis_fifo_tvalid(aurora_axi_rx_tvalid_eth[x]            ),//(usr_tx_tvalid), //input
-            .tx_axis_fifo_tlast (aurora_axi_rx_tlast_eth[x]             ),//(usr_tx_tlast ), //input
+            .tx_axis_fifo_tdata (aurora_axi_rx_tdata_eth[x][(0*8) +: 8]),//input [7:0]
+            .tx_axis_fifo_tvalid(aurora_axi_rx_tvalid_eth[x]           ),//input
+            .tx_axis_fifo_tlast (aurora_axi_rx_tlast_eth[x]            ),//input
             .tx_axis_fifo_tready(), //output
 
             .rx_fifo_aclk       (aurora_usr_clk), //input
