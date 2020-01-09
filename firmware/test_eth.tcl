@@ -64,11 +64,11 @@ proc main {argc argv} {
         }
         puts "\nUSR CTRL:"
         set usr_ctrl [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CTRL}]] ]
-        puts "\tzynq eth: [expr { ($artix_m >> ($i*${::hw_usr::UREG_CTRL_SEL_ZYNQ_ETH_BIT})) & 0x3 } ]"
-        puts "\tartix eth: [expr { ($artix_m >> ($i*${::hw_usr::UREG_CTRL_SEL_ARTIX_ETH_BIT})) & 0x7 } ]"
+        puts "\tzynq eth: [expr { ($usr_ctrl >> ${::hw_usr::UREG_CTRL_SEL_ZYNQ_ETH_BIT}) & 0x3 } ]"
+        puts "\tartix eth: [expr { ($usr_ctrl >> ${::hw_usr::UREG_CTRL_SEL_ARTIX_ETH_BIT}) & 0x7 } ]"
 
-        puts "\n1 - get status"
-        puts "0 - quit"
+        puts "\n0 - quit"
+        puts "1 - get status"
         puts -nonewline "Enter key: "
         flush stdout
         set usr_key [gets stdin]
