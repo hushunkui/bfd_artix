@@ -9,6 +9,8 @@ module usr_logic #(
 ) (
     output [0:0] test_gpio,
     output reg [31:0] reg_ctrl = 0,
+    input [31:0] status_aurora,
+    input [31:0] status_eth,
 
 //AXI interface
     input  [31:0]  s_axi_awaddr ,
@@ -116,6 +118,8 @@ always @(posedge s_axi_clk) begin
         if (reg_addr == `UREG_CTRL )         begin reg_rdata <= reg_ctrl; end
         if (reg_addr == `UREG_TEST0)         begin reg_rdata <= reg_test0; end
         if (reg_addr == `UREG_TEST1)         begin reg_rdata <= reg_test1; end
+        if (reg_addr == `UREG_STATUS_AURORA) begin reg_rdata <= status_aurora; end
+        if (reg_addr == `UREG_STATUS_ETH)    begin reg_rdata <= status_eth; end
     end
 end
 
