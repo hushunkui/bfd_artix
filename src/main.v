@@ -81,6 +81,12 @@ wire [3:0] mac_link;
 wire [7:0]              usr_rx_tdata  [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     usr_rx_tvalid;
 wire [ETHCOUNT-1:0]     usr_rx_tlast ;
+wire [ETHCOUNT-1:0]     usr_rx_tready;
+
+wire [7:0]              usr_tx_tdata  [ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0]     usr_tx_tvalid;
+wire [ETHCOUNT-1:0]     usr_tx_tlast ;
+wire [ETHCOUNT-1:0]     usr_tx_tready;
 
 wire [3:0]              rx_fifo_status  [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     rx_fifo_overflow;
@@ -221,7 +227,7 @@ system system_i(
     .aurora_axi_rx_tlast(aurora_axi_rx_tlast), //output
     .aurora_axi_tx_tready(aurora_axi_tx_tready),//output
     .aurora_axi_tx_tdata(aurora_axi_tx_tdata), //input
-    .aurora_axi_tx_tkeep(4'hF),//(aurora_axi_tx_tkeep), //input
+    .aurora_axi_tx_tkeep(aurora_axi_tx_tkeep), //input
     .aurora_axi_tx_tvalid(aurora_axi_tx_tvalid), //input
     .aurora_axi_tx_tlast(aurora_axi_tx_tlast), //input
     .aurora_control_power_down(aurora_control_pwd),
@@ -350,6 +356,27 @@ usr_logic #(
 //     .rst(aurora_sysrst)
 // );
 
+aurora_rx_fifo aurora_fifo_loopback (
+  .wr_rst_busy(),      // output wire wr_rst_busy
+  .rd_rst_busy(),      // output wire rd_rst_busy
+
+  .s_axis_tready(),  // output wire s_axis_tready
+  .s_axis_tdata (aurora_axi_rx_tdata ),  // input wire [31 : 0] s_axis_tdata
+  .s_axis_tkeep (aurora_axi_rx_tkeep ),  // input wire [3 : 0] s_axis_tkeep
+  .s_axis_tvalid(aurora_axi_rx_tvalid),  // input wire s_axis_tvalid
+  .s_axis_tlast (aurora_axi_rx_tlast ),  // input wire s_axis_tlast
+
+  .m_axis_tready(aurora_axi_tx_tready),  // input wire m_axis_tready
+  .m_axis_tdata (aurora_axi_tx_tdata ),  // output wire [31 : 0] m_axis_tdata
+  .m_axis_tkeep (aurora_axi_tx_tkeep ),  // output wire [3 : 0] m_axis_tkeep
+  .m_axis_tvalid(aurora_axi_tx_tvalid),  // output wire m_axis_tvalid
+  .m_axis_tlast (aurora_axi_tx_tlast ),  // output wire m_axis_tlast
+
+  .s_aclk(aurora_usr_clk),        // input wire s_aclk
+  .s_aresetn(~aurora_rst)         // input wire s_aresetn
+);
+
+
 // aurora_tx_fifo aurora_tx_fifo (
 //     .din   (aurora_usr_data),                 // input wire [15 : 0] din
 //     .wr_en (~aurora_rx_fifo_empty),
@@ -431,25 +458,28 @@ assign usr_lvds_p_o[2] = mac_link[2];
 assign usr_lvds_p_o[3] = mac_link[3];
 
 
-assign aurora_axi_tx_tdata  = (module_en && (eth_num == 2'd0)) ? aurora_axi_tx_tdata_eth[0][(0*8) +: 8] :
-                            (module_en && (eth_num == 2'd1)) ? aurora_axi_tx_tdata_eth[1][(0*8) +: 8] :
-                            (module_en && (eth_num == 2'd2)) ? aurora_axi_tx_tdata_eth[2][(0*8) +: 8] : aurora_axi_tx_tdata_eth[3][(0*8) +: 8];
+// assign aurora_axi_tx_tdata  = (module_en && (eth_num == 2'd0)) ? aurora_axi_tx_tdata_eth[0][(0*8) +: 8] :
+//                             (module_en && (eth_num == 2'd1)) ? aurora_axi_tx_tdata_eth[1][(0*8) +: 8] :
+//                             (module_en && (eth_num == 2'd2)) ? aurora_axi_tx_tdata_eth[2][(0*8) +: 8] : aurora_axi_tx_tdata_eth[3][(0*8) +: 8];
 
-assign aurora_axi_tx_tvalid = (module_en && (eth_num == 2'd0)) ? aurora_axi_tx_tvalid_eth[0] :
-                            (module_en && (eth_num == 2'd1)) ? aurora_axi_tx_tvalid_eth[1] :
-                            (module_en && (eth_num == 2'd2)) ? aurora_axi_tx_tvalid_eth[2] :
-                            (module_en && (eth_num == 2'd3)) ? aurora_axi_tx_tvalid_eth[3] : 1'b0;
+// assign aurora_axi_tx_tvalid = (module_en && (eth_num == 2'd0)) ? aurora_axi_tx_tvalid_eth[0] :
+//                             (module_en && (eth_num == 2'd1)) ? aurora_axi_tx_tvalid_eth[1] :
+//                             (module_en && (eth_num == 2'd2)) ? aurora_axi_tx_tvalid_eth[2] :
+//                             (module_en && (eth_num == 2'd3)) ? aurora_axi_tx_tvalid_eth[3] : 1'b0;
 
-assign aurora_axi_tx_tlast = (module_en && (eth_num == 2'd0)) ? aurora_axi_tx_tlast_eth[0] :
-                            (module_en && (eth_num == 2'd1)) ? aurora_axi_tx_tlast_eth[1] :
-                            (module_en && (eth_num == 2'd2)) ? aurora_axi_tx_tlast_eth[2] :
-                            (module_en && (eth_num == 2'd3)) ? aurora_axi_tx_tlast_eth[3] : 1'b0;
+// assign aurora_axi_tx_tlast = (module_en && (eth_num == 2'd0)) ? aurora_axi_tx_tlast_eth[0] :
+//                             (module_en && (eth_num == 2'd1)) ? aurora_axi_tx_tlast_eth[1] :
+//                             (module_en && (eth_num == 2'd2)) ? aurora_axi_tx_tlast_eth[2] :
+//                             (module_en && (eth_num == 2'd3)) ? aurora_axi_tx_tlast_eth[3] : 1'b0;
 
 IDELAYCTRL idelayctrl (
     .RDY(),
     .REFCLK(clk200M),
     .RST(mac_pll_locked)
 );
+
+wire mac_link_all;
+assign mac_link_all = &mac_link;
 
 genvar x;
 generate
@@ -493,35 +523,35 @@ generate
         // bit[1:0] - speed
         //work only if link up 1Gb!!!
         assign mac_link[x] = mac_status[x][0] && (mac_status[x][2:1] == 2'b10) && mac_pll_locked;
-        assign mac_fifo_resetn[x] = mac_link[x] && aurora_status_channel_up && eth_en[x];
+        // assign mac_fifo_resetn[x] = mac_link[x] && aurora_status_channel_up && eth_en[x];
 
-        assign eth_en[x] = module_en && (eth_num == x);
+        // assign eth_en[x] = module_en && (eth_num == x);
 
-        assign aurora_axi_rx_tdata_eth [x][(0*8) +: 8] = aurora_axi_rx_tdata[(0*8) +: 8];//input [7:0]
-        assign aurora_axi_rx_tvalid_eth[x]             = aurora_axi_rx_tvalid;//input
-        assign aurora_axi_rx_tlast_eth [x]             = aurora_axi_rx_tlast;//input
+        // assign aurora_axi_rx_tdata_eth [x][(0*8) +: 8] = aurora_axi_rx_tdata[(0*8) +: 8];//input [7:0]
+        // assign aurora_axi_rx_tvalid_eth[x]             = aurora_axi_rx_tvalid;//input
+        // assign aurora_axi_rx_tlast_eth [x]             = aurora_axi_rx_tlast;//input
 
-        assign aurora_axi_tx_tready_eth[x] = aurora_axi_tx_tready; //input
+        // assign aurora_axi_tx_tready_eth[x] = aurora_axi_tx_tready; //input
 
         mac_fifo fifo(
             //USER IF
-            .tx_fifo_aclk       (aurora_usr_clk), //input
-            .tx_fifo_resetn     (mac_fifo_resetn[x]), //input
-            .tx_axis_fifo_tdata (aurora_axi_rx_tdata_eth [x][(0*8) +: 8]),//input [7:0]
-            .tx_axis_fifo_tvalid(aurora_axi_rx_tvalid_eth[x]            ),//input
-            .tx_axis_fifo_tlast (aurora_axi_rx_tlast_eth [x]            ),//input
-            .tx_axis_fifo_tready(), //output
+            .tx_fifo_aclk       (mac_gtx_clk), //input
+            .tx_fifo_resetn     (mac_link_all), //input
+            .tx_axis_fifo_tdata (usr_rx_tdata [x][(0*8) +: 8]),//input [7:0]
+            .tx_axis_fifo_tvalid(usr_rx_tvalid[x]            ),//input
+            .tx_axis_fifo_tlast (usr_rx_tlast [x]            ),//input
+            .tx_axis_fifo_tready(usr_rx_tready[x]), //output
 
-            .rx_fifo_aclk       (aurora_usr_clk), //input
-            .rx_fifo_resetn     (mac_fifo_resetn[x]), //input
-            .rx_axis_fifo_tready(aurora_axi_tx_tready_eth[x]            ), //input
-            .rx_axis_fifo_tdata (aurora_axi_tx_tdata_eth [x][(0*8) +: 8]), //output [7:0]
-            .rx_axis_fifo_tvalid(aurora_axi_tx_tvalid_eth[x]            ), //output
-            .rx_axis_fifo_tlast (aurora_axi_tx_tlast_eth [x]            ), //output
+            .rx_fifo_aclk       (mac_gtx_clk), //input
+            .rx_fifo_resetn     (mac_link_all), //input
+            .rx_axis_fifo_tready(usr_tx_tready[x]            ), //input
+            .rx_axis_fifo_tdata (usr_tx_tdata [x][(0*8) +: 8]), //output [7:0]
+            .rx_axis_fifo_tvalid(usr_tx_tvalid[x]            ), //output
+            .rx_axis_fifo_tlast (usr_tx_tlast [x]            ), //output
 
             //MAC IF
             .tx_mac_aclk        (mac_gtx_clk  ), //input
-            .tx_mac_resetn      (mac_fifo_resetn[x]), //input
+            .tx_mac_resetn      (mac_link_all), //input
             .tx_axis_mac_tdata  (mac_tx_tdata [x]), //output [7:0]
             .tx_axis_mac_tvalid (mac_tx_tvalid[x]), //output
             .tx_axis_mac_tlast  (mac_tx_tlast [x]), //output
@@ -534,7 +564,7 @@ generate
             .tx_retransmit      (1'b0), //input
 
             .rx_mac_aclk        (mac_rx_clk[x]   ),//input
-            .rx_mac_resetn      (mac_fifo_resetn[x]),//input
+            .rx_mac_resetn      (mac_link_all),//input
             .rx_axis_mac_tdata  (mac_rx_tdata [x]),//input [7:0]
             .rx_axis_mac_tvalid (mac_rx_tvalid[x]),//input
             .rx_axis_mac_tlast  (mac_rx_tlast [x]),//input
@@ -572,6 +602,28 @@ generate
         );
     end
 endgenerate
+
+//connection mac0 - mac1
+assign usr_rx_tdata [1] = usr_tx_tdata [0];
+assign usr_rx_tvalid[1] = usr_tx_tvalid[0];
+assign usr_rx_tlast [1] = usr_tx_tlast [0];
+assign usr_tx_tready[1] = usr_rx_tready[0];
+
+assign usr_rx_tdata [0] = usr_tx_tdata [1];
+assign usr_rx_tvalid[0] = usr_tx_tvalid[1];
+assign usr_rx_tlast [0] = usr_tx_tlast [1];
+assign usr_tx_tready[0] = usr_rx_tready[1];
+
+//connection mac2 - mac3
+assign usr_rx_tdata [3] = usr_tx_tdata [2];
+assign usr_rx_tvalid[3] = usr_tx_tvalid[2];
+assign usr_rx_tlast [3] = usr_tx_tlast [2];
+assign usr_tx_tready[3] = usr_rx_tready[2];
+
+assign usr_rx_tdata [2] = usr_tx_tdata [3];
+assign usr_rx_tvalid[2] = usr_tx_tvalid[3];
+assign usr_rx_tlast [2] = usr_tx_tlast [3];
+assign usr_tx_tready[2] = usr_rx_tready[3];
 
 // ila_1 aurora_ila (
 //     .probe0({
@@ -646,19 +698,6 @@ always @(posedge sysclk25_g) begin
     sysclk25_div <= ~sysclk25_div;
 end
 
-assign dbg_out[0] = 1'b0;
-assign dbg_out[1] = clk20_div | sysclk25_div | led_blink | reg_ctrl[0];// &
-                    // |mac_rx_tvalid &
-                    // |mac_rx_tlast &
-                    // |mac_rx_tuser &
-                    // |mac_tx_tready &
-                    // |mac_tx_clk &
-                    // |mac_tx_reset
-                    // ;
-                    // |mac_rx_reset &
-                    // |mac_rx_tdata &
-// assign dbg_led = 1'b0;
-
 wire led_blink;
 fpga_test_01 #(
     .G_BLINK_T05(125),  // -- 1/2 ïåðèîäà ìèãàíèÿ ñâåòîäèîäà.(âðåìÿ â ms)
@@ -678,7 +717,18 @@ fpga_test_01 #(
 
 assign dbg_led = led_blink & !gt_rst;// !test_gpio[0] & !aurora_gt_rst;// & test_err;
 
-
+assign dbg_out[0] = 1'b0;
+assign dbg_out[1] = clk20_div | sysclk25_div | led_blink | reg_ctrl[0];// &
+                    // |mac_rx_tvalid &
+                    // |mac_rx_tlast &
+                    // |mac_rx_tuser &
+                    // |mac_tx_tready &
+                    // |mac_tx_clk &
+                    // |mac_tx_reset
+                    // ;
+                    // |mac_rx_reset &
+                    // |mac_rx_tdata &
+// assign dbg_led = 1'b0;
 
 
 // reg [31:0] mac_rx_cnterr [ETHCOUNT-1:0];
