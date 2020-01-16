@@ -25,10 +25,10 @@ module main #(
     inout                     eth_phy_mdio,
     output                    eth_phy_mdc ,
 
-    input [0:0] gt_rx_rxn,
-    input [0:0] gt_rx_rxp,
-    output [0:0] gt_tx_txn,
-    output [0:0] gt_tx_txp,
+    input [1:0] gt_rx_rxn,
+    input [1:0] gt_rx_rxp,
+    output [1:0] gt_tx_txn,
+    output [1:0] gt_tx_txp,
     input gt_refclk_n,
     input gt_refclk_p,
     output mgt_pwr_en,
@@ -117,8 +117,6 @@ wire [3:0]aurora_axi_tx_tkeep;
 wire aurora_axi_tx_tlast;
 wire aurora_axi_tx_tready;
 wire aurora_axi_tx_tvalid;
-wire gt_rst;
-wire aurora_rst;
 wire aurora_control_pwd;
 wire aurora_status_channel_up;
 wire aurora_status_frame_err;
@@ -129,6 +127,29 @@ wire aurora_status_rx_resetdone_out;
 wire aurora_status_soft_err;
 wire aurora_status_tx_lock;
 wire aurora_status_tx_resetdone_out;
+
+wire [31:0]aurora1_axi_rx_tdata;
+wire [3:0]aurora1_axi_rx_tkeep;
+wire aurora1_axi_rx_tlast;
+wire aurora1_axi_rx_tvalid;
+wire [31:0]aurora1_axi_tx_tdata;
+wire [3:0]aurora1_axi_tx_tkeep;
+wire aurora1_axi_tx_tlast;
+wire aurora1_axi_tx_tready;
+wire aurora1_axi_tx_tvalid;
+wire aurora1_control_pwd;
+wire aurora1_status_channel_up;
+wire aurora1_status_frame_err;
+wire aurora1_status_hard_err;
+wire [0:0]aurora1_status_lane_up;
+wire aurora1_status_pll_not_locked_out;
+wire aurora1_status_rx_resetdone_out;
+wire aurora1_status_soft_err;
+wire aurora1_status_tx_lock;
+wire aurora1_status_tx_resetdone_out;
+
+wire gt_rst;
+wire aurora_rst;
 wire aurora_usr_clk;
 
 wire [31:0] aurora_axi_rx_tdata_eth [ETHCOUNT-1:0];
@@ -173,7 +194,6 @@ wire test_err;
 wire [1:0] eth_num;
 wire [3:0] eth_en;
 wire  module_en;
-
 
 
 wire clk20_i;
@@ -236,14 +256,38 @@ system system_i(
     .aurora_status_frame_err(aurora_status_frame_err),
     .aurora_status_hard_err(aurora_status_hard_err),
     .aurora_status_soft_err(aurora_status_soft_err),
-    .aurora_status_pll_not_locked_out(aurora_status_pll_not_locked_out),
+    // .aurora_status_pll_not_locked_out(aurora_status_pll_not_locked_out),
     .aurora_status_tx_lock(aurora_status_tx_lock),
     .aurora_status_tx_resetdone_out(aurora_status_tx_resetdone_out),
     .aurora_status_rx_resetdone_out(aurora_status_rx_resetdone_out),
-    .aurora_gt_rx_rxn(gt_rx_rxn),
-    .aurora_gt_rx_rxp(gt_rx_rxp),
-    .aurora_gt_tx_txn(gt_tx_txn),
-    .aurora_gt_tx_txp(gt_tx_txp),
+    .aurora_gt_rx_rxn(gt_rx_rxn[0:0]),
+    .aurora_gt_rx_rxp(gt_rx_rxp[0:0]),
+    .aurora_gt_tx_txn(gt_tx_txn[0:0]),
+    .aurora_gt_tx_txp(gt_tx_txp[0:0]),
+
+    .aurora1_axi_rx_tdata(aurora1_axi_rx_tdata), //output
+    .aurora1_axi_rx_tkeep(aurora1_axi_rx_tkeep), //output
+    .aurora1_axi_rx_tvalid(aurora1_axi_rx_tvalid),//output
+    .aurora1_axi_rx_tlast(aurora1_axi_rx_tlast), //output
+    .aurora1_axi_tx_tready(aurora1_axi_tx_tready),//output
+    .aurora1_axi_tx_tdata(aurora1_axi_tx_tdata), //input
+    .aurora1_axi_tx_tkeep(aurora1_axi_tx_tkeep), //input
+    .aurora1_axi_tx_tvalid(aurora1_axi_tx_tvalid), //input
+    .aurora1_axi_tx_tlast(aurora1_axi_tx_tlast), //input
+    .aurora1_control_power_down(aurora_control_pwd),
+    .aurora1_status_lane_up(aurora1_status_lane_up),
+    .aurora1_status_channel_up(aurora1_status_channel_up),
+    .aurora1_status_frame_err(aurora1_status_frame_err),
+    .aurora1_status_hard_err(aurora1_status_hard_err),
+    .aurora1_status_soft_err(aurora1_status_soft_err),
+    // .aurora1_status_pll_not_locked_out(aurora1_status_pll_not_locked_out),
+    .aurora1_status_tx_lock(aurora1_status_tx_lock),
+    .aurora1_status_tx_resetdone_out(aurora1_status_tx_resetdone_out),
+    .aurora1_status_rx_resetdone_out(aurora1_status_rx_resetdone_out),
+    .aurora1_gt_rx_rxn(gt_rx_rxn[1:1]),
+    .aurora1_gt_rx_rxp(gt_rx_rxp[1:1]),
+    .aurora1_gt_tx_txn(gt_tx_txn[1:1]),
+    .aurora1_gt_tx_txp(gt_tx_txp[1:1]),
 
     .aurora_gt_refclk_clk_n(gt_refclk_n),//(mgt_refclk_n),//
     .aurora_gt_refclk_clk_p(gt_refclk_p),//(mgt_refclk_p),//
@@ -283,7 +327,7 @@ usr_logic #(
 //user part
     .test_gpio (test_gpio),
     .reg_ctrl (reg_ctrl),
-    .status_aurora({30'd0, 1'b0, aurora_status_channel_up}),
+    .status_aurora({30'd0, aurora1_status_channel_up, aurora_status_channel_up}),
     .status_eth({21'd0, 4'd0, mac_link[3:0], 3'd0}),
 
 //AXI interface
@@ -365,6 +409,26 @@ aurora_rx_fifo aurora_fifo_loopback (
   .s_axis_tkeep (aurora_axi_rx_tkeep ),  // input wire [3 : 0] s_axis_tkeep
   .s_axis_tvalid(aurora_axi_rx_tvalid),  // input wire s_axis_tvalid
   .s_axis_tlast (aurora_axi_rx_tlast ),  // input wire s_axis_tlast
+
+  .m_axis_tready(aurora1_axi_tx_tready),  // input wire m_axis_tready
+  .m_axis_tdata (aurora1_axi_tx_tdata ),  // output wire [31 : 0] m_axis_tdata
+  .m_axis_tkeep (aurora1_axi_tx_tkeep ),  // output wire [3 : 0] m_axis_tkeep
+  .m_axis_tvalid(aurora1_axi_tx_tvalid),  // output wire m_axis_tvalid
+  .m_axis_tlast (aurora1_axi_tx_tlast ),  // output wire m_axis_tlast
+
+  .s_aclk(aurora_usr_clk),        // input wire s_aclk
+  .s_aresetn(~aurora_rst)         // input wire s_aresetn
+);
+
+aurora_rx_fifo aurora1_fifo_loopback (
+  .wr_rst_busy(),      // output wire wr_rst_busy
+  .rd_rst_busy(),      // output wire rd_rst_busy
+
+  .s_axis_tready(),  // output wire s_axis_tready
+  .s_axis_tdata (aurora1_axi_rx_tdata ),  // input wire [31 : 0] s_axis_tdata
+  .s_axis_tkeep (aurora1_axi_rx_tkeep ),  // input wire [3 : 0] s_axis_tkeep
+  .s_axis_tvalid(aurora1_axi_rx_tvalid),  // input wire s_axis_tvalid
+  .s_axis_tlast (aurora1_axi_rx_tlast ),  // input wire s_axis_tlast
 
   .m_axis_tready(aurora_axi_tx_tready),  // input wire m_axis_tready
   .m_axis_tdata (aurora_axi_tx_tdata ),  // output wire [31 : 0] m_axis_tdata
@@ -478,8 +542,6 @@ IDELAYCTRL idelayctrl (
     .RST(mac_pll_locked)
 );
 
-wire mac_link_all;
-assign mac_link_all = &mac_link;
 
 genvar x;
 generate
@@ -536,14 +598,14 @@ generate
         mac_fifo fifo(
             //USER IF
             .tx_fifo_aclk       (mac_gtx_clk), //input
-            .tx_fifo_resetn     (mac_link_all), //input
+            .tx_fifo_resetn     (module_en), //input
             .tx_axis_fifo_tdata (usr_rx_tdata [x][(0*8) +: 8]),//input [7:0]
             .tx_axis_fifo_tvalid(usr_rx_tvalid[x]            ),//input
             .tx_axis_fifo_tlast (usr_rx_tlast [x]            ),//input
             .tx_axis_fifo_tready(usr_rx_tready[x]), //output
 
             .rx_fifo_aclk       (mac_gtx_clk), //input
-            .rx_fifo_resetn     (mac_link_all), //input
+            .rx_fifo_resetn     (module_en), //input
             .rx_axis_fifo_tready(usr_tx_tready[x]            ), //input
             .rx_axis_fifo_tdata (usr_tx_tdata [x][(0*8) +: 8]), //output [7:0]
             .rx_axis_fifo_tvalid(usr_tx_tvalid[x]            ), //output
@@ -551,7 +613,7 @@ generate
 
             //MAC IF
             .tx_mac_aclk        (mac_gtx_clk  ), //input
-            .tx_mac_resetn      (mac_link_all), //input
+            .tx_mac_resetn      (module_en), //input
             .tx_axis_mac_tdata  (mac_tx_tdata [x]), //output [7:0]
             .tx_axis_mac_tvalid (mac_tx_tvalid[x]), //output
             .tx_axis_mac_tlast  (mac_tx_tlast [x]), //output
@@ -564,7 +626,7 @@ generate
             .tx_retransmit      (1'b0), //input
 
             .rx_mac_aclk        (mac_rx_clk[x]   ),//input
-            .rx_mac_resetn      (mac_link_all),//input
+            .rx_mac_resetn      (module_en),//input
             .rx_axis_mac_tdata  (mac_rx_tdata [x]),//input [7:0]
             .rx_axis_mac_tvalid (mac_rx_tvalid[x]),//input
             .rx_axis_mac_tlast  (mac_rx_tlast [x]),//input
