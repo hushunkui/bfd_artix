@@ -5,7 +5,7 @@
 #------------------------------------------------------------------------
 namespace eval hw_usr \
 {
-    variable AURORA_CHCOUNT              2
+    variable AURORA_CHCOUNT              4
 
     variable MODULE_ZYNQ_ETHCOUNT        3
     variable MODULE_ZYNQ_ETHCOUNT_MAX    3
@@ -25,5 +25,10 @@ namespace eval hw_usr \
     variable UREG_TEST1            0x00000010
     variable UREG_STATUS_AURORA    0x00000014
     variable UREG_STATUS_ETH       0x00000018
+
+    variable UREG_CNTERR_ETH0      0x0000001C
+    variable UREG_CNTERR_ETH1      0x00000020
+    variable UREG_CNTERR_ETH2      0x00000024
+    variable UREG_CNTERR_ETH3      0x00000028
 
 }; #namespace eval hw_usr

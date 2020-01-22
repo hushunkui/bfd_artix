@@ -65,6 +65,7 @@ wire [ETHCOUNT-1:0]     mac_rx_tlast ;
 wire [ETHCOUNT-1:0]     mac_rx_tuser ;
 wire [ETHCOUNT-1:0]     mac_rx_clk;
 wire [ETHCOUNT-1:0]     mac_fifo_resetn;
+reg [31:0] mac_rx_cnterr [ETHCOUNT-1:0];
 
 wire [7:0]              mac_tx_tdata [ETHCOUNT-1:0];// = 0;
 wire [ETHCOUNT-1:0]     mac_tx_tvalid;// = 0;
@@ -514,7 +515,7 @@ assign gt_rst = usr_lvds_p[0];
 assign aurora_rst = usr_lvds_p[1];
 assign aurora_control_pwd = usr_lvds_p[2];
 assign eth_num = usr_lvds_p[4:3];
-assign module_en = usr_lvds_p[5];
+assign module_en = reg_ctrl[28];//usr_lvds_p[5] |
 
 assign usr_lvds_p_o[0] = mac_link[0];
 assign usr_lvds_p_o[1] = mac_link[1];
@@ -547,6 +548,18 @@ genvar x;
 generate
     for (x=0; x < ETHCOUNT; x=x+1)  begin : eth
         assign eth_phy_rst[x] = mac_pll_locked;
+
+        always @(posedge mac_rx_clk[x]) begin
+            if (reg_ctrl[24]) begin
+                mac_rx_cnterr[x] <= 0;
+            end else begin
+                if (mac_rx_tvalid[x] && mac_rx_tlast[x]) begin
+                    if (mac_rx_bd[x] || mac_rx_er[x]) begin
+                        mac_rx_cnterr[x] <= mac_rx_cnterr[x] + 1;
+                    end
+                end
+            end
+        end
 
         mac_rgmii rgmii (
             .status_o(mac_status[x]),//output [3:0]
@@ -637,10 +650,10 @@ generate
 
         ila_0 rx_ila (
             .probe0({
-                mac_fifo_resetn[x],
-                rx_fifo_status[x],
+                rx_fifo_status[x], //[3:0]
                 rx_fifo_overflow[x],
-                mac_status[x],
+                mac_status[x], //[3:0]
+                mac_rx_cnterr[x][7:0],
                 mac_rx_er[x],
                 mac_rx_bd[x],
                 mac_rx_ok[x],

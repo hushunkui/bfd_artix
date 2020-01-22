@@ -11,6 +11,10 @@ module usr_logic #(
     output reg [31:0] reg_ctrl = 0,
     input [31:0] status_aurora,
     input [31:0] status_eth,
+    input [31:0] cnterr_eth0,
+    input [31:0] cnterr_eth1,
+    input [31:0] cnterr_eth2,
+    input [31:0] cnterr_eth3,
 
 //AXI interface
     input  [31:0]  s_axi_awaddr ,
@@ -38,7 +42,7 @@ module usr_logic #(
     input s_axi_clk
 );
 
-localparam USER_ADR_WIDTH = 4;
+localparam USER_ADR_WIDTH = 8;
 localparam ADDR_LSB = 2;
 localparam ADDR_MSB = ADDR_LSB + USER_ADR_WIDTH;
 
@@ -120,6 +124,10 @@ always @(posedge s_axi_clk) begin
         if (reg_addr == `UREG_TEST1)         begin reg_rdata <= reg_test1; end
         if (reg_addr == `UREG_STATUS_AURORA) begin reg_rdata <= status_aurora; end
         if (reg_addr == `UREG_STATUS_ETH)    begin reg_rdata <= status_eth; end
+        if (reg_addr == `UREG_CNTERR_ETH0)    begin reg_rdata <= cnterr_eth0; end
+        if (reg_addr == `UREG_CNTERR_ETH1)    begin reg_rdata <= cnterr_eth1; end
+        if (reg_addr == `UREG_CNTERR_ETH2)    begin reg_rdata <= cnterr_eth2; end
+        if (reg_addr == `UREG_CNTERR_ETH3)    begin reg_rdata <= cnterr_eth3; end
     end
 end
 

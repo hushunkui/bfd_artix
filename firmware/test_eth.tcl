@@ -67,18 +67,31 @@ proc main {argc argv} {
         puts "\tzynq eth: [expr { ($usr_ctrl >> ${::hw_usr::UREG_CTRL_SEL_ZYNQ_ETH_BIT}) & 0x3 } ]"
         puts "\tartix eth: [expr { ($usr_ctrl >> ${::hw_usr::UREG_CTRL_SEL_ARTIX_ETH_BIT}) & 0x7 } ]"
 
+        puts "\nMAC_RX_CNTERR:"
+        set mac0_rx_cnterr [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CNTERR_ETH0}]] ]
+        set mac1_rx_cnterr [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CNTERR_ETH1}]] ]
+        set mac2_rx_cnterr [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CNTERR_ETH2}]] ]
+        set mac3_rx_cnterr [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CNTERR_ETH3}]] ]
+        puts "\teth0: $mac0_rx_cnterr"
+        puts "\teth1: $mac1_rx_cnterr"
+        puts "\teth2: $mac2_rx_cnterr"
+        puts "\teth2: $mac3_rx_cnterr"
+
         puts "\n0 - quit"
         puts "1 - get status"
+        puts "2 - set ctrl"
         puts -nonewline "Enter key: "
         flush stdout
         set usr_key [gets stdin]
         if {[string compare $usr_key "0"] == 0} {
             eval exec >&@stdout <@stdin [auto_execok cls]
             break;
+        } elseif {[string compare $usr_key "2"] == 0} {
+            # eval exec >&@stdout <@stdin [auto_execok cls]
+            puts -nonewline "Enter value(hex): "
+            set usr_key [gets stdin]
+            axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CTRL}]] $usr_key
         }
-        # elseif {[string compare $usr_key "1"] == 0} {
-
-        # }
     }
 
     usr_close
