@@ -21,6 +21,7 @@ namespace eval hw_usr \
     variable UREG_CTRL             0x00000008
         variable UREG_CTRL_SEL_ARTIX_ETH_BIT     8
         variable UREG_CTRL_SEL_ZYNQ_ETH_BIT      12
+        variable UREG_CTRL_EN_BIT                28
     variable UREG_TEST0            0x0000000C
     variable UREG_TEST1            0x00000010
     variable UREG_STATUS_AURORA    0x00000014

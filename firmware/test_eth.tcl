@@ -66,6 +66,7 @@ proc main {argc argv} {
         set usr_ctrl [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CTRL}]] ]
         puts "\tzynq eth: [expr { ($usr_ctrl >> ${::hw_usr::UREG_CTRL_SEL_ZYNQ_ETH_BIT}) & 0x3 } ]"
         puts "\tartix eth: [expr { ($usr_ctrl >> ${::hw_usr::UREG_CTRL_SEL_ARTIX_ETH_BIT}) & 0x7 } ]"
+        puts "\tenable: [expr { ($usr_ctrl >> ${::hw_usr::UREG_CTRL_EN_BIT}) & 0x1 } ]"
 
         puts "\nMAC_RX_CNTERR:"
         set mac0_rx_cnterr [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CNTERR_ETH0}]] ]
