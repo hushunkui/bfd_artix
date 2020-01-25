@@ -17,15 +17,13 @@
 `define UREG_CNTERR_ETH2      32'h24
 `define UREG_CNTERR_ETH3      32'h28
 
-`define UREG_ETHPHY_MDIO_O    32'h2C
-    `define UREG_ETHPHY_MDIO_O_CLK_BIT         0
-    `define UREG_ETHPHY_MDIO_O_DATA_BIT        1
-    `define UREG_ETHPHY_MDIO_O_DIR_BIT         2
-`define UREG_ETHPHY_MDIO_I    32'h30
-    `define UREG_ETHPHY_MDIO_I_DATA_BIT        0
+`define UREG_ETHPHY_MDIO_CLK_O    32'h2C
+`define UREG_ETHPHY_MDIO_DATA_O   32'h30
+`define UREG_ETHPHY_MDIO_DATA_I   32'h34
+`define UREG_ETHPHY_MDIO_DIR_O    32'h38
 
-`define UREG_ETHPHY_RST       32'h34
+`define UREG_ETHPHY_RST       32'h3C
 
-`define UREG_AURORA_O_CTL_0   32'h38
-`define UREG_AURORA_O_CTL_1   32'h3C
-`define UREG_AURORA_I_CTL_0   32'h40
+`define UREG_AURORA_O_CTL_0   32'h40
+`define UREG_AURORA_O_CTL_1   32'h44
+`define UREG_AURORA_I_CTL_0   32'h48

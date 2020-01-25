@@ -31,17 +31,15 @@ namespace eval hw_usr \
     variable UREG_CNTERR_ETH2      0x00000024
     variable UREG_CNTERR_ETH3      0x00000028
 
-    variable UREG_ETHPHY_MDIO_O    0x0000002C
-        variable UREG_ETHPHY_MDIO_O_CLK_BIT         0
-        variable UREG_ETHPHY_MDIO_O_DATA_BIT        1
-        variable UREG_ETHPHY_MDIO_O_DIR_BIT         2
-    variable UREG_ETHPHY_MDIO_I    0x00000030
-    variable UREG_ETHPHY_MDIO_I_DATA_BIT            0
+    variable UREG_ETHPHY_MDIO_CLK_O    0x0000002C
+    variable UREG_ETHPHY_MDIO_DATA_O   0x00000030
+    variable UREG_ETHPHY_MDIO_DATA_I   0x00000034
+    variable UREG_ETHPHY_MDIO_DIR_O    0x00000038
 
-    variable UREG_ETHPHY_RST       0x00000034
+    variable UREG_ETHPHY_RST       0x0000003C
 
-    variable UREG_AURORA_O_CTL_0   0x00000038
-    variable UREG_AURORA_O_CTL_1   0x0000003C
-    variable UREG_AURORA_I_CTL_0   0x00000040
+    variable UREG_AURORA_O_CTL_0   0x00000040
+    variable UREG_AURORA_O_CTL_1   0x00000044
+    variable UREG_AURORA_I_CTL_0   0x00000048
 
 }; #namespace eval hw_usr

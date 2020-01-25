@@ -3,6 +3,7 @@
 #
 source ./hw_usr.tcl
 source ./axi_wr.tcl
+source ./mdio_if.tcl
 
 proc usr_open {} {
     set fpga_index 0
@@ -67,6 +68,7 @@ proc main {argc argv} {
         puts "\n0 - quit"
         puts "1 - get status"
         puts "2 - set ctrl"
+        puts "3 - EthPHY"
         puts -nonewline "Enter key: "
         flush stdout
         set usr_key [gets stdin]
@@ -78,6 +80,31 @@ proc main {argc argv} {
             puts -nonewline "Enter value(hex): "
             set usr_key [gets stdin]
             axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CTRL}]] $usr_key
+        } elseif {[string compare $usr_key "3"] == 0} {
+            while (1) {
+                eval exec >&@stdout <@stdin [auto_execok cls]
+                puts "\nEthPHY Ctrl:"
+                puts "0 - quit"
+                puts "1 - select PHY"
+                puts "2 - get reg data"
+                puts -nonewline "Enter key: "
+                set usr_key [gets stdin]
+                if {[string compare $usr_key "0"] == 0} {
+                    break;
+                } elseif {[string compare $usr_key "1"] == 0} {
+                    puts -nonewline "Enter mask(hex): "
+                    set usr_key [gets stdin]
+                    axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_RST}]] $usr_key
+                    puts -nonewline "press any key for continue: "
+                    set usr_key [gets stdin]
+                } elseif {[string compare $usr_key "2"] == 0} {
+                    set phy_adr 0x0
+                    set reg_adr ${::mdio::REG_PHY_Identifier_2}
+                    puts "rdata: [ ::mdio::mdio_read $phy_adr $reg_adr ]"
+                    puts -nonewline "press any key for continue: "
+                    set usr_key [gets stdin]
+                }
+            }
         }
     }
 

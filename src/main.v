@@ -173,7 +173,8 @@ wire [1:0] eth_num;
 wire [3:0] eth_en;
 wire  module_en;
 
-wire [3:0] ethphy_mdio;
+wire ethphy_mdio_data;
+wire ethphy_mdio_dir;
 wire [3:0] ethphy_rst;
 
 wire [7:0] vio_test_start;
@@ -295,8 +296,10 @@ usr_logic #(
     .cnterr_eth1(mac_rx_cnterr[1]),
     .cnterr_eth2(mac_rx_cnterr[2]),
     .cnterr_eth3(mac_rx_cnterr[3]),
-    .ethphy_mdio_o(ethphy_mdio),
-    .ethphy_mdio_i(eth_phy_mdio),
+    .ethphy_mdio_clk_o(eth_phy_mdc),
+    .ethphy_mdio_data_o(ethphy_mdio_data),
+    .ethphy_mdio_dir_o(ethphy_mdio_dir),
+    .ethphy_mdio_data_i(eth_phy_mdio),
     .ethphy_nrst_o(ethphy_rst),
     .aurora_o_ctl_0(aurora_axi_tx_tdata),
     .aurora_o_ctl_1({aurora_axi_tx_tlast, aurora_axi_tx_tvalid}),
@@ -327,6 +330,8 @@ usr_logic #(
     .s_axi_resetn (mac_pll_locked),
     .s_axi_clk (mac_gtx_clk)
 );
+
+assign eth_phy_mdio = (ethphy_mdio_dir) ? ethphy_mdio_data : 1'bz;
 
 
 // assign aurora_axi_tx_tdata  = aurora_axi_rx_tdata ;
@@ -420,10 +425,7 @@ assign  spi_cs   = 1'bz;
 assign  spi_mosi = 1'bz;
 assign  spi_miso = 1'bz;
 
-assign eth_phy_mdio = (ethphy_mdio[`UREG_ETHPHY_MDIO_O_DIR_BIT]) ?
-                        ethphy_mdio[`UREG_ETHPHY_MDIO_O_DATA_BIT] : 1'bz;
 
-assign eth_phy_mdc = ethphy_mdio[`UREG_ETHPHY_MDIO_O_CLK_BIT];
 
 // wire [13:0] usr_lvds;
 // genvar i;
@@ -464,7 +466,7 @@ IDELAYCTRL idelayctrl (
 genvar x;
 generate
     for (x=0; x < ETHCOUNT; x=x+1)  begin : eth
-        assign eth_phy_rst[x] = mac_pll_locked;// & ethphy_rst[x];
+        assign eth_phy_rst[x] = mac_pll_locked & ethphy_rst[x];
 
         assign test_mac_start[x] = vio_test_start[x]; //reg_ctrl[x] |
 
