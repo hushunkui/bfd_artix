@@ -51,16 +51,16 @@ sata_scrambler #(
 );
 
 always @(posedge clk) begin
+    srcambler_sof <= 1'b0;
     case (fsm_cs)
         IDLE: begin
-            if (start) begin
+            if (start) begin //Initialization scrambler. Do it once.
                 srcambler_sof <= 1'b1;
                 fsm_cs <= TXSTART;
             end
         end
 
         TXSTART: begin
-            srcambler_sof <= 1'b0;
             mac_tx_valid <= 1'b0;
             mac_tx_sof <= 1'b0;
             mac_tx_eof <= 1'b0;
@@ -70,6 +70,8 @@ always @(posedge clk) begin
                 mac_tx_sof <= 1'b1;
                 mac_tx_eof <= 1'b0;
                 fsm_cs <= TX;
+            end else begin
+                fsm_cs <= IDLE;
             end
         end
 

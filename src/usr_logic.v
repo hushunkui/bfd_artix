@@ -11,8 +11,18 @@ module usr_logic #(
     output reg [31:0] reg_ctrl = 0,
     input [31:0] status_aurora,
     input [31:0] status_eth,
+    input [31:0] cnterr_eth0,
+    input [31:0] cnterr_eth1,
+    input [31:0] cnterr_eth2,
+    input [31:0] cnterr_eth3,
+    output reg [3:0] ethphy_mdio_o = 0,
+    input            ethphy_mdio_i,
+    output reg [3:0] ethphy_nrst_o = 0,
+    output reg [31:0] aurora_o_ctl_0 = 0,
+    output reg [31:0] aurora_o_ctl_1 = 0,
+    input  [31:0] aurora_i_ctl_0,
 
-//AXI interface
+//AXI i3terface
     input  [31:0]  s_axi_awaddr ,
     input  [2:0]   s_axi_awprot ,
     output         s_axi_awready,
@@ -38,7 +48,7 @@ module usr_logic #(
     input s_axi_clk
 );
 
-localparam USER_ADR_WIDTH = 4;
+localparam USER_ADR_WIDTH = 8;
 localparam ADDR_LSB = 2;
 localparam ADDR_MSB = ADDR_LSB + USER_ADR_WIDTH;
 
@@ -106,6 +116,10 @@ always @(posedge s_axi_clk) begin
             if (reg_addr == `UREG_CTRL)  begin reg_ctrl <= reg_wdata; end
             if (reg_addr == `UREG_TEST0) begin reg_test0 <= reg_wdata; end
             if (reg_addr == `UREG_TEST1) begin reg_test1 <= reg_wdata; end
+            if (reg_addr == `UREG_ETHPHY_MDIO_O) begin ethphy_mdio_o <= reg_wdata[3:0]; end
+            if (reg_addr == `UREG_ETHPHY_RST) begin ethphy_nrst_o <= reg_wdata[3:0]; end
+            if (reg_addr == `UREG_AURORA_O_CTL_0) begin aurora_o_ctl_0 <= reg_wdata; end
+            if (reg_addr == `UREG_AURORA_O_CTL_1) begin aurora_o_ctl_0 <= reg_wdata; end
         end
     end
 end
@@ -120,6 +134,12 @@ always @(posedge s_axi_clk) begin
         if (reg_addr == `UREG_TEST1)         begin reg_rdata <= reg_test1; end
         if (reg_addr == `UREG_STATUS_AURORA) begin reg_rdata <= status_aurora; end
         if (reg_addr == `UREG_STATUS_ETH)    begin reg_rdata <= status_eth; end
+        if (reg_addr == `UREG_CNTERR_ETH0)    begin reg_rdata <= cnterr_eth0; end
+        if (reg_addr == `UREG_CNTERR_ETH1)    begin reg_rdata <= cnterr_eth1; end
+        if (reg_addr == `UREG_CNTERR_ETH2)    begin reg_rdata <= cnterr_eth2; end
+        if (reg_addr == `UREG_CNTERR_ETH3)    begin reg_rdata <= cnterr_eth3; end
+        if (reg_addr == `UREG_ETHPHY_MDIO_I) begin reg_rdata <= {30'd0, ethphy_mdio_i}; end
+        if (reg_addr == `UREG_AURORA_I_CTL_0) begin reg_rdata <= aurora_i_ctl_0; end
     end
 end
 
