@@ -2,6 +2,7 @@
 # author: Golovachenko Viktor
 #
 source ./hw_usr.tcl
+source ./axi_wr.tcl
 
 proc usr_open {} {
     set fpga_index 0
@@ -14,21 +15,6 @@ proc usr_open {} {
 
 proc usr_close {} {
     close_hw
-}
-
-proc axi_read { addr } {
-    delete_hw_axi_txn axi_read_txn -quiet
-    create_hw_axi_txn -type read -address $addr axi_read_txn [get_hw_axis]
-    run_hw_axi axi_read_txn -quiet
-    return 0x[lindex [report_hw_axi_txn axi_read_txn] 1]
-}
-
-proc axi_write { addr data } {
-    set data [format %08x $data]
-    delete_hw_axi_txn axi_write_txn -quiet
-    create_hw_axi_txn -type write -address $addr -data $data axi_write_txn [get_hw_axis]
-    run_hw_axi axi_write_txn -quiet
-    return -code ok
 }
 
 proc main {argc argv} {
@@ -66,7 +52,7 @@ proc main {argc argv} {
         set usr_ctrl [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CTRL}]] ]
         puts "\tzynq eth: [expr { ($usr_ctrl >> ${::hw_usr::UREG_CTRL_SEL_ZYNQ_ETH_BIT}) & 0x3 } ]"
         puts "\tartix eth: [expr { ($usr_ctrl >> ${::hw_usr::UREG_CTRL_SEL_ARTIX_ETH_BIT}) & 0x7 } ]"
-        puts "\tenable: [expr { ($usr_ctrl >> ${::hw_usr::UREG_CTRL_EN_BIT}) & 0x1 } ]"
+        # puts "\tenable: [expr { ($usr_ctrl >> ${::hw_usr::UREG_CTRL_EN_BIT}) & 0x1 } ]"
 
         puts "\nMAC_RX_CNTERR:"
         set mac0_rx_cnterr [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CNTERR_ETH0}]] ]
@@ -81,7 +67,6 @@ proc main {argc argv} {
         puts "\n0 - quit"
         puts "1 - get status"
         puts "2 - set ctrl"
-        puts "3 - tttt"
         puts -nonewline "Enter key: "
         flush stdout
         set usr_key [gets stdin]
