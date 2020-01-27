@@ -138,10 +138,10 @@ proc main {argc argv} {
                         puts "\nEthPHY Ctrl:"
                         puts "0 - quit"
                         puts "1 - set PHY adr"
-                        puts "2 - mmd dev adr"
-                        puts "3 - mmd reg adr"
-                        puts "4 - mmd reg read"
-                        puts "5 - mmd reg write"
+                        puts "2 - mmd reg adr"
+                        puts "3 - mmd reg read"
+                        puts "4 - mmd reg write"
+                        puts "5 - mmd dev adr"
                         puts -nonewline "Enter key: "
                         set usr_key [gets stdin]
                         if {[string compare $usr_key "0"] == 0} {
@@ -151,19 +151,18 @@ proc main {argc argv} {
                             set ethphy_adr [gets stdin]
                         } elseif {[string compare $usr_key "2"] == 0} {
                             puts -nonewline "Enter value(hex): "
-                            set ethphy_mmd_dev_adr [gets stdin]
-                        } elseif {[string compare $usr_key "3"] == 0} {
-                            puts -nonewline "Enter value(hex): "
                             set ethphy_mmd_reg_adr [gets stdin]
-                        } elseif {[string compare $usr_key "4"] == 0} {
+                        } elseif {[string compare $usr_key "3"] == 0} {
                             puts "rdata: [ ::mdio::mmd_read $ethphy_adr $ethphy_mmd_dev_adr $ethphy_mmd_reg_adr ]"
                             puts -nonewline "press any key for continue: "
                             set usr_key [gets stdin]
-                        } elseif {[string compare $usr_key "5"] == 0} {
+                        } elseif {[string compare $usr_key "4"] == 0} {
                             puts -nonewline "Enter value(hex): "
                             set ethphy_mmd_reg_wdata [gets stdin]
                             ::mdio::mmd_write $ethphy_adr $ethphy_mmd_dev_adr $ethphy_mmd_reg_adr $ethphy_mmd_reg_wdata
-                            set usr_key [gets stdin]
+                        } elseif {[string compare $usr_key "5"] == 0} {
+                            puts -nonewline "Enter value(hex): "
+                            set ethphy_mmd_dev_adr [gets stdin]
                         }
                     }
                 } elseif {[string compare $usr_key "3"] == 0} {
