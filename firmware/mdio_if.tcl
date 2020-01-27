@@ -29,7 +29,7 @@ namespace eval mdio \
         #set output buffer as output
         ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_MDIO_DIR_O}]] 1
         ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_MDIO_DATA_O}]] 1
-        for {set i 0} {$i < 2} {incr i} {
+        for {set i 0} {$i < 32} {incr i} {
             mdio_clk
         }
         return -code ok
@@ -127,17 +127,58 @@ namespace eval mdio \
 
     #write/read MDIO Manageable device (MMD) registers
     proc mmd_write { ethphy_adr mmd_dev_addr mmd_reg_addr mmd_reg_data } {
-        mdio_write $phy_adr $REG_MMD_Access_Control $mmd_dev_addr
-        mdio_write $phy_adr $REG_MMD_Access_Reg_Data $mmd_reg_addr
-        mdio_write $phy_adr $REG_MMD_Access_Control [format %04x [expr { (4 << 12) | [expr $mmd_dev_addr & 0x1F] }]]
-        mdio_write $phy_adr $REG_MMD_Access_Reg_Data $mmd_reg_data
+        set reg_adr ${::mdio::REG_MMD_Access_Control}
+        set reg_val $mmd_dev_addr
+        puts "mmd_write: mdio_write $ethphy_adr; $reg_adr; $reg_val"
+        mdio_write $ethphy_adr $reg_adr $reg_val
+        # puts -nonewline "press any key for continue: "
+        # set usr_key [gets stdin]
+
+        set reg_adr ${::mdio::REG_MMD_Access_Reg_Data}
+        set reg_val $mmd_reg_addr
+        puts "mmd_write: mdio_write $ethphy_adr; $reg_adr; $reg_val"
+        mdio_write $ethphy_adr $reg_adr $reg_val
+        # puts -nonewline "press any key for continue: "
+        # set usr_key [gets stdin]
+
+        set reg_adr ${::mdio::REG_MMD_Access_Control}
+        set reg_val 0x[format %04x [expr { (4 << 12) | ($mmd_dev_addr & 0x1F) }]]
+        puts "mmd_write: mdio_write $ethphy_adr; $reg_adr; $reg_val"
+        mdio_write $ethphy_adr $reg_adr $reg_val
+        # puts -nonewline "press any key for continue: "
+        # set usr_key [gets stdin]
+
+        set reg_adr ${::mdio::REG_MMD_Access_Reg_Data}
+        set reg_val $mmd_reg_data
+        puts "mmd_write: mdio_write $ethphy_adr; $reg_adr; $reg_val"
+        mdio_write $ethphy_adr $reg_adr $reg_val
         return -code ok
     }
 
     proc mmd_read { ethphy_adr mmd_dev_addr mmd_reg_addr } {
-        mdio_write $phy_adr $REG_MMD_Access_Control $mmd_dev_addr
-        mdio_write $phy_adr $REG_MMD_Access_Reg_Data $mmd_reg_addr
-        mdio_write $phy_adr $REG_MMD_Access_Control [format %04x [expr { (4 << 12) | [expr $mmd_dev_addr & 0x1F] }]]
-        return [ mdio_read $phy_adr $REG_MMD_Access_Reg_Data ]
+        set reg_adr ${::mdio::REG_MMD_Access_Control}
+        set reg_val $mmd_dev_addr
+        puts "mmd_read: mdio_write $ethphy_adr; $reg_adr; $reg_val"
+        mdio_write $ethphy_adr $reg_adr $reg_val
+        # puts -nonewline "press any key for continue: "
+        # set usr_key [gets stdin]
+
+        set reg_adr ${::mdio::REG_MMD_Access_Reg_Data}
+        set reg_val $mmd_reg_addr
+        puts "mmd_read: mdio_write $ethphy_adr; $reg_adr; $reg_val"
+        mdio_write $ethphy_adr $reg_adr $reg_val
+        # puts -nonewline "press any key for continue: "
+        # set usr_key [gets stdin]
+
+        set reg_adr ${::mdio::REG_MMD_Access_Control}
+        set reg_val 0x[format %04x [expr { (4 << 12) | ($mmd_dev_addr & 0x1F) }]]
+        puts "mmd_read: mdio_write $ethphy_adr; $reg_adr; $reg_val"
+        mdio_write $ethphy_adr $reg_adr $reg_val
+        # puts -nonewline "press any key for continue: "
+        # set usr_key [gets stdin]
+
+        set reg_adr ${::mdio::REG_MMD_Access_Reg_Data}
+        puts "mmd_read: mdio_read $ethphy_adr; $reg_adr"
+        return [ mdio_read $ethphy_adr $reg_adr ]
     }
 }; #namespace eval mdio

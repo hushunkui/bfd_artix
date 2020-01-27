@@ -21,7 +21,6 @@ proc usr_close {} {
 proc main {argc argv} {
 
     usr_open
-
     reset_hw_axi [get_hw_axis]
 
     while (1) {
@@ -81,56 +80,93 @@ proc main {argc argv} {
             set usr_key [gets stdin]
             ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CTRL}]] $usr_key
         } elseif {[string compare $usr_key "3"] == 0} {
-            set ethphy_adr 0x01
+            set ethphy_adr 0x00
             set ethphy_reg_adr ${::mdio::REG_PHY_Identifier_1}
-            set ethphy_mmd_dev_adr 0x1
+            set ethphy_mmd_dev_adr 0x2
+            set ethphy_mmd_reg_adr 0x8
             ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_RST}]] 0xF
             while (1) {
                 eval exec >&@stdout <@stdin [auto_execok cls]
                 puts "\ncurrent EthPHY addr: $ethphy_adr"
-                puts "current EthPHY reg addr: $ethphy_reg_adr"
-                puts "current EthPHY mmd device addr: $ethphy_mmd_dev_adr"
                 puts "\nEthPHY Ctrl:"
                 puts "0 - quit"
-                puts "1 - set PHY adr"
-                puts "2 - reg addr"
-                puts "3 - mmd device addr"
-                puts "4 - standart reg read"
-                puts "5 - standart reg write"
-                puts "6 - mmd reg read"
-                puts "7 - mmd reg write"
-                puts "8 - reset all PHY"
+                puts "1 - standart reg write/read"
+                puts "2 - mmd reg write/read"
+                puts "3 - reset all PHY"
                 puts -nonewline "Enter key: "
                 set usr_key [gets stdin]
                 if {[string compare $usr_key "0"] == 0} {
                     break;
                 } elseif {[string compare $usr_key "1"] == 0} {
-                    puts -nonewline "Enter value(hex): "
-                    set ethphy_adr [gets stdin]
+                    while (1) {
+                        eval exec >&@stdout <@stdin [auto_execok cls]
+                        puts "\ncurrent EthPHY addr: $ethphy_adr"
+                        puts "current reg addr: $ethphy_reg_adr"
+                        puts "\nEthPHY Ctrl:"
+                        puts "0 - quit"
+                        puts "1 - set PHY adr"
+                        puts "2 - reg addr"
+                        puts "3 - reg read"
+                        puts "4 - reg write"
+                        puts -nonewline "Enter key: "
+                        set usr_key [gets stdin]
+                        if {[string compare $usr_key "0"] == 0} {
+                            break;
+                        } elseif {[string compare $usr_key "1"] == 0} {
+                            puts -nonewline "Enter value(hex): "
+                            set ethphy_adr [gets stdin]
+                        } elseif {[string compare $usr_key "2"] == 0} {
+                            puts -nonewline "Enter value(hex): "
+                            set ethphy_reg_adr [gets stdin]
+                        } elseif {[string compare $usr_key "3"] == 0} {
+                            puts "rdata: [ ::mdio::mdio_read $ethphy_adr $ethphy_reg_adr ]"
+                            puts -nonewline "press any key for continue: "
+                            set usr_key [gets stdin]
+                        } elseif {[string compare $usr_key "4"] == 0} {
+                            puts -nonewline "Enter value(hex): "
+                            set ethphy_reg_wdata [gets stdin]
+                            ::mdio::mdio_write $ethphy_adr $ethphy_reg_adr $ethphy_reg_wdata
+                            set usr_key [gets stdin]
+                        }
+                    }
                 } elseif {[string compare $usr_key "2"] == 0} {
-                    puts -nonewline "Enter value(hex): "
-                    set ethphy_reg_adr [gets stdin]
+                    while (1) {
+                        eval exec >&@stdout <@stdin [auto_execok cls]
+                        puts "\ncurrent EthPHY addr: $ethphy_adr"
+                        puts "current mmd dev addr: $ethphy_mmd_dev_adr"
+                        puts "current mmd reg addr: $ethphy_mmd_reg_adr"
+                        puts "\nEthPHY Ctrl:"
+                        puts "0 - quit"
+                        puts "1 - set PHY adr"
+                        puts "2 - mmd dev adr"
+                        puts "3 - mmd reg adr"
+                        puts "4 - mmd reg read"
+                        puts "5 - mmd reg write"
+                        puts -nonewline "Enter key: "
+                        set usr_key [gets stdin]
+                        if {[string compare $usr_key "0"] == 0} {
+                            break;
+                        } elseif {[string compare $usr_key "1"] == 0} {
+                            puts -nonewline "Enter value(hex): "
+                            set ethphy_adr [gets stdin]
+                        } elseif {[string compare $usr_key "2"] == 0} {
+                            puts -nonewline "Enter value(hex): "
+                            set ethphy_mmd_dev_adr [gets stdin]
+                        } elseif {[string compare $usr_key "3"] == 0} {
+                            puts -nonewline "Enter value(hex): "
+                            set ethphy_mmd_reg_adr [gets stdin]
+                        } elseif {[string compare $usr_key "4"] == 0} {
+                            puts "rdata: [ ::mdio::mmd_read $ethphy_adr $ethphy_mmd_dev_adr $ethphy_mmd_reg_adr ]"
+                            puts -nonewline "press any key for continue: "
+                            set usr_key [gets stdin]
+                        } elseif {[string compare $usr_key "5"] == 0} {
+                            puts -nonewline "Enter value(hex): "
+                            set ethphy_mmd_reg_wdata [gets stdin]
+                            ::mdio::mmd_write $ethphy_adr $ethphy_mmd_dev_adr $ethphy_mmd_reg_adr $ethphy_mmd_reg_wdata
+                            set usr_key [gets stdin]
+                        }
+                    }
                 } elseif {[string compare $usr_key "3"] == 0} {
-                    puts "rdata: [ ::mdio::mdio_read $ethphy_adr $ethphy_reg_adr ]"
-                    puts -nonewline "press any key for continue: "
-                    set usr_key [gets stdin]
-                } elseif {[string compare $usr_key "4"] == 0} {
-                    puts -nonewline "Enter value(hex): "
-                    set ethphy_reg_wdata [gets stdin]
-                    ::mdio::mdio_write $ethphy_adr $ethphy_reg_adr $ethphy_reg_wdata
-                    puts -nonewline "press any key for continue: "
-                    set usr_key [gets stdin]
-                } elseif {[string compare $usr_key "5"] == 0} {
-                    puts "rdata: [ ::mdio::mmd_read $ethphy_adr $ethphy_reg_adr ]"
-                    puts -nonewline "press any key for continue: "
-                    set usr_key [gets stdin]
-                } elseif {[string compare $usr_key "6"] == 0} {
-                    puts -nonewline "Enter value(hex): "
-                    set ethphy_reg_wdata [gets stdin]
-                    ::mdio::mmd_write $ethphy_adr $ethphy_reg_adr $ethphy_reg_wdata
-                    puts -nonewline "press any key for continue: "
-                    set usr_key [gets stdin]
-                } elseif {[string compare $usr_key "7"] == 0} {
                     ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_RST}]] 0x0
                     ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_RST}]] 0xF
                 }
