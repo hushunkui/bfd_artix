@@ -1,13 +1,22 @@
 #
 # author: Golovachenko Viktor
 #
+# https://en.wikipedia.org/wiki/Management_Data_Input/Output
+#
 source ./hw_usr.tcl
 source ./axi_wr.tcl
 
 namespace eval mdio \
 {
-    variable REG_PHY_Identifier_1   0x02
-    variable REG_PHY_Identifier_2   0x03
+    # The register space within the KSZ9031RNX consists of two distinct areas.
+    # • Standard registers // Direct register access
+    # • MDIO Manageable device (MMD) registers // Indirect register access
+
+    #STANDARD REGISTERS (IEEE-Defined Registers)
+    variable REG_PHY_Identifier_1     0x02
+    variable REG_PHY_Identifier_2     0x03
+    variable REG_MMD_Access_Control   0x0D
+    variable REG_MMD_Access_Reg_Data  0x0E
 
     proc mdio_clk { } {
         ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_MDIO_CLK_O}]] 1
@@ -89,29 +98,46 @@ namespace eval mdio \
         return 0x[format %04x [lindex $var $i ]]
     }
 
-    proc mdio_write { phy_adr reg_addr reg_data } {
+    #write/read Standard registers
+    proc mdio_write { ethphy_adr mdio_reg_addr mdio_reg_data } {
         mdio_preamble
         mdio_start
         mdio_op_write
-        mdio_set_addr $phy_adr
-        mdio_set_addr $reg_addr
+        mdio_set_addr $ethphy_adr
+        mdio_set_addr $mdio_reg_addr
         ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_MDIO_DATA_O}]] 1
         mdio_clk
         ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_MDIO_DATA_O}]] 0
         mdio_clk
-        mdio_set_data $reg_data
+        mdio_set_data $mdio_reg_data
         return -code ok
     }
 
-    proc mdio_read { phy_adr reg_addr } {
+    proc mdio_read { ethphy_adr mdio_reg_addr } {
         mdio_preamble
         mdio_start
         mdio_op_read
-        mdio_set_addr $phy_adr
-        mdio_set_addr $reg_addr
+        mdio_set_addr $ethphy_adr
+        mdio_set_addr $mdio_reg_addr
         #set output buffer as input
         ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_MDIO_DIR_O}]] 0
         mdio_clk
         return [ mdio_get_data ]
+    }
+
+    #write/read MDIO Manageable device (MMD) registers
+    proc mmd_write { ethphy_adr mmd_dev_addr mmd_reg_addr mmd_reg_data } {
+        mdio_write $phy_adr $REG_MMD_Access_Control $mmd_dev_addr
+        mdio_write $phy_adr $REG_MMD_Access_Reg_Data $mmd_reg_addr
+        mdio_write $phy_adr $REG_MMD_Access_Control [format %04x [expr { (4 << 12) | [expr $mmd_dev_addr & 0x1F] }]]
+        mdio_write $phy_adr $REG_MMD_Access_Reg_Data $mmd_reg_data
+        return -code ok
+    }
+
+    proc mmd_read { ethphy_adr mmd_dev_addr mmd_reg_addr } {
+        mdio_write $phy_adr $REG_MMD_Access_Control $mmd_dev_addr
+        mdio_write $phy_adr $REG_MMD_Access_Reg_Data $mmd_reg_addr
+        mdio_write $phy_adr $REG_MMD_Access_Control [format %04x [expr { (4 << 12) | [expr $mmd_dev_addr & 0x1F] }]]
+        return [ mdio_read $phy_adr $REG_MMD_Access_Reg_Data ]
     }
 }; #namespace eval mdio

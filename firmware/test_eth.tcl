@@ -81,28 +81,58 @@ proc main {argc argv} {
             set usr_key [gets stdin]
             ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CTRL}]] $usr_key
         } elseif {[string compare $usr_key "3"] == 0} {
+            set ethphy_adr 0x01
+            set ethphy_reg_adr ${::mdio::REG_PHY_Identifier_1}
+            set ethphy_mmd_dev_adr 0x1
+            ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_RST}]] 0xF
             while (1) {
                 eval exec >&@stdout <@stdin [auto_execok cls]
+                puts "\ncurrent EthPHY addr: $ethphy_adr"
+                puts "current EthPHY reg addr: $ethphy_reg_adr"
+                puts "current EthPHY mmd device addr: $ethphy_mmd_dev_adr"
                 puts "\nEthPHY Ctrl:"
                 puts "0 - quit"
-                puts "1 - select PHY"
-                puts "2 - get reg data"
+                puts "1 - set PHY adr"
+                puts "2 - reg addr"
+                puts "3 - mmd device addr"
+                puts "4 - standart reg read"
+                puts "5 - standart reg write"
+                puts "6 - mmd reg read"
+                puts "7 - mmd reg write"
+                puts "8 - reset all PHY"
                 puts -nonewline "Enter key: "
                 set usr_key [gets stdin]
                 if {[string compare $usr_key "0"] == 0} {
                     break;
                 } elseif {[string compare $usr_key "1"] == 0} {
-                    puts -nonewline "Enter mask(hex): "
-                    set usr_key [gets stdin]
-                    ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_RST}]] $usr_key
-                    puts -nonewline "press any key for continue: "
-                    set usr_key [gets stdin]
+                    puts -nonewline "Enter value(hex): "
+                    set ethphy_adr [gets stdin]
                 } elseif {[string compare $usr_key "2"] == 0} {
-                    set phy_adr 0x0
-                    set reg_adr ${::mdio::REG_PHY_Identifier_2}
-                    puts "rdata: [ ::mdio::mdio_read $phy_adr $reg_adr ]"
+                    puts -nonewline "Enter value(hex): "
+                    set ethphy_reg_adr [gets stdin]
+                } elseif {[string compare $usr_key "3"] == 0} {
+                    puts "rdata: [ ::mdio::mdio_read $ethphy_adr $ethphy_reg_adr ]"
                     puts -nonewline "press any key for continue: "
                     set usr_key [gets stdin]
+                } elseif {[string compare $usr_key "4"] == 0} {
+                    puts -nonewline "Enter value(hex): "
+                    set ethphy_reg_wdata [gets stdin]
+                    ::mdio::mdio_write $ethphy_adr $ethphy_reg_adr $ethphy_reg_wdata
+                    puts -nonewline "press any key for continue: "
+                    set usr_key [gets stdin]
+                } elseif {[string compare $usr_key "5"] == 0} {
+                    puts "rdata: [ ::mdio::mmd_read $ethphy_adr $ethphy_reg_adr ]"
+                    puts -nonewline "press any key for continue: "
+                    set usr_key [gets stdin]
+                } elseif {[string compare $usr_key "6"] == 0} {
+                    puts -nonewline "Enter value(hex): "
+                    set ethphy_reg_wdata [gets stdin]
+                    ::mdio::mmd_write $ethphy_adr $ethphy_reg_adr $ethphy_reg_wdata
+                    puts -nonewline "press any key for continue: "
+                    set usr_key [gets stdin]
+                } elseif {[string compare $usr_key "7"] == 0} {
+                    ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_RST}]] 0x0
+                    ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_RST}]] 0xF
                 }
             }
         }
