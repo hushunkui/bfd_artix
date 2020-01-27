@@ -28,15 +28,15 @@ proc main {argc argv} {
         eval exec >&@stdout <@stdin [auto_execok cls]
 
         puts "\nSTATUS:"
-        set aurora_status [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_STATUS_AURORA}]] ]
+        set aurora_status [::axi::axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_STATUS_AURORA}]] ]
         puts "\tinterface aurora:"
         for {set i 0} {$i < ${::hw_usr::AURORA_CHCOUNT}} {incr i} {
             puts "\t\taurora ch($i) - link: [ expr [ expr $aurora_status >> $i ] & 0x01 ]"
         }
 
-        set eth_status [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_STATUS_ETH}]] ]
-        puts "\n\tmodule ZYNQ: firmware:[string trimleft [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_FIRMWARE_DATE}]] ] 0x]:[string\
-         trimleft [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_FIRMWARE_TIME}]] ] 0x]"
+        set eth_status [::axi::axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_STATUS_ETH}]] ]
+        puts "\n\tmodule ZYNQ: firmware:[string trimleft [::axi::axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_FIRMWARE_DATE}]] ] 0x]:[string\
+         trimleft [::axi::axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_FIRMWARE_TIME}]] ] 0x]"
         for {set i 0} {$i < ${::hw_usr::MODULE_ZYNQ_ETHCOUNT}} {incr i} {
             puts "\t\teth ch($i) - link: [ expr { ($eth_status >> $i ) & 0x01} ]"
         }
@@ -50,16 +50,16 @@ proc main {argc argv} {
             }
         }
         puts "\nUSR CTRL:"
-        set usr_ctrl [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CTRL}]] ]
+        set usr_ctrl [::axi::axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CTRL}]] ]
         puts "\tzynq eth: [expr { ($usr_ctrl >> ${::hw_usr::UREG_CTRL_SEL_ZYNQ_ETH_BIT}) & 0x3 } ]"
         puts "\tartix eth: [expr { ($usr_ctrl >> ${::hw_usr::UREG_CTRL_SEL_ARTIX_ETH_BIT}) & 0x7 } ]"
         # puts "\tenable: [expr { ($usr_ctrl >> ${::hw_usr::UREG_CTRL_EN_BIT}) & 0x1 } ]"
 
         puts "\nMAC_RX_CNTERR:"
-        set mac0_rx_cnterr [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CNTERR_ETH0}]] ]
-        set mac1_rx_cnterr [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CNTERR_ETH1}]] ]
-        set mac2_rx_cnterr [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CNTERR_ETH2}]] ]
-        set mac3_rx_cnterr [axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CNTERR_ETH3}]] ]
+        set mac0_rx_cnterr [::axi::axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CNTERR_ETH0}]] ]
+        set mac1_rx_cnterr [::axi::axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CNTERR_ETH1}]] ]
+        set mac2_rx_cnterr [::axi::axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CNTERR_ETH2}]] ]
+        set mac3_rx_cnterr [::axi::axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CNTERR_ETH3}]] ]
         puts "\teth0: $mac0_rx_cnterr"
         puts "\teth1: $mac1_rx_cnterr"
         puts "\teth2: $mac2_rx_cnterr"
@@ -79,7 +79,7 @@ proc main {argc argv} {
             # eval exec >&@stdout <@stdin [auto_execok cls]
             puts -nonewline "Enter value(hex): "
             set usr_key [gets stdin]
-            axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CTRL}]] $usr_key
+            ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CTRL}]] $usr_key
         } elseif {[string compare $usr_key "3"] == 0} {
             while (1) {
                 eval exec >&@stdout <@stdin [auto_execok cls]
@@ -94,7 +94,7 @@ proc main {argc argv} {
                 } elseif {[string compare $usr_key "1"] == 0} {
                     puts -nonewline "Enter mask(hex): "
                     set usr_key [gets stdin]
-                    axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_RST}]] $usr_key
+                    ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_RST}]] $usr_key
                     puts -nonewline "press any key for continue: "
                     set usr_key [gets stdin]
                 } elseif {[string compare $usr_key "2"] == 0} {
