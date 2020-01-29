@@ -27,3 +27,5 @@
 `define UREG_AURORA_O_CTL_0   32'h40
 `define UREG_AURORA_O_CTL_1   32'h44
 `define UREG_AURORA_I_CTL_0   32'h48
+
+`define UREG_ETHPHY_TEST_PRM  32'h4C

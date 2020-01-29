@@ -42,4 +42,8 @@ namespace eval hw_usr \
     variable UREG_AURORA_O_CTL_1   0x00000044
     variable UREG_AURORA_I_CTL_0   0x00000048
 
+    variable UREG_ETHPHY_TEST_PRM  0x0000004C
+        variable UREG_ETHPHY_TEST_PRM_PKT_SIZE_OFFSET     0
+        variable UREG_ETHPHY_TEST_PRM_PAUSE_SIZE_OFFSET   16
+
 }; #namespace eval hw_usr

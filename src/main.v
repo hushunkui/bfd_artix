@@ -184,6 +184,8 @@ wire [7:0] vio_test_start;
 wire [43:0]  vio_in ;
 wire [7:0]   vio_out;
 
+wire [15:0] test_mac_pkt_size;
+wire [15:0] test_mac_pause_size;
 
 
 wire clk20_i;
@@ -307,6 +309,8 @@ usr_logic #(
     .aurora_o_ctl_0(aurora_axi_tx_tdata),
     .aurora_o_ctl_1({aurora_axi_tx_tlast, aurora_axi_tx_tvalid}),
     .aurora_i_ctl_0((aurora_axi_rx_tlast & aurora_axi_rx_tvalid) ? aurora_axi_rx_tdata : 0),
+    .ethphy_test_pkt_size(test_mac_pkt_size),
+    .ethphy_test_pause_size(test_mac_pause_size),
 
 //AXI interface
     .s_axi_awaddr  (M_AXI_0_awaddr ),
@@ -471,7 +475,7 @@ generate
     for (x=0; x < ETHCOUNT; x=x+1)  begin : eth
         assign eth_phy_rst[x] = mac_pll_locked & ethphy_rst[x];
 
-        assign test_mac_start[x] = vio_test_start[x]; //reg_ctrl[x] |
+        assign test_mac_start[x] = reg_ctrl[x];// | vio_test_start[x];
 
         always @(posedge mac_rx_clk[x]) begin
             if (reg_ctrl[24]) begin
@@ -671,6 +675,8 @@ test_phy test_rx_eth0 (
     .mac_rx_fr_err (1'b0),
 
     .start(test_mac_start[0]),
+    .pkt_size(test_mac_pkt_size),
+    .pause_size(test_mac_pause_size),
     .err(test_err[0]),
     .test_data(test_data[0]),
 
@@ -692,6 +698,8 @@ test_phy test_rx_eth1 (
     .mac_rx_fr_err (1'b0),
 
     .start(test_mac_start[1]),
+    .pkt_size(test_mac_pkt_size),
+    .pause_size(test_mac_pause_size),
     .err(test_err[1]),
     .test_data(test_data[1]),
 
@@ -713,6 +721,8 @@ test_phy test_rx_eth2 (
     .mac_rx_fr_err (1'b0),
 
     .start(test_mac_start[2]),
+    .pkt_size(test_mac_pkt_size),
+    .pause_size(test_mac_pause_size),
     .err(test_err[2]),
     .test_data(test_data[2]),
 
@@ -734,6 +744,8 @@ test_phy test_rx_eth3 (
     .mac_rx_fr_err (1'b0),
 
     .start(test_mac_start[3]),
+    .pkt_size(test_mac_pkt_size),
+    .pause_size(test_mac_pause_size),
     .err(test_err[3]),
     .test_data(test_data[3]),
 

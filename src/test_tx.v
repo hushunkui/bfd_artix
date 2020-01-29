@@ -22,6 +22,9 @@ wire [31:0] data;
 reg [15:0] dcnt = 0;
 reg srcambler_sof = 1'b0;
 
+reg [15:0] pkt_size_cur = 0;
+reg [15:0] pause_size_cur = 0;
+
 `ifdef SIM_FSM
     enum int unsigned {
         IDLE   ,
@@ -64,7 +67,8 @@ always @(posedge clk) begin
             mac_tx_valid <= 1'b0;
             mac_tx_sof <= 1'b0;
             mac_tx_eof <= 1'b0;
-
+            pkt_size_cur <= pkt_size;
+            pause_size_cur <= pause_size;
             if (start) begin
                 mac_tx_valid <= 1'b1;
                 mac_tx_sof <= 1'b1;
@@ -77,14 +81,14 @@ always @(posedge clk) begin
 
         TX: begin
             mac_tx_sof <= 1'b0;
-            if (dcnt == (pkt_size - 2)) begin
+            if (dcnt == (pkt_size_cur - 2)) begin
                 mac_tx_eof <= 1'b1;
-            end else if (dcnt == (pkt_size - 1)) begin
+            end else if (dcnt == (pkt_size_cur - 1)) begin
                 mac_tx_eof <= 1'b0;
                 mac_tx_valid <= 1'b0;
             end
 
-            if (dcnt == (pkt_size - 1)) begin
+            if (dcnt == (pkt_size_cur - 1)) begin
                 dcnt <= 0;
                 fsm_cs <= PAUSE;
             end else begin
@@ -93,7 +97,7 @@ always @(posedge clk) begin
         end
 
         PAUSE: begin
-            if (dcnt == (pause_size - 1)) begin
+            if (dcnt == (pause_size_cur - 1)) begin
                 dcnt <= 0;
                 if (start) begin
                     fsm_cs <= TXSTART;
