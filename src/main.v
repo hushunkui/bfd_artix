@@ -67,6 +67,8 @@ wire [ETHCOUNT-1:0]     mac_rx_tuser ;
 wire [ETHCOUNT-1:0]     mac_rx_clk;
 wire [ETHCOUNT-1:0]     mac_fifo_resetn;
 reg  [31:0]             mac_rx_cnterr [ETHCOUNT-1:0];
+reg  [31:0]             mac_rx_cnterr_mjtag [ETHCOUNT-1:0];
+reg  [31:0]             mac_rx_cnterr_aurclk [ETHCOUNT-1:0];
 
 wire [7:0]              mac_tx_tdata [ETHCOUNT-1:0];// = 0;
 wire [ETHCOUNT-1:0]     mac_tx_tvalid;// = 0;
@@ -79,6 +81,7 @@ wire [ETHCOUNT-1:0]     mac_tx_reset;
 // wire [3:0] mac_fifo_status [ETHCOUNT-1:0];
 wire [3:0] mac_status [ETHCOUNT-1:0];
 wire [3:0] mac_link;
+reg [3:0] mac_link_mjtag;
 
 wire [7:0]              usr_rx_tdata  [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     usr_rx_tvalid;
@@ -291,11 +294,11 @@ usr_logic #(
     .test_gpio (test_gpio),
     .reg_ctrl (reg_ctrl),
     .status_aurora({30'd0, 1'b0, aurora_status_channel_up}),
-    .status_eth({21'd0, 4'd0, mac_link[3:0], 3'd0}),
-    .cnterr_eth0(mac_rx_cnterr[0]),
-    .cnterr_eth1(mac_rx_cnterr[1]),
-    .cnterr_eth2(mac_rx_cnterr[2]),
-    .cnterr_eth3(mac_rx_cnterr[3]),
+    .status_eth({21'd0, 4'd0, mac_link_mjtag[3:0], 3'd0}),
+    .cnterr_eth0(mac_rx_cnterr_mjtag[0]),
+    .cnterr_eth1(mac_rx_cnterr_mjtag[1]),
+    .cnterr_eth2(mac_rx_cnterr_mjtag[2]),
+    .cnterr_eth3(mac_rx_cnterr_mjtag[3]),
     .ethphy_mdio_clk_o(eth_phy_mdc),
     .ethphy_mdio_data_o(ethphy_mdio_data),
     .ethphy_mdio_dir_o(ethphy_mdio_dir),
@@ -482,6 +485,15 @@ generate
             end
         end
 
+        always @(posedge mac_gtx_clk) begin
+            mac_rx_cnterr_mjtag[x] <= mac_rx_cnterr[x];
+            mac_link_mjtag[x] <= mac_link[x];
+        end
+
+        always @(posedge aurora_usr_clk) begin
+            mac_rx_cnterr_aurclk[x] <= mac_rx_cnterr[x];
+        end
+
         mac_rgmii rgmii (
             .status_o(mac_status[x]),//output [3:0]
             // .fifo_status(mac_fifo_status[x]),
@@ -635,10 +647,10 @@ endgenerate
 vio_0 vvv (
     .probe_in0(test_mac_start[3:0]),    // input wire [3 : 0] probe_in0
     .probe_in1(test_err[3:0]),    // input wire [3 : 0] probe_in1
-    .probe_in2(mac_rx_cnterr[0][9:0]),    // input wire [9 : 0] probe_in2
-    .probe_in3(mac_rx_cnterr[1][9:0]),    // input wire [9 : 0] probe_in3
-    .probe_in4(mac_rx_cnterr[2][9:0]),    // input wire [9 : 0] probe_in4
-    .probe_in5(mac_rx_cnterr[3][9:0]),    // input wire [9 : 0] probe_in5
+    .probe_in2(mac_rx_cnterr_aurclk[0][9:0]),    // input wire [9 : 0] probe_in2
+    .probe_in3(mac_rx_cnterr_aurclk[1][9:0]),    // input wire [9 : 0] probe_in3
+    .probe_in4(mac_rx_cnterr_aurclk[2][9:0]),    // input wire [9 : 0] probe_in4
+    .probe_in5(mac_rx_cnterr_aurclk[3][9:0]),    // input wire [9 : 0] probe_in5
     .probe_out0(vio_test_start),  // output wire [7 : 0] probe_out0
     .clk(aurora_usr_clk)
 );

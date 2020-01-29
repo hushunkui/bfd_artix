@@ -75,7 +75,6 @@ proc main {argc argv} {
             eval exec >&@stdout <@stdin [auto_execok cls]
             break;
         } elseif {[string compare $usr_key "2"] == 0} {
-            # eval exec >&@stdout <@stdin [auto_execok cls]
             puts -nonewline "Enter value(hex): "
             set usr_key [gets stdin]
             ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CTRL}]] $usr_key
