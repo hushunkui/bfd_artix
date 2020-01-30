@@ -84,13 +84,16 @@ proc main {argc argv} {
             set ethphy_mmd_dev_adr 0x2
             set ethphy_mmd_reg_adr 0x8
             ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_RST}]] 0xF
-            set ethhy_test_prm_pkt_size 0x200
-            set ethhy_test_prm_pause_size 0x40
+            # set ethhy_test_prm_pkt_size 0x200
+            # set ethhy_test_prm_pause_size 0x40
+            set ethhy_test_prm [::axi::axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_TEST_PRM}]] ]
+            set ethhy_test_prm_pkt_size  0x[format %04x [ expr { ($ethhy_test_prm >> ${::hw_usr::UREG_ETHPHY_TEST_PRM_PKT_SIZE_OFFSET} ) & 0xFFFF } ] ]
+            set ethhy_test_prm_pause_size  0x[format %04x [ expr { ($ethhy_test_prm >> ${::hw_usr::UREG_ETHPHY_TEST_PRM_PAUSE_SIZE_OFFSET} ) & 0xFFFF } ] ]
             while (1) {
                 eval exec >&@stdout <@stdin [auto_execok cls]
                 puts "\ntest param:"
-                puts "\tpkt_size: $ethhy_test_prm_pkt_size"
-                puts "\tpause_size: $ethhy_test_prm_pause_size"
+                puts "\tpkt_size: [format %d $ethhy_test_prm_pkt_size ]"
+                puts "\tpause_size: [format %d $ethhy_test_prm_pause_size ]"
                 puts "\nMAC_RX_CNTERR:"
                 set mac0_rx_cnterr [::axi::axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CNTERR_ETH0}]] ]
                 set mac1_rx_cnterr [::axi::axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_CNTERR_ETH1}]] ]
@@ -186,11 +189,15 @@ proc main {argc argv} {
                     ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_RST}]] 0x0
                     ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_RST}]] 0xF
                 } elseif {[string compare $usr_key "4"] == 0} {
-                    puts -nonewline "Enter value(hex): "
-                    set ethhy_test_prm_pkt_size [gets stdin]
+                    puts -nonewline "Enter value(dec): "
+                    set ethhy_test_prm_pkt_size 0x[format %04x [gets stdin]]
+                    set val [expr {($ethhy_test_prm_pause_size << ${::hw_usr::UREG_ETHPHY_TEST_PRM_PAUSE_SIZE_OFFSET}) | ($ethhy_test_prm_pkt_size << ${::hw_usr::UREG_ETHPHY_TEST_PRM_PKT_SIZE_OFFSET})}]
+                    ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_TEST_PRM}]] $val
                 } elseif {[string compare $usr_key "5"] == 0} {
-                    puts -nonewline "Enter value(hex): "
-                    set ethhy_test_prm_pause_size [gets stdin]
+                    puts -nonewline "Enter value(dec): "
+                    set ethhy_test_prm_pause_size 0x[format %04x [gets stdin]]
+                    set val [expr {($ethhy_test_prm_pause_size << ${::hw_usr::UREG_ETHPHY_TEST_PRM_PAUSE_SIZE_OFFSET}) | ($ethhy_test_prm_pkt_size << ${::hw_usr::UREG_ETHPHY_TEST_PRM_PKT_SIZE_OFFSET})}]
+                    ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_TEST_PRM}]] $val
                 } elseif {[string compare $usr_key "6"] == 0} {
                     set val [expr {($ethhy_test_prm_pause_size << ${::hw_usr::UREG_ETHPHY_TEST_PRM_PAUSE_SIZE_OFFSET}) | ($ethhy_test_prm_pkt_size << ${::hw_usr::UREG_ETHPHY_TEST_PRM_PKT_SIZE_OFFSET})}]
                     ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_ETHPHY_TEST_PRM}]] $val
