@@ -2,10 +2,6 @@
 // author: Golovachenko Viktor
 //
 module filter_eth_pkt (
-    // clock interface
-    input           csi_clock_clk,
-    input           csi_clock_reset,
-
     // slave interface
     input           avs_s0_write     ,
     input           avs_s0_read      ,
@@ -15,20 +11,24 @@ module filter_eth_pkt (
     output  [31:0]  avs_s0_readdata  ,
 
     // source interface
-    input              aso_src0_ready        ,
-    output reg [31:0]  aso_src0_data          = 32'd0,
-    output reg         aso_src0_valid         = 1'b0,
-    output reg         aso_src0_startofpacket = 1'b0,
-    output reg         aso_src0_endofpacket   = 1'b0,
-    output reg [1:0]   aso_src0_empty         = 2'd0,
+    input              aso_src0_ready,
+    output reg [31:0]  aso_src0_data = 32'd0,
+    output reg         aso_src0_valid= 1'b0,
+    output reg         aso_src0_sof  = 1'b0,
+    output reg         aso_src0_eof  = 1'b0,
+    output reg [1:0]   aso_src0_empty= 2'd0,
 
     // sink interface
-    output          asi_snk0_ready        ,
-    input   [31:0]  asi_snk0_data         ,
-    input           asi_snk0_valid        ,
-    input           asi_snk0_startofpacket,
-    input           asi_snk0_endofpacket  ,
-    input   [1:0]   asi_snk0_empty
+    output          asi_snk0_ready,
+    input   [31:0]  asi_snk0_data ,
+    input           asi_snk0_valid,
+    input           asi_snk0_sof  ,
+    input           asi_snk0_eof  ,
+    input   [1:0]   asi_snk0_empty,
+
+    // clock interface
+    input           csi_clock_clk,
+    input           csi_clock_reset
 );
 
 localparam  [15:0]   ETH_TYPE_IP         = 16'h0800;
@@ -108,11 +108,11 @@ localparam   [3:0]   C_PIPELINE = 11;
 reg            [3:0] i;
 reg   [C_PIPELINE:0] pkt_valid = {(C_PIPELINE+1){1'b0}};
 
-reg           [31:0] sr_snk0_data         [C_PIPELINE-1:0];
-reg [C_PIPELINE-1:0] sr_snk0_valid         = {C_PIPELINE{1'b0}};
-reg [C_PIPELINE-1:0] sr_snk0_startofpacket = {C_PIPELINE{1'b0}};
-reg [C_PIPELINE-1:0] sr_snk0_endofpacket   = {C_PIPELINE{1'b0}};
-reg            [1:0] sr_snk0_empty        [C_PIPELINE-1:0];
+reg           [31:0] sr_snk0_data [C_PIPELINE-1:0];
+reg [C_PIPELINE-1:0] sr_snk0_valid = {C_PIPELINE{1'b0}};
+reg [C_PIPELINE-1:0] sr_snk0_sof = {C_PIPELINE{1'b0}};
+reg [C_PIPELINE-1:0] sr_snk0_eof = {C_PIPELINE{1'b0}};
+reg            [1:0] sr_snk0_empty [C_PIPELINE-1:0];
 
 
 //
@@ -148,7 +148,7 @@ begin
     end else begin
         case (state)
             IDLE: begin // data[0]  = mac_dst[47:16];
-                if (aso_src0_ready & asi_snk0_valid & asi_snk0_startofpacket) begin
+                if (aso_src0_ready & asi_snk0_valid & asi_snk0_sof) begin
                     en_arp_syn <= en_arp;
                     en_icmp_syn <= en_icmp;
                     en_udp_syn <= en_udp;
@@ -333,7 +333,7 @@ begin
 
                             pkt_valid[0] <= &check;
 
-                            if (asi_snk0_endofpacket) begin
+                            if (asi_snk0_eof) begin
 
                                 check <= 4'd0;
                                 detect_arp <= 1'b0;
@@ -359,7 +359,7 @@ begin
 
             WAIT_EOF: begin
                 if (aso_src0_ready & asi_snk0_valid) begin
-                    if (asi_snk0_endofpacket) begin
+                    if (asi_snk0_eof) begin
                         check <= 4'd0;
                         detect_arp <= 1'b0;
                         detect_ipv4 <= 1'b0;
@@ -402,8 +402,8 @@ begin
 //        for(i = 0; i < C_PIPELINE; i = i + 1) begin
 //            sr_snk0_data         [i] <= 32'd0;
 //            sr_snk0_valid        [i] <= 1'b0;
-//            sr_snk0_startofpacket[i] <= 1'b0;
-//            sr_snk0_endofpacket  [i] <= 1'b0;
+//            sr_snk0_sof[i] <= 1'b0;
+//            sr_snk0_eof  [i] <= 1'b0;
 //            sr_snk0_empty        [i] <= 2'd0;
 //
 //            pkt_valid[i+1] <= 1'b0;
@@ -411,47 +411,47 @@ begin
 //
 //        aso_src0_data          <= 32'd0;
 //        aso_src0_valid         <= 1'b0 ;
-//        aso_src0_startofpacket <= 1'b0 ;
-//        aso_src0_endofpacket   <= 1'b0 ;
+//        aso_src0_sof <= 1'b0 ;
+//        aso_src0_eof   <= 1'b0 ;
 //        aso_src0_empty         <= 2'd0 ;
 //
 //    end else begin
         if (aso_src0_ready) begin
 
-        sr_snk0_data         [0] <= asi_snk0_data         ;
-        sr_snk0_valid        [0] <= asi_snk0_valid        ;
-        sr_snk0_startofpacket[0] <= asi_snk0_startofpacket;
-        sr_snk0_endofpacket  [0] <= asi_snk0_endofpacket  ;
-        sr_snk0_empty        [0] <= asi_snk0_empty        ;
+        sr_snk0_data [0] <= asi_snk0_data ;
+        sr_snk0_valid[0] <= asi_snk0_valid;
+        sr_snk0_sof  [0] <= asi_snk0_sof  ;
+        sr_snk0_eof  [0] <= asi_snk0_eof  ;
+        sr_snk0_empty[0] <= asi_snk0_empty;
 
-        pkt_valid[1]           <= pkt_valid[0];
+        pkt_valid[1] <= pkt_valid[0];
 
         //pipeline
         for(i = 0; i < (C_PIPELINE - 1); i = i + 1) begin
-            sr_snk0_data         [i+1] <= sr_snk0_data         [i];
-            sr_snk0_valid        [i+1] <= sr_snk0_valid        [i];
-            sr_snk0_startofpacket[i+1] <= sr_snk0_startofpacket[i];
-            sr_snk0_endofpacket  [i+1] <= sr_snk0_endofpacket  [i];
-            sr_snk0_empty        [i+1] <= sr_snk0_empty        [i];
+            sr_snk0_data [i+1] <= sr_snk0_data [i];
+            sr_snk0_valid[i+1] <= sr_snk0_valid[i];
+            sr_snk0_sof  [i+1] <= sr_snk0_sof  [i];
+            sr_snk0_eof  [i+1] <= sr_snk0_eof  [i];
+            sr_snk0_empty[i+1] <= sr_snk0_empty[i];
 
             pkt_valid[i+2] <= pkt_valid[i+1];
         end
 
         //pipeline end
-        aso_src0_empty         <= sr_snk0_empty        [C_PIPELINE-1] ;
-        aso_src0_data          <= sr_snk0_data         [C_PIPELINE-1] ;
+        aso_src0_empty <= sr_snk0_empty [C_PIPELINE-1] ;
+        aso_src0_data  <= sr_snk0_data  [C_PIPELINE-1] ;
 
-        aso_src0_valid         <= sr_snk0_valid        [C_PIPELINE-1] & ((detect_icmp) ? (|pkt_valid[C_PIPELINE:2]) :
-                                                                         (detect_udp)  ? (|pkt_valid[C_PIPELINE:1]) :
-                                                                                         (|pkt_valid) );
+        aso_src0_valid <= sr_snk0_valid [C_PIPELINE-1] & ((detect_icmp) ? (|pkt_valid[C_PIPELINE:2]) :
+                                                        (detect_udp)  ? (|pkt_valid[C_PIPELINE:1]) :
+                                                                        (|pkt_valid) );
 
-        aso_src0_startofpacket <= sr_snk0_startofpacket[C_PIPELINE-1] & ((detect_icmp) ? (|pkt_valid[C_PIPELINE:2]) :
-                                                                         (detect_udp)  ? (|pkt_valid[C_PIPELINE:1]) :
-                                                                                         (|pkt_valid) );
+        aso_src0_sof   <= sr_snk0_sof   [C_PIPELINE-1] & ((detect_icmp) ? (|pkt_valid[C_PIPELINE:2]) :
+                                                        (detect_udp)  ? (|pkt_valid[C_PIPELINE:1]) :
+                                                                        (|pkt_valid) );
 
-        aso_src0_endofpacket   <= sr_snk0_endofpacket  [C_PIPELINE-1] & ((detect_icmp) ? (|pkt_valid[C_PIPELINE:2]) :
-                                                                         (detect_udp)  ? (|pkt_valid[C_PIPELINE:1]) :
-                                                                                         (|pkt_valid) );
+        aso_src0_eof   <= sr_snk0_eof   [C_PIPELINE-1] & ((detect_icmp) ? (|pkt_valid[C_PIPELINE:2]) :
+                                                        (detect_udp)  ? (|pkt_valid[C_PIPELINE:1]) :
+                                                                        (|pkt_valid) );
         end
 //    end
 end
