@@ -94,6 +94,7 @@ wire [7:0]              test_mac_tx_tdata [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     test_mac_tx_tvalid;
 wire [ETHCOUNT-1:0]     test_mac_tx_tuser ;
 wire [ETHCOUNT-1:0]     test_mac_tx_tlast ;
+wire [ETHCOUNT-1:0]     test_mac_tx_tready;
 
 wire [7:0]              test_mac_rx_tdata [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     test_mac_rx_tvalid;
@@ -544,7 +545,7 @@ generate
             .tx_axis_fifo_tdata (test_mac_tx_tdata [x][(0*8) +: 8]),//input [7:0]
             .tx_axis_fifo_tvalid(test_mac_tx_tvalid[x]            ),//input
             .tx_axis_fifo_tlast (test_mac_tx_tlast [x]            ),//input
-            .tx_axis_fifo_tready(), //output
+            .tx_axis_fifo_tready(test_mac_tx_tready[x]), //output
 
             .rx_fifo_aclk       (aurora_usr_clk), //input
             .rx_fifo_resetn     (mac_fifo_resetn[x]), //input
@@ -622,17 +623,33 @@ generate
         //     .clk(mac_gtx_clk)
         // );
 
+        // ila_0 tx_ila (
+        //     .probe0({
+        //         test_mac_rx_tvalid[x],
+        //         test_mac_rx_tlast[x],
+        //         test_mac_rx_tdata[x],
+        //         test_data[x], //8b
+        //         test_err[x],
+        //         test_mac_start[x]
+        //     }),
+        //     .clk(aurora_usr_clk)
+        // );
+
         ila_0 tx_ila (
             .probe0({
+                test_mac_tx_tvalid[x],
+                test_mac_tx_tlast[x],
+                test_mac_tx_tready[x],
+                test_mac_tx_tdata[x], //8b
                 test_mac_rx_tvalid[x],
                 test_mac_rx_tlast[x],
-                test_mac_rx_tdata[x],
-                test_data[x], //8b
+                test_mac_rx_tdata[x], //8b
                 test_err[x],
                 test_mac_start[x]
             }),
             .clk(aurora_usr_clk)
         );
+
     end
 endgenerate
 
@@ -666,6 +683,7 @@ test_phy test_rx_eth0 (
     .mac_tx_valid (test_mac_tx_tvalid[1]),
     .mac_tx_sof   (test_mac_tx_tuser [1]),
     .mac_tx_eof   (test_mac_tx_tlast [1]),
+    .mac_tx_rdy   (test_mac_tx_tready[1]),
 
     .mac_rx_data   (test_mac_rx_tdata [0]),
     .mac_rx_valid  (test_mac_rx_tvalid[0]),
@@ -689,6 +707,7 @@ test_phy test_rx_eth1 (
     .mac_tx_valid (test_mac_tx_tvalid[0]),
     .mac_tx_sof   (test_mac_tx_tuser [0]),
     .mac_tx_eof   (test_mac_tx_tlast [0]),
+    .mac_tx_rdy   (test_mac_tx_tready[0]),
 
     .mac_rx_data   (test_mac_rx_tdata [1]),
     .mac_rx_valid  (test_mac_rx_tvalid[1]),
@@ -712,6 +731,7 @@ test_phy test_rx_eth2 (
     .mac_tx_valid (test_mac_tx_tvalid[3]),
     .mac_tx_sof   (test_mac_tx_tuser [3]),
     .mac_tx_eof   (test_mac_tx_tlast [3]),
+    .mac_tx_rdy   (test_mac_tx_tready[3]),
 
     .mac_rx_data   (test_mac_rx_tdata [2]),
     .mac_rx_valid  (test_mac_rx_tvalid[2]),
@@ -735,6 +755,7 @@ test_phy test_rx_eth3 (
     .mac_tx_valid (test_mac_tx_tvalid[2]),
     .mac_tx_sof   (test_mac_tx_tuser [2]),
     .mac_tx_eof   (test_mac_tx_tlast [2]),
+    .mac_tx_rdy   (test_mac_tx_tready[2]),
 
     .mac_rx_data   (test_mac_rx_tdata [3]),
     .mac_rx_valid  (test_mac_rx_tvalid[3]),
