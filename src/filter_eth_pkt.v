@@ -1,6 +1,7 @@
 //
 // author: Golovachenko Viktor
 //
+
 module filter_eth_pkt (
     // slave interface
     input           avs_s0_write     ,

@@ -1,15 +1,10 @@
-//-----------------------------------------------------------------------
-// Engineer    : Golovachenko Victor
 //
-// Create Date : 10.10.2017 9:49:44
-// Module Name : udp_payload_inserter
+// author: Golovachenko Viktor
 //
 // Description : Insert MAC,IP,UDP and User Protocol headers
 //               before the input data packet
-//------------------------------------------------------------------------
 
-module udp_payload_inserter
-(
+module udp_payload_inserter (
     // clock interface
     input           csi_clock_clk,
     input           csi_clock_reset,
@@ -26,26 +21,36 @@ module udp_payload_inserter
     input               aso_src0_ready,
     output  reg [31:0]  aso_src0_data = 32'd0,
     output  reg         aso_src0_valid = 1'b0,
-    output  reg         aso_src0_startofpacket = 1'b0,
-    output  reg         aso_src0_endofpacket = 1'b0,
+    output  reg         aso_src0_sof = 1'b0,
+    output  reg         aso_src0_eof = 1'b0,
     output  reg [1:0]   aso_src0_empty = 2'd0,
 
     // sink interface
     output          asi_snk0_ready,
     input   [31:0]  asi_snk0_data,
     input           asi_snk0_valid,
-    input           asi_snk0_startofpacket,
-    input           asi_snk0_endofpacket,
+    input           asi_snk0_sof,
+    input           asi_snk0_eof,
     input   [1:0]   asi_snk0_empty
 );
 
-enum int unsigned {
-IDLE    ,
-INS_N   ,
-SINK_0  ,
-SINK_N  ,
-WAIT_EOP
-} state = IDLE;
+
+`ifdef SIM_FSM
+    enum int unsigned {
+        IDLE    ,
+        INS_N   ,
+        SINK_0  ,
+        SINK_N  ,
+        WAIT_EOP
+    } state = IDLE;
+`else
+    localparam IDLE    = 3'd0;
+    localparam INS_N   = 3'd1;
+    localparam SINK_0  = 3'd2;
+    localparam SINK_N  = 3'd3;
+    localparam WAIT_EOP= 3'd4;
+    reg [2:0] state = IDLE;
+`endif
 
 localparam  [15:0]   MAC_TYPE            = 16'h0800;
 
@@ -262,15 +267,15 @@ begin
 
                     //save state sink signal
                     sink_data   <= asi_snk0_data;
-                    sink_eop    <= asi_snk0_endofpacket;
+                    sink_eop    <= asi_snk0_eof;
                     sink_empty  <= asi_snk0_empty;
 
-                    aso_src0_valid         <= 1'b0;
-                    aso_src0_startofpacket <= 1'b0;
-                    aso_src0_endofpacket   <= 1'b0;
-                    aso_src0_empty         <= 2'd0;
+                    aso_src0_valid <= 1'b0;
+                    aso_src0_sof <= 1'b0;
+                    aso_src0_eof <= 1'b0;
+                    aso_src0_empty <= 2'd0;
 
-                    if (asi_snk0_valid & asi_snk0_startofpacket) begin
+                    if (asi_snk0_valid & asi_snk0_sof) begin
                         if (go_bit) begin
                             if (skip_pkt_en && (skip_pkt_count > 0)) begin
                             //Make skip udp packets
@@ -293,10 +298,10 @@ begin
                         end
                     end
 
-                    aso_src0_valid         <= 1'b1;
-                    aso_src0_startofpacket <= ~(|cnt) ;
-                    aso_src0_endofpacket   <= 1'b0;
-                    aso_src0_empty         <= {2{1'b0}};
+                    aso_src0_valid <= 1'b1;
+                    aso_src0_sof <= ~(|cnt) ;
+                    aso_src0_eof <= 1'b0;
+                    aso_src0_empty <= {2{1'b0}};
 
                     if (cnt == (INSERT_COUNT - 1)) begin
                         cnt <= 4'd0;
@@ -317,8 +322,8 @@ begin
                     end else begin
                     aso_src0_data <= {tst_data[7:0], tst_data[15:8], tst_data[23:16], tst_data[31:24]};
                     end
-                    aso_src0_endofpacket <= sink_eop;
-                    aso_src0_empty       <= sink_empty;
+                    aso_src0_eof <= sink_eop;
+                    aso_src0_empty <= sink_empty;
 
                     busy <= 1'b0;
 
@@ -339,11 +344,11 @@ begin
                     end else begin
                     aso_src0_data <= {tst_data[7:0], tst_data[15:8], tst_data[23:16], tst_data[31:24]};
                     end
-                    aso_src0_valid       <= asi_snk0_valid;
-                    aso_src0_endofpacket <= asi_snk0_endofpacket;
-                    aso_src0_empty       <= asi_snk0_empty;
+                    aso_src0_valid <= asi_snk0_valid;
+                    aso_src0_eof <= asi_snk0_eof;
+                    aso_src0_empty <= asi_snk0_empty;
 
-                    if (asi_snk0_valid & asi_snk0_endofpacket) begin
+                    if (asi_snk0_valid & asi_snk0_eof) begin
                         state <= IDLE;
                     end
                 end
@@ -351,7 +356,7 @@ begin
 
             WAIT_EOP: begin
                 if (aso_src0_ready) begin
-                    if (asi_snk0_valid & asi_snk0_endofpacket) begin
+                    if (asi_snk0_valid & asi_snk0_eof) begin
                         if (skip_pkt_cnt == (skip_pkt_count - 1)) begin
                             skip_pkt_cnt <= 16'd0;
                         end else begin
@@ -378,14 +383,14 @@ always @ (posedge csi_clock_clk)
 begin
     if (pkt_cnt_ld) begin
         pkt_cnt <= cfg.trn.id;
-    end else if ((aso_src0_ready & asi_snk0_valid & asi_snk0_endofpacket) && ((state == SINK_N) || (state == WAIT_EOP))) begin
+    end else if ((aso_src0_ready & asi_snk0_valid & asi_snk0_eof) && ((state == SINK_N) || (state == WAIT_EOP))) begin
         pkt_cnt <= pkt_cnt + 1;
     end
 end
 
 always @ (posedge csi_clock_clk)
 begin
-    if ((aso_src0_ready & asi_snk0_valid & asi_snk0_endofpacket) && ((state == SINK_N) || (state == WAIT_EOP))) begin
+    if ((aso_src0_ready & asi_snk0_valid & asi_snk0_eof) && ((state == SINK_N) || (state == WAIT_EOP))) begin
         ip_identification <= ip_identification + 1;
     end
 end
@@ -567,7 +572,7 @@ begin
     end
     if (skip_pkt_start) begin
         skip_pkt_en <= hw_skip_pkt_ctrl[28];
-    end else if ((aso_src0_ready & asi_snk0_valid & asi_snk0_endofpacket) && (state == WAIT_EOP) && (skip_pkt_cnt == (skip_pkt_count - 1))) begin
+    end else if ((aso_src0_ready & asi_snk0_valid & asi_snk0_eof) && (state == WAIT_EOP) && (skip_pkt_cnt == (skip_pkt_count - 1))) begin
         skip_pkt_en <= 1'b0;
     end
 end
