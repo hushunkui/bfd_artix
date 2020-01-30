@@ -1,0 +1,1 @@
+vsim -do ./filter_eth_pkt_tb.do
