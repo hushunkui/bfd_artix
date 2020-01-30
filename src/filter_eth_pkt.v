@@ -1,15 +1,7 @@
-//-----------------------------------------------------------------------
-// Engineer    : Golovachenko Victor
 //
-// Create Date : 14.10.2017 13:38:17
-// Module Name : filter_eth_pkt
+// author: Golovachenko Viktor
 //
-// Description :
-//
-//------------------------------------------------------------------------
-
-module filter_eth_pkt
-(
+module filter_eth_pkt (
     // clock interface
     input           csi_clock_clk,
     input           csi_clock_reset,
@@ -51,22 +43,38 @@ localparam   [7:0]   IP_VERSION          = {4'd4, 4'd5}; //Ver=4; HeaderLen=5
 localparam   [7:0]   IP_PROTOCOL_UDP     = 8'd17;
 localparam   [7:0]   IP_PROTOCOL_ICMP    = 8'd1;
 
-
-enum int unsigned {
-IDLE ,
-CHK_1,
-CHK_2,
-CHK_3,
-CHK_4,
-CHK_5,
-CHK_6,
-CHK_7,
-CHK_8,
-CHK_9,
-CHK_10,
-WAIT_EOF,
-S_PAUSE
-} state = IDLE;
+`ifdef SIM_FSM
+    enum int unsigned {
+        IDLE ,
+        CHK_1,
+        CHK_2,
+        CHK_3,
+        CHK_4,
+        CHK_5,
+        CHK_6,
+        CHK_7,
+        CHK_8,
+        CHK_9,
+        CHK_10,
+        WAIT_EOF,
+        S_PAUSE
+    } state = IDLE;
+`else
+    localparam IDLE  = 4'd0;
+    localparam CHK_1 = 4'd1;
+    localparam CHK_2 = 4'd2;
+    localparam CHK_3 = 4'd3;
+    localparam CHK_4 = 4'd4;
+    localparam CHK_5 = 4'd5;
+    localparam CHK_6 = 4'd6;
+    localparam CHK_7 = 4'd7;
+    localparam CHK_8 = 4'd8;
+    localparam CHK_9 = 4'd9;
+    localparam CHK_10 = 4'd10;
+    localparam WAIT_EOF = 4'd11;
+    localparam S_PAUSE = 4'd12;
+    reg [3:0] state = IDLE;
+`endif
 
 reg            rst_bit = 1'b0;
 reg            go_bit    = 1'b0;
