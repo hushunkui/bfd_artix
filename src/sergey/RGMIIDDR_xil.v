@@ -7,23 +7,27 @@
 module RGMIIDDR (
     input [4:0]  datain,
     input  inclock,
-    output [4:0]  dataout_h,
-    output [4:0]  dataout_l
+    input  inclock2,
+    output reg [4:0]  dataout_h = 0,
+    output reg [4:0]  dataout_l = 0
 );
 
 localparam IDDR_MODE = "SAME_EDGE_PIPELINED"; //"OPPOSITE_EDGE";
 
-wire phy_rxc_ibuf;
+// wire phy_rxc_ibuf;
 wire phy_rxc_bufio;
 wire phy_rx_ctl_ibuf;
 wire [3:0] phy_rxd_ibuf;
-wire phy_rxclk;
+// wire phy_rxclk;
 wire mac_rx_clk;
 
 
-IBUF ibuf_rxclk (.I(inclock), .O(phy_rxc_ibuf));
-BUFG bufio_rxclk (.I(phy_rxc_ibuf), .O(phy_rxc_bufio));
-BUFG bufr_rxclk (.I(phy_rxc_ibuf), .O(phy_rxclk)); //, .CE(1'b1), .CLR(0));
+// IBUF ibuf_rxclk (.I(inclock), .O(phy_rxc_ibuf));
+// BUFG bufio_rxclk (.I(phy_rxc_ibuf), .O(phy_rxc_bufio));
+// BUFG bufr_rxclk (.I(phy_rxc_ibuf), .O(mac_rx_clk)); //, .CE(1'b1), .CLR(0));
+
+assign phy_rxc_bufio = inclock;
+assign mac_rx_clk = inclock2;
 
 IBUF ibuf_rxctl (.I(datain[4]), .O(phy_rx_ctl_ibuf));
 genvar a;
@@ -63,18 +67,19 @@ generate for (c=0; c<4; c=c+1)
 endgenerate
 
 
-assign dataout_h[4] = rx_err;
-assign dataout_h[3] = rx_data[7];
-assign dataout_h[2] = rx_data[6];
-assign dataout_h[1] = rx_data[5];
-assign dataout_h[0] = rx_data[4];
+always @(posedge mac_rx_clk) begin
+    dataout_h[4] <= rx_err;
+    dataout_h[3] <= rx_data[7];
+    dataout_h[2] <= rx_data[6];
+    dataout_h[1] <= rx_data[5];
+    dataout_h[0] <= rx_data[4];
 
-assign dataout_l[4] = rx_dv;
-assign dataout_l[3] = rx_data[3];
-assign dataout_l[2] = rx_data[2];
-assign dataout_l[1] = rx_data[1];
-assign dataout_l[0] = rx_data[0];
-
+    dataout_l[4] <= rx_dv;
+    dataout_l[3] <= rx_data[3];
+    dataout_l[2] <= rx_data[2];
+    dataout_l[1] <= rx_data[1];
+    dataout_l[0] <= rx_data[0];
+end
 
 endmodule
 

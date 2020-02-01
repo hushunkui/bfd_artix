@@ -250,9 +250,9 @@ set_property IOSTANDARD LVCMOS25 [get_ports {usr_lvds_p_o[2]}]
 set_property IOSTANDARD LVCMOS25 [get_ports {usr_lvds_p_o[3]}]
 
 
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[1].rgmii/CustomGMAC_Inst/RGMII_rx_inst/phy_rxc_ibuf}]
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[2].rgmii/phy_rxc_ibuf}]
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[3].rgmii/phy_rxc_ibuf}]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[1].rgmii/CustomGMAC_Inst/phy_rxc_ibuf}]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[2].rgmii/CustomGMAC_Inst/phy_rxc_ibuf}]
+set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[3].rgmii/CustomGMAC_Inst/phy_rxc_ibuf}]
 
 
 # input      _______________________________                                  ________

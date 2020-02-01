@@ -39,11 +39,20 @@ module CustomGMAC_Wrap
 
 );
 
-assign CLK_OUT=RXC;
+wire phy_rxc_ibuf;
+wire phy_rxc_bufio;
+wire phy_rxclk;
+
+IBUF ibuf_rxclk (.I(RXC), .O(phy_rxc_ibuf));
+BUFG bufio_rxclk (.I(phy_rxc_ibuf), .O(phy_rxc_bufio));
+BUFG bufr_rxclk (.I(phy_rxc_ibuf), .O(phy_rxclk)); //, .CE(1'b1), .CLR(0));
+
+assign CLK_OUT=phy_rxclk;
 
 CustomGMAC  CustomGMAC_Inst
 (
-    .RXC(RXC),
+    .RXC_DDR(phy_rxc_bufio),
+    .RXC(phy_rxclk),
     .CLK(CLK),
     .RX_CTL(RX_CTL),
     .RXD(RXD),
@@ -70,7 +79,7 @@ CustomGMAC  CustomGMAC_Inst
 
     .ReqConfirm(ReqConfirm),
 
-    .dbg_rgmii_rx_data(bg_rgmii_rx_data),
+    .dbg_rgmii_rx_data(dbg_rgmii_rx_data),
     .dbg_rgmii_rx_den(dbg_rgmii_rx_den),
     .dbg_rgmii_rx_sof(dbg_rgmii_rx_sof),
     .dbg_rgmii_rx_eof(dbg_rgmii_rx_eof),

@@ -1,5 +1,6 @@
 module CustomGMAC
 ( input RXC,
+    input RXC_DDR,
     input CLK,
     input RX_CTL,
     input [3 :0]RXD,
@@ -63,6 +64,7 @@ wire [1:0]wSpeed;
 
 RGMII_rx RGMII_rx_inst (
     .clk200  (CLK   ),
+    .RXC_DDR  (RXC_DDR     ),
     .RXC      (RXC     ),
     .RX_CTL   ( RX_CTL ),
     .RXD      ( RXD    ),
