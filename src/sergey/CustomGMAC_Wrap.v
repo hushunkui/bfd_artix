@@ -41,7 +41,8 @@ module CustomGMAC_Wrap
 	output	EOF_OUT,
 	output	ENA_OUT,
 	output	ERR_OUT,
-	output	[7 :0] DATA_OUT
+	output	[7 :0] DATA_OUT,
+	output	[31 :0] InputCRC_ErrorCounter
 
 );
 
@@ -86,7 +87,8 @@ CustomGMAC  CustomGMAC_Inst
 	.  Remote_MACOut(Remote_MACOut),
 	.  Remote_IP_Out(Remote_IP_Out),
 	.  RemotePortOut(RemotePortOut),
-	.  DATA_OUT(DATA_OUT),
+	.  InputCRC_ErrorCounter(InputCRC_ErrorCounter),
+	.  DATA_OUT(DATA_OUT),	
 	.  SOF_OUT (SOF_OUT ),
 	.  EOF_OUT (EOF_OUT ),
 	.  ENA_OUT (ENA_OUT ),
