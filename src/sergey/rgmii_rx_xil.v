@@ -1,4 +1,6 @@
-
+//
+// author: Golovachenko Viktor
+//
 // synopsys translate_off
 `timescale 1 ps / 1 ps
 // synopsys translate_on
@@ -9,8 +11,7 @@ module RGMIIDDR (
     output [4:0]  dataout_l
 );
 
-// localparam IDDR_MODE = "OPPOSITE_EDGE";
-localparam IDDR_MODE = "SAME_EDGE_PIPELINED";
+localparam IDDR_MODE = "SAME_EDGE_PIPELINED"; //"OPPOSITE_EDGE";
 
 wire phy_rxc_ibuf;
 wire phy_rxc_bufio;
