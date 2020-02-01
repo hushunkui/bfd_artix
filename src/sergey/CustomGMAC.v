@@ -2,7 +2,7 @@ module CustomGMAC
 (	input	RXC,
 	input	CLK,
 	input	RX_CTL,	
-	input	[3:0]RXD,
+	input	[3 :0]RXD,
 	input	[47:0]InnerMAC ,
 	input	[31:0]IPD ,
 	input	[15:0]PortD,
@@ -38,6 +38,9 @@ module CustomGMAC
 	output   [31:0] Remote_IP_Out,
 	output   [15:0] RemotePortOut,
 	output	[7 :0] DATA_OUT,	
+	
+	output	reg [31 :0] InputCRC_ErrorCounter,	
+	
 	output	SOF_OUT,
 	output	EOF_OUT,
 	output	ENA_OUT,
@@ -79,8 +82,15 @@ RGMII_rx	RGMII_rx_inst (
 	);
 	
 	
-assign MODE=wSpeed[1];	
-assign LINK_UP = wLinkUP;
+	
+
+
+DDR_OUT	DDR_OUT_inst (
+	.datain_l ( {1'b0,wValRGMII,wDATARGMII[7:4]}),
+	.datain_h ( {1'b1,wValRGMII,wDATARGMII[3:0]}),
+	.outclock ( RXC ),
+	.dataout  ( {CLK_TX,TX_CTL,TXDATA} )
+	);
 	
 
 	
@@ -124,6 +134,8 @@ reg ErrL2;
 	
 always @(posedge RXC)
 begin
+if (wEOFL2&&wErrL2) InputCRC_ErrorCounter<=InputCRC_ErrorCounter+1'b1;
+
 if (wIP4) DATAL2 <=wDATAL2; else DATAL2 <=1'b0;
 if (wIP4) SOFL2  <=wSOFL2;  else SOFL2  <=1'b0;
 if (wIP4) EOFL2  <=wEOFL2;  else EOFL2  <=1'b0;
@@ -318,11 +330,11 @@ end
 	
 	
 	
-	.  ReqConfirm(wReqConfirm),
+	.  ReqConfirm(wReqConfirm)
 
-	.	ClkOut 			( CLK_TX	),
-	.	ValOut 			( TX_CTL	),
-	.	DataOut			( TXDATA	)
+//	.	ClkOut 			( CLK_TX	),
+//	.	ValOut 			( TX_CTL	),
+//	.	DataOut			( TXDATA	)
 	);
 	
 	
