@@ -5,10 +5,10 @@
 `timescale 1 ps / 1 ps
 // synopsys translate_on
 module DDR_OUT (
-    input  [5:0]  datain_h;
-    input  [5:0]  datain_l;
-    input         outclock;
-    output [5:0]  dataout;
+    input  [5:0]  datain_h,
+    input  [5:0]  datain_l,
+    input         outclock,
+    output [5:0]  dataout
 );
 
 localparam ODDR_MODE = "SAME_EDGE";
@@ -42,7 +42,7 @@ generate for (d=0; d<4; d=d+1)
         ODDR #(.DDR_CLK_EDGE(ODDR_MODE)) inst (
             .D1 (datain_h[d]),
             .D2 (datain_l[d]),
-            .Q  (dataout[d]),
+            .Q  (phy_txd_obuf[d]),
 
             .CE (1'b1), .R(1'b0), .S(1'b0),
             .C  (outclock)

@@ -66,7 +66,7 @@ wire [ETHCOUNT-1:0]     mac_rx_tlast ;
 wire [ETHCOUNT-1:0]     mac_rx_tuser ;
 wire [ETHCOUNT-1:0]     mac_rx_clk;
 wire [ETHCOUNT-1:0]     mac_fifo_resetn;
-reg  [31:0]             mac_rx_cnterr [ETHCOUNT-1:0];
+wire  [31:0]             mac_rx_cnterr [ETHCOUNT-1:0];
 reg  [31:0]             mac_rx_cnterr_mjtag [ETHCOUNT-1:0];
 reg  [31:0]             mac_rx_cnterr_aurclk [ETHCOUNT-1:0];
 
