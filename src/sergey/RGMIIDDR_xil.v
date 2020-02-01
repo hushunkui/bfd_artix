@@ -23,7 +23,7 @@ wire mac_rx_clk;
 
 IBUF ibuf_rxclk (.I(inclock), .O(phy_rxc_ibuf));
 BUFG bufio_rxclk (.I(phy_rxc_ibuf), .O(phy_rxc_bufio));
-// BUFG bufr_rxclk (.I(phy_rxc_ibuf), .O(phy_rxclk)); //, .CE(1'b1), .CLR(0));
+BUFG bufr_rxclk (.I(phy_rxc_ibuf), .O(phy_rxclk)); //, .CE(1'b1), .CLR(0));
 
 IBUF ibuf_rxctl (.I(datain[4]), .O(phy_rx_ctl_ibuf));
 genvar a;

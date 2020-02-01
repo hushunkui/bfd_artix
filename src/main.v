@@ -102,6 +102,10 @@ wire [ETHCOUNT-1:0]     test_mac_rx_tvalid;
 wire [ETHCOUNT-1:0]     test_mac_rx_tuser ;
 wire [ETHCOUNT-1:0]     test_mac_rx_tlast ;
 wire [ETHCOUNT-1:0]     test_mac_start;
+wire [ETHCOUNT-1:0]     test_mac_rx_tsof;
+wire [ETHCOUNT-1:0]     test_mac_rx_terr;
+
+wire [0:0] ReqConfirm [ETHCOUNT-1:0];
 
 wire mac_gtx_clk;
 wire mac_gtx_clk90;
@@ -479,17 +483,17 @@ generate
 
         assign test_mac_start[x] = reg_ctrl[x];// | vio_test_start[x];
 
-        always @(posedge mac_rx_clk[x]) begin
-            if (reg_ctrl[24]) begin
-                mac_rx_cnterr[x] <= 0;
-            end else begin
-                if (mac_rx_tvalid[x] && mac_rx_tlast[x]) begin
-                    if (mac_rx_bd[x] || mac_rx_er[x]) begin
-                        mac_rx_cnterr[x] <= mac_rx_cnterr[x] + 1;
-                    end
-                end
-            end
-        end
+        // always @(posedge mac_rx_clk[x]) begin
+        //     if (reg_ctrl[24]) begin
+        //         mac_rx_cnterr[x] <= 0;
+        //     end else begin
+        //         if (mac_rx_tvalid[x] && mac_rx_tlast[x]) begin
+        //             if (mac_rx_bd[x] || mac_rx_er[x]) begin
+        //                 mac_rx_cnterr[x] <= mac_rx_cnterr[x] + 1;
+        //             end
+        //         end
+        //     end
+        // end
 
         always @(posedge mac_gtx_clk) begin
             mac_rx_cnterr_mjtag[x] <= mac_rx_cnterr[x];
@@ -526,7 +530,7 @@ generate
             // .ReqIn1 (1'b0),//input
             // .DataIn1(0),//input [7:0]
 
-            .ReqConfirm(ReqConfirm[x]),//output [2:0]
+            .ReqConfirm(ReqConfirm[x]),//output
 
             .dbg_rgmii_rx_data(),
             .dbg_rgmii_rx_den(),
@@ -536,13 +540,65 @@ generate
             .Remote_MACOut(), //output   [47:0]
             .Remote_IP_Out(), //output   [31:0]
             .RemotePortOut(), //output   [15:0]
-            .CLK_OUT(), //output
-            .SOF_OUT(), //output
-            .EOF_OUT(), //output
-            .ENA_OUT(), //output
-            .ERR_OUT(), //output
-            .DATA_OUT(), //output  [7 :0]
-            .InputCRC_ErrorCounter() //output  [31 :0]
+            .CLK_OUT(mac_rx_clk[x]), //output
+            .SOF_OUT(test_mac_rx_tsof[x]), //output
+            .EOF_OUT(test_mac_rx_tlast[x]), //output
+            .ENA_OUT(test_mac_rx_tvalid[x]), //output
+            .ERR_OUT(test_mac_rx_terr[x]), //output
+            .DATA_OUT(test_mac_rx_tdata[x]), //output  [7 :0]
+            .InputCRC_ErrorCounter(mac_rx_cnterr[x]) //output  [31 :0]
+        );
+
+        test_rx test_rx_eth0 (
+            .mac_rx_data   (test_mac_rx_tdata [x]   ),
+            .mac_rx_valid  (test_mac_rx_tvalid[x]  ),
+            .mac_rx_sof    (test_mac_rx_tsof[x]    ),
+            .mac_rx_eof    (test_mac_rx_tlast[x]    ),
+            .mac_rx_fr_good(1'b1),
+            .mac_rx_fr_err (1'b0 ),
+
+            .start(test_mac_start[x]),
+            .err(),
+            .test_data(),
+
+            .clk(mac_rx_clk[x]),
+            .rst(~mac_pll_locked)
+        );
+
+        ila_0 rx_ila (
+            .probe0({
+                mac_rx_cnterr[x][9:0],
+                test_mac_rx_tdata[x],           //11
+                test_mac_rx_tvalid[x],         //3
+                test_mac_rx_tsof[x], //sof   //2
+                test_mac_rx_tlast[x]  //eof  //1
+            }),
+            .clk(mac_rx_clk[x])
+        );
+
+        test_tx test_tx_eth0 (
+            .mac_tx_data (test_mac_tx_tdata [x]),
+            .mac_tx_valid(test_mac_tx_tvalid[x]),
+            .mac_tx_sof  (test_mac_tx_tuser [x]),
+            .mac_tx_eof  (test_mac_tx_tlast [x]),
+            .mac_tx_rdy  (ReqConfirm[x][0]),
+
+            .start(test_mac_start[x]),
+            .pkt_size(test_mac_pkt_size),
+            .pause_size(test_mac_pause_size),
+
+            .clk(mac_rx_clk[x]),
+            .rst(~mac_pll_locked)
+        );
+
+        ila_0 tx_ila (
+            .probe0({
+                test_mac_tx_tdata[x],           //11
+                test_mac_tx_tvalid[x],         //3
+                test_mac_tx_tuser[x], //sof   //2
+                test_mac_tx_tlast[x]  //eof  //1
+            }),
+            .clk(mac_rx_clk[x])
         );
 
         // mac_rgmii rgmii (
@@ -711,114 +767,115 @@ endgenerate
 //     .clk(aurora_usr_clk)
 // );
 
-vio_0 vvv (
-    .probe_in0(test_mac_start[3:0]),    // input wire [3 : 0] probe_in0
-    .probe_in1(test_err[3:0]),    // input wire [3 : 0] probe_in1
-    .probe_in2(mac_rx_cnterr_aurclk[0][9:0]),    // input wire [9 : 0] probe_in2
-    .probe_in3(mac_rx_cnterr_aurclk[1][9:0]),    // input wire [9 : 0] probe_in3
-    .probe_in4(mac_rx_cnterr_aurclk[2][9:0]),    // input wire [9 : 0] probe_in4
-    .probe_in5(mac_rx_cnterr_aurclk[3][9:0]),    // input wire [9 : 0] probe_in5
-    .probe_out0(vio_test_start),  // output wire [7 : 0] probe_out0
-    .clk(aurora_usr_clk)
-);
+// vio_0 vvv (
+//     .probe_in0(test_mac_start[3:0]),    // input wire [3 : 0] probe_in0
+//     .probe_in1(test_err[3:0]),    // input wire [3 : 0] probe_in1
+//     .probe_in2(mac_rx_cnterr_aurclk[0][9:0]),    // input wire [9 : 0] probe_in2
+//     .probe_in3(mac_rx_cnterr_aurclk[1][9:0]),    // input wire [9 : 0] probe_in3
+//     .probe_in4(mac_rx_cnterr_aurclk[2][9:0]),    // input wire [9 : 0] probe_in4
+//     .probe_in5(mac_rx_cnterr_aurclk[3][9:0]),    // input wire [9 : 0] probe_in5
+//     .probe_out0(vio_test_start),  // output wire [7 : 0] probe_out0
+//     .clk(aurora_usr_clk)
+// );
 
 
-// //set channel for transfer test data
-test_phy test_rx_eth0 (
-    .mac_tx_data  (test_mac_tx_tdata [1]),
-    .mac_tx_valid (test_mac_tx_tvalid[1]),
-    .mac_tx_sof   (test_mac_tx_tuser [1]),
-    .mac_tx_eof   (test_mac_tx_tlast [1]),
-    .mac_tx_rdy   (test_mac_tx_tready[1]),
+// // //set channel for transfer test data
+// test_phy test_rx_eth0 (
+//     .mac_tx_data  (test_mac_tx_tdata [1]),
+//     .mac_tx_valid (test_mac_tx_tvalid[1]),
+//     .mac_tx_sof   (test_mac_tx_tuser [1]),
+//     .mac_tx_eof   (test_mac_tx_tlast [1]),
+//     .mac_tx_rdy   (test_mac_tx_tready[1]),
 
-    .mac_rx_data   (test_mac_rx_tdata [0]),
-    .mac_rx_valid  (test_mac_rx_tvalid[0]),
-    .mac_rx_sof    (1'b0),
-    .mac_rx_eof    (test_mac_rx_tlast[0]),
-    .mac_rx_fr_good(1'b1),
-    .mac_rx_fr_err (1'b0),
+//     .mac_rx_data   (test_mac_rx_tdata [0]),
+//     .mac_rx_valid  (test_mac_rx_tvalid[0]),
+//     .mac_rx_sof    (test_mac_rx_tsof[0]),
+//     .mac_rx_eof    (test_mac_rx_tlast[0]),
+//     .mac_rx_fr_good(1'b1),
+//     .mac_rx_fr_err (1'b0),
 
-    .start(test_mac_start[0]),
-    .pkt_size(test_mac_pkt_size),
-    .pause_size(test_mac_pause_size),
-    .err(test_err[0]),
-    .test_data(test_data[0]),
+//     .start(test_mac_start[0]),
+//     .pkt_size(test_mac_pkt_size),
+//     .pause_size(test_mac_pause_size),
+//     .err(test_err[0]),
+//     .test_data(test_data[0]),
 
-    .clk(aurora_usr_clk),
-    .rst(~mac_pll_locked)
-);
+//     .clk(mac_rx_clk[x]),
+//     .rst(~mac_pll_locked)
+// );
 
-test_phy test_rx_eth1 (
-    .mac_tx_data  (test_mac_tx_tdata [0]),
-    .mac_tx_valid (test_mac_tx_tvalid[0]),
-    .mac_tx_sof   (test_mac_tx_tuser [0]),
-    .mac_tx_eof   (test_mac_tx_tlast [0]),
-    .mac_tx_rdy   (test_mac_tx_tready[0]),
+// test_phy test_rx_eth1 (
+//     .mac_tx_data  (test_mac_tx_tdata [0]),
+//     .mac_tx_valid (test_mac_tx_tvalid[0]),
+//     .mac_tx_sof   (test_mac_tx_tuser [0]),
+//     .mac_tx_eof   (test_mac_tx_tlast [0]),
+//     .mac_tx_rdy   (test_mac_tx_tready[0]),
 
-    .mac_rx_data   (test_mac_rx_tdata [1]),
-    .mac_rx_valid  (test_mac_rx_tvalid[1]),
-    .mac_rx_sof    (1'b0),
-    .mac_rx_eof    (test_mac_rx_tlast[1]),
-    .mac_rx_fr_good(1'b1),
-    .mac_rx_fr_err (1'b0),
+//     .mac_rx_data   (test_mac_rx_tdata [1]),
+//     .mac_rx_valid  (test_mac_rx_tvalid[1]),
+//     .mac_rx_sof    (test_mac_rx_tsof[1]),
+//     .mac_rx_eof    (test_mac_rx_tlast[1]),
+//     .mac_rx_fr_good(1'b1),
+//     .mac_rx_fr_err (1'b0),
 
-    .start(test_mac_start[1]),
-    .pkt_size(test_mac_pkt_size),
-    .pause_size(test_mac_pause_size),
-    .err(test_err[1]),
-    .test_data(test_data[1]),
+//     .start(test_mac_start[1]),
+//     .pkt_size(test_mac_pkt_size),
+//     .pause_size(test_mac_pause_size),
+//     .err(test_err[1]),
+//     .test_data(test_data[1]),
 
-    .clk(aurora_usr_clk),
-    .rst(~mac_pll_locked)
-);
+//     .clk(aurora_usr_clk),
+//     .rst(~mac_pll_locked)
+// );
 
-test_phy test_rx_eth2 (
-    .mac_tx_data  (test_mac_tx_tdata [3]),
-    .mac_tx_valid (test_mac_tx_tvalid[3]),
-    .mac_tx_sof   (test_mac_tx_tuser [3]),
-    .mac_tx_eof   (test_mac_tx_tlast [3]),
-    .mac_tx_rdy   (test_mac_tx_tready[3]),
+// test_phy test_rx_eth2 (
+//     .mac_tx_data  (test_mac_tx_tdata [3]),
+//     .mac_tx_valid (test_mac_tx_tvalid[3]),
+//     .mac_tx_sof   (test_mac_tx_tuser [3]),
+//     .mac_tx_eof   (test_mac_tx_tlast [3]),
+//     .mac_tx_rdy   (test_mac_tx_tready[3]),
 
-    .mac_rx_data   (test_mac_rx_tdata [2]),
-    .mac_rx_valid  (test_mac_rx_tvalid[2]),
-    .mac_rx_sof    (1'b0),
-    .mac_rx_eof    (test_mac_rx_tlast[2]),
-    .mac_rx_fr_good(1'b1),
-    .mac_rx_fr_err (1'b0),
+//     .mac_rx_data   (test_mac_rx_tdata [2]),
+//     .mac_rx_valid  (test_mac_rx_tvalid[2]),
+//     .mac_rx_sof    (test_mac_rx_tsof[2]),
+//     .mac_rx_eof    (test_mac_rx_tlast[2]),
+//     .mac_rx_fr_good(1'b1),
+//     .mac_rx_fr_err (1'b0),
 
-    .start(test_mac_start[2]),
-    .pkt_size(test_mac_pkt_size),
-    .pause_size(test_mac_pause_size),
-    .err(test_err[2]),
-    .test_data(test_data[2]),
+//     .start(test_mac_start[2]),
+//     .pkt_size(test_mac_pkt_size),
+//     .pause_size(test_mac_pause_size),
+//     .err(test_err[2]),
+//     .test_data(test_data[2]),
 
-    .clk(aurora_usr_clk),
-    .rst(~mac_pll_locked)
-);
+//     .clk(aurora_usr_clk),
+//     .rst(~mac_pll_locked)
+// );
 
-test_phy test_rx_eth3 (
-    .mac_tx_data  (test_mac_tx_tdata [2]),
-    .mac_tx_valid (test_mac_tx_tvalid[2]),
-    .mac_tx_sof   (test_mac_tx_tuser [2]),
-    .mac_tx_eof   (test_mac_tx_tlast [2]),
-    .mac_tx_rdy   (test_mac_tx_tready[2]),
+// test_phy test_rx_eth3 (
+//     .mac_tx_data  (test_mac_tx_tdata [2]),
+//     .mac_tx_valid (test_mac_tx_tvalid[2]),
+//     .mac_tx_sof   (test_mac_tx_tuser [2]),
+//     .mac_tx_eof   (test_mac_tx_tlast [2]),
+//     .mac_tx_rdy   (test_mac_tx_tready[2]),
 
-    .mac_rx_data   (test_mac_rx_tdata [3]),
-    .mac_rx_valid  (test_mac_rx_tvalid[3]),
-    .mac_rx_sof    (1'b0),
-    .mac_rx_eof    (test_mac_rx_tlast[3]),
-    .mac_rx_fr_good(1'b1),
-    .mac_rx_fr_err (1'b0),
+//     .mac_rx_data   (test_mac_rx_tdata [3]),
+//     .mac_rx_valid  (test_mac_rx_tvalid[3]),
+//     .mac_rx_sof    (test_mac_rx_tsof[3]),
+//     .mac_rx_eof    (test_mac_rx_tlast[3]),
+//     .mac_rx_fr_good(1'b1),
+//     .mac_rx_fr_err (1'b0),
 
-    .start(test_mac_start[3]),
-    .pkt_size(test_mac_pkt_size),
-    .pause_size(test_mac_pause_size),
-    .err(test_err[3]),
-    .test_data(test_data[3]),
+//     .start(test_mac_start[3]),
+//     .pkt_size(test_mac_pkt_size),
+//     .pause_size(test_mac_pause_size),
+//     .err(test_err[3]),
+//     .test_data(test_data[3]),
 
-    .clk(aurora_usr_clk),
-    .rst(~mac_pll_locked)
-);
+//     .clk(aurora_usr_clk),
+//     .rst(~mac_pll_locked)
+// );
+
 
 
 
