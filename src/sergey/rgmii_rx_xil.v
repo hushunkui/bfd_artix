@@ -1,167 +1,79 @@
 
-module RGMII_rx
-
-(	
-	input	clk200,
-	input	RXC,
-	input	RX_CTL,	
-	input	[3:0]RXD,
-	
-	output	RX_ERR,
-	output	RX_DV,
-	output	[7:0] DATA_OUT,
-	output	 ENA,
-	output	 SOF,
-	output	 EOF,
-	output    LINK_UP,
-	output    DUPLEX,
-	output    [1:0] SPEED
+// synopsys translate_off
+`timescale 1 ps / 1 ps
+// synopsys translate_on
+module RGMIIDDR (
+    input [4:0]  datain,
+    input  inclock,
+    output [4:0]  dataout_h,
+    output [4:0]  dataout_l
 );
 
+// localparam IDDR_MODE = "OPPOSITE_EDGE";
+localparam IDDR_MODE = "SAME_EDGE_PIPELINED";
+
+wire phy_rxc_ibuf;
+wire phy_rxc_bufio;
+wire phy_rx_ctl_ibuf;
+wire [3:0] phy_rxd_ibuf;
+wire phy_rxclk;
+wire mac_rx_clk;
 
 
-reg [4:0]DataL;
-reg [4:0]DataH;
-reg [7:0]Data;
+IBUF ibuf_rxclk (.I(inclock), .O(phy_rxc_ibuf));
+BUFG bufio_rxclk (.I(phy_rxc_ibuf), .O(phy_rxc_bufio));
+// BUFG bufr_rxclk (.I(phy_rxc_ibuf), .O(phy_rxclk)); //, .CE(1'b1), .CLR(0));
 
-wire [4:0] wDataH;
-wire [4:0] wDataL;
-reg  [4:0] rDataL;
-
-
-RGMIIDDR	RGMIIDDRRX_inst (
-	.datain    ( {RX_CTL,RXD} ),
-	.inclock   ( RXC ),
-	.dataout_h ( wDataL ),
-	.dataout_l ( wDataH )
-	);
-
-reg SyncReg =1'b0;
-reg SyncReg0=1'b0;
-reg SyncReg1=1'b0;
-//reg SyncReg2=1'b0;
-reg RXDV_DEL0;
-reg RXDV_DEL1;
-
-reg SoFReg;
-reg SoFReg0;
-reg SoFReg1;
-reg SoFReg2;
-
-reg EoFReg;
-
-reg Busy=1'b0;
-reg BusyD=1'b0;
-/////////////////////////////////////////////////////
-
-	wire wLinkUP;
-	wire wDuplexMode;
-	wire [1:0]wSpeed;
-
-LinkStatus LinkStatus_inst
-(
-	. clk200(clk200),
-	. clkRXC(RXC),
-	. ValIn(wDataL[4]|wDataH[4]),
-	. DataIn  ({wDataH[3:0],wDataL[3:0]}),
-	
-	. LINK_UP(wLinkUP),
-	. DUPLEX (wDuplexMode),
-	. SPEED  (wSpeed)
-);	
+IBUF ibuf_rxctl (.I(datain[4]), .O(phy_rx_ctl_ibuf));
+genvar a;
+generate for (a=0; a<4; a=a+1)
+    begin : ibuf_rxd
+        IBUF inst (.I(datain[a]), .O(phy_rxd_ibuf[a]));
+    end
+endgenerate
 
 
-assign LINK_UP=wLinkUP;
-assign DUPLEX =wDuplexMode;
-assign SPEED  =wSpeed;
+// IDDR for rx channel
+wire rx_dv;
+wire rx_err;
+wire [7:0] rx_data;
+
+IDDR #(.DDR_CLK_EDGE(IDDR_MODE)) iddr_rx_ctrl (
+    .D(datain[4]),
+    .Q1(rx_dv),
+    .Q2(rx_err),
+
+    .CE(1'b1), .R(1'b0), .S(1'b0),
+    .C(phy_rxc_bufio)
+);
+
+genvar c;
+generate for (c=0; c<4; c=c+1)
+    begin : iddr_rxd
+        IDDR #(.DDR_CLK_EDGE(IDDR_MODE)) inst (
+            .D(datain[c]),
+            .Q1(rx_data[c]),
+            .Q2(rx_data[c+4]),
+
+            .CE(1'b1), .R(1'b0), .S(1'b0),
+            .C(phy_rxc_bufio)
+        );
+    end
+endgenerate
 
 
-always @(posedge RXC)
-begin
-rDataL<=wDataL;
+assign dataout_h[4] = rx_err;
+assign dataout_h[3] = rx_data[7];
+assign dataout_h[2] = rx_data[6];
+assign dataout_h[1] = rx_data[5];
+assign dataout_h[0] = rx_data[4];
 
-RXDV_DEL0<=wDataL[4];
-RXDV_DEL1<=RXDV_DEL0;
-	
-	if (wSpeed[1]==1'b0)
-	begin
-	if ({wDataL[4],RXDV_DEL0,RXDV_DEL1}==3'b100)	
-		begin
-			SyncReg<=1'b1;
-		end
-		else
-		begin
-			SyncReg<=!SyncReg;
-		end	
-	end else
-	begin
-		SyncReg<=1'b1;	
-	end  
-	
-	
-
-	if ({wDataL[4],RXDV_DEL0,RXDV_DEL1}==3'b100)	
-		begin
-			SoFReg<=1'b1;
-			Busy<=1'b1;
-		end
-		else
-		begin
-		   if ({wDataL[4],RXDV_DEL0,SyncReg}==3'b001)	
-			begin 
-				Busy<=1'b0;
-				if (Busy) EoFReg<=1'b1; else EoFReg<=1'b0;
-			end
-			SoFReg<=1'b0;
-		end	
-
-//BusyD<=Busy;
-	
-	SoFReg0<=SoFReg;
-	SoFReg1<=SoFReg0;
-	if (wSpeed[1]==1'b0) SoFReg2<=SoFReg1;
-		else SoFReg2<=SoFReg0;
-
-	
-	SyncReg0<=SyncReg;
-	SyncReg1<=SyncReg0;
-//	SyncReg2<=SyncReg1;
-	
-	
-
-	if( SyncReg )  DataL		<=	rDataL; 
-	if( SyncReg0)  DataH		<=	wDataH;
-
-end 
-
-
-always @(posedge RXC) if( SyncReg1)   Data		<=	{DataH[3:0],DataL[3:0]};
-
-
-
-
-reg RXDV;
-reg RXERR;
-reg ENAReg;
-
-
-always @(posedge RXC) if( SyncReg1) RXDV	<=	DataL[4];
-always @(posedge RXC) if( SyncReg1) RXERR	<=	DataH[4]^DataL[4];
-always @(posedge RXC) ENAReg	<=SyncReg1&DataL[4];
-
-
-
-
-
-
-assign DATA_OUT =Data;
-assign SOF  = SoFReg2;
-assign ENA  = ENAReg;//SyncReg2;
-
-assign EOF = EoFReg;
-
-assign RX_DV   = RXDV;
-assign RX_ERR  = RXERR;
+assign dataout_l[4] = rx_dv;
+assign dataout_l[3] = rx_data[3];
+assign dataout_l[2] = rx_data[2];
+assign dataout_l[1] = rx_data[1];
+assign dataout_l[0] = rx_data[0];
 
 
 endmodule
+
