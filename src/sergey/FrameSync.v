@@ -15,9 +15,9 @@ module FrameSync
 	output FrameOut,
 	output [7 :0] DataOut,
 	output [47:0] RemoteMACOut,
-	output reg ARPFrame,
+	output reg ARPFrame = 0,
 //	output reg JumFrame,
-	output reg IP4Frame
+	output reg IP4Frame = 0
 
 
 );

@@ -1,5 +1,6 @@
 module CustomGMAC
-( input RXC,
+(
+    input RXC,
     input RXC_DDR,
     input CLK,
     input RX_CTL,
