@@ -2,13 +2,10 @@ onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /mac_rgmii_tb/pll0_locked
 add wave -noupdate /mac_rgmii_tb/clk200M
-add wave -noupdate /mac_rgmii_tb/mac2/rst
-add wave -noupdate /mac_rgmii_tb/mac2/rx_data
-add wave -noupdate /mac_rgmii_tb/mac2/rx_dv
-add wave -noupdate /mac_rgmii_tb/mac2/rx_err
 add wave -noupdate /mac_rgmii_tb/mac/RXC
 add wave -noupdate /mac_rgmii_tb/mac/RXD
 add wave -noupdate /mac_rgmii_tb/mac/RX_CTL
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/wSpeed
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/LinkStatus_inst/LINK_UP
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/RGMIIDDRRX_inst/rst
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/RGMIIDDRRX_inst/rx_data
@@ -16,6 +13,16 @@ add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/RGMIIDDRRX_in
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/RGMIIDDRRX_inst/rx_err
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/RGMIIDDRRX_inst/dataout_h
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/RGMIIDDRRX_inst/dataout_l
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/wDataH
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/wDataL
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/sr0_data
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/sr0_dv
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/sr1_data
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/sr1_dv
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/rgmii_sof
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/rgmii_eof
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/rgmii_data
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/rgmii_dv
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/DATA_OUT
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/ENA
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/SOF
@@ -65,4 +72,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {5621309 ps} {6447613 ps}
+WaveRestoreZoom {0 ps} {13650 ns}

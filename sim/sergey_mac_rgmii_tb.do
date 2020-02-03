@@ -22,15 +22,15 @@ vlog  $env(XILINX_VV)/data/verilog/src/glbl.v
 vlog -modelsimini $inifile ../src/core_gen/clk25_wiz0/clk25_wiz0.v
 vlog -modelsimini $inifile ../src/core_gen/clk25_wiz0/clk25_wiz0_clk_wiz.v
 
-vlog ../src/mac_crc.v
-vlog -modelsimini $inifile ../src/mac_rgmii.v
-vlog -modelsimini $inifile ../src/core_gen/clk25_wiz0/clk25_wiz0.v
-vlog -modelsimini $inifile ../src/core_gen/clk25_wiz0/clk25_wiz0_clk_wiz.v
-vlog -modelsimini $inifile ../src/mac_bram.v
-vlog -modelsimini $inifile ../src/mac_fifo_sync_block.v
-vlog -modelsimini $inifile ../src/mac_fifo_tx.v -sv +define+SIM_FSM
-vlog -modelsimini $inifile ../src/mac_fifo_rx.v -sv +define+SIM_FSM
-vlog -modelsimini $inifile ../src/mac_fifo.v
+#vlog ../src/mac_crc.v
+#vlog -modelsimini $inifile ../src/mac_rgmii.v
+#vlog -modelsimini $inifile ../src/core_gen/clk25_wiz0/clk25_wiz0.v
+#vlog -modelsimini $inifile ../src/core_gen/clk25_wiz0/clk25_wiz0_clk_wiz.v
+#vlog -modelsimini $inifile ../src/mac_bram.v
+#vlog -modelsimini $inifile ../src/mac_fifo_sync_block.v
+#vlog -modelsimini $inifile ../src/mac_fifo_tx.v -sv +define+SIM_FSM
+#vlog -modelsimini $inifile ../src/mac_fifo_rx.v -sv +define+SIM_FSM
+#vlog -modelsimini $inifile ../src/mac_fifo.v
 
 vlog -modelsimini $inifile ../src/sergey/CustomGMAC_Wrap.v
 vlog -modelsimini $inifile ../src/sergey/CustomGMAC.v

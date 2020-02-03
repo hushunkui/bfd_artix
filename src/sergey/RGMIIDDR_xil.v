@@ -23,7 +23,6 @@ wire phy_rx_ctl_delay;
 wire [3:0] phy_rxd_delay;
 
 wire rst;
-
 assign rst = 1'b0;
 
 assign phy_rxc_bufio = inclock2;
@@ -123,13 +122,13 @@ endgenerate
 
 
 always @(posedge phy_rxclk) begin
-    dataout_h[4] <= rx_err;
+    dataout_h[4] <= rx_dv;
     dataout_h[3] <= rx_data[3];
     dataout_h[2] <= rx_data[2];
     dataout_h[1] <= rx_data[1];
     dataout_h[0] <= rx_data[0];
 
-    dataout_l[4] <= rx_dv;
+    dataout_l[4] <= rx_err;
     dataout_l[3] <= rx_data[7];
     dataout_l[2] <= rx_data[6];
     dataout_l[1] <= rx_data[5];
