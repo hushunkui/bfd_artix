@@ -21,13 +21,13 @@ module RGMII_rx
 
 
 
-reg [4:0]DataL;
-reg [4:0]DataH;
-reg [7:0]Data;
+reg [4:0]DataL = 0;
+reg [4:0]DataH = 0;
+reg [7:0]Data = 0;
 
 wire [4:0] wDataH;
 wire [4:0] wDataL;
-reg  [4:0] rDataL;
+reg  [4:0] rDataL = 0;
 
 
 RGMIIDDR	RGMIIDDRRX_inst (
@@ -42,15 +42,15 @@ reg SyncReg =1'b0;
 reg SyncReg0=1'b0;
 reg SyncReg1=1'b0;
 //reg SyncReg2=1'b0;
-reg RXDV_DEL0;
-reg RXDV_DEL1;
+reg RXDV_DEL0 = 0;
+reg RXDV_DEL1 = 0;
 
-reg SoFReg;
-reg SoFReg0;
-reg SoFReg1;
-reg SoFReg2;
+reg SoFReg = 0;
+reg SoFReg0 = 0;
+reg SoFReg1 = 0;
+reg SoFReg2 = 0;
 
-reg EoFReg;
+reg EoFReg = 0;
 
 reg Busy=1'b0;
 reg BusyD=1'b0;
@@ -142,9 +142,9 @@ always @(posedge RXC) if( SyncReg1)   Data		<=	{DataH[3:0],DataL[3:0]};
 
 
 
-reg RXDV;
-reg RXERR;
-reg ENAReg;
+reg RXDV = 0;
+reg RXERR = 0;
+reg ENAReg = 0;
 
 
 always @(posedge RXC) if( SyncReg1) RXDV	<=	DataL[4];

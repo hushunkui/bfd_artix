@@ -7,7 +7,7 @@ module FrameSync
 	input	ValIn,
 	input	[7:0]DataIn,
 	input	[47:0]InnerMAC ,
-	
+
 	output SoFOut,
 	output EoFOut,
 	output ValOut,
@@ -19,44 +19,44 @@ module FrameSync
 //	output reg JumFrame,
 	output reg IP4Frame
 
-	
+
 );
 
-reg [7:0]DataReg; 
-reg Pream0; 
-reg Pream1; 
-reg Pream2;
-reg Pream3;  
-reg Sync;
-reg ValReg; 
-reg ValReg0; 
-reg ValReg1; 
+reg [7:0]DataReg = 0;
+reg Pream0 = 0;
+reg Pream1 = 0;
+reg Pream2 = 0;
+reg Pream3 = 0;
+reg Sync = 0;
+reg ValReg = 0;
+reg ValReg0 = 0;
+reg ValReg1 = 0;
 
 
-reg EoFReg; 
-reg EoFReg0; 
+reg EoFReg = 0;
+reg EoFReg0 = 0;
 
-reg Sync0;
-reg Sync1;
-reg Sync2;
-reg Sync3;
-reg Sync4;
-reg Sync5;
-reg Sync6;
-reg Sync7; 
-reg Sync8;
-reg Sync9;
-reg Sync10;
-reg Sync11;
-reg Sync12;
-reg Sync13;
-reg Sync14;
-reg Sync15;
+reg Sync0 = 0;
+reg Sync1 = 0;
+reg Sync2 = 0;
+reg Sync3 = 0;
+reg Sync4 = 0;
+reg Sync5 = 0;
+reg Sync6 = 0;
+reg Sync7 = 0;
+reg Sync8 = 0;
+reg Sync9 = 0;
+reg Sync10 = 0;
+reg Sync11 = 0;
+reg Sync12 = 0;
+reg Sync13 = 0;
+reg Sync14 = 0;
+reg Sync15 = 0;
 
-reg Sync16;
-reg Sync17;
-reg Sync18;
-reg Sync19;
+reg Sync16 = 0;
+reg Sync17 = 0;
+reg Sync18 = 0;
+reg Sync19 = 0;
 
 //reg Sync15_D;
 
@@ -70,35 +70,35 @@ assign wStartPayload = Sync18;
 wire wSoFPayload;
 assign wSoFPayload =   Sync19;
 
-reg [7:0] DataReg0; 
-reg [7:0] DataReg1; 
-reg [7:0] DataReg2; 
-reg [7:0] DataReg3; 
-reg [7:0] DataReg4; 
-reg [7:0] DataReg5;
-reg [7:0] DataReg6;    
+reg [7:0] DataReg0 = 0;
+reg [7:0] DataReg1 = 0;
+reg [7:0] DataReg2 = 0;
+reg [7:0] DataReg3 = 0;
+reg [7:0] DataReg4 = 0;
+reg [7:0] DataReg5 = 0;
+reg [7:0] DataReg6 = 0;
 
-reg [7:0]SMACAdr0;
-reg [7:0]SMACAdr1;
-reg [7:0]SMACAdr2;
-reg [7:0]SMACAdr3;
-reg [7:0]SMACAdr4;
-reg [7:0]SMACAdr5;
-reg [7:0]DMACAdr0;
-reg [7:0]DMACAdr1;
-reg [7:0]DMACAdr2;
-reg [7:0]DMACAdr3;
-reg [7:0]DMACAdr4;
-reg [7:0]DMACAdr5;  
+reg [7:0]SMACAdr0 = 0;
+reg [7:0]SMACAdr1 = 0;
+reg [7:0]SMACAdr2 = 0;
+reg [7:0]SMACAdr3 = 0;
+reg [7:0]SMACAdr4 = 0;
+reg [7:0]SMACAdr5 = 0;
+reg [7:0]DMACAdr0 = 0;
+reg [7:0]DMACAdr1 = 0;
+reg [7:0]DMACAdr2 = 0;
+reg [7:0]DMACAdr3 = 0;
+reg [7:0]DMACAdr4 = 0;
+reg [7:0]DMACAdr5 = 0;
 
-reg MacValid0;
-reg MacValid1;
-reg MacValid2;
-reg MacValid3;
-reg MacValid4;
-reg MacValid5; 
-reg MacValid;
- 
+reg MacValid0 = 0;
+reg MacValid1 = 0;
+reg MacValid2 = 0;
+reg MacValid3 = 0;
+reg MacValid4 = 0;
+reg MacValid5 = 0;
+reg MacValid = 0;
+
 reg PayloadReg=1'b0;
 
 reg PackDecode=1'b0;
@@ -107,22 +107,22 @@ reg CRCVal0=1'b0;
 
    EthCRC32    RX_EthCRC32_inst0
     (
-   
-    . clk(Clk),			
-    . DataIn     (DataReg0 ), 	
-    . DataValid  (CRCVal0), 		
-    . EndOfPacket(EoFReg0), 	
+
+    . clk(Clk),
+    . DataIn     (DataReg0 ),
+    . DataValid  (CRCVal0),
+    . EndOfPacket(EoFReg0),
     . StartOfPacket(Sync1),
 	 . Sync(Sync0),
 	 . CRCErr(ErrOut),
-	 
+
 //    . DataOutSOF_R(),
 //    . DataOutEOF_R(),
 //    . DataOutCRC_OK_R(),
 //    . DataOutValid_R(),
 //    . DataOut_R(),
-    
-    
+
+
    	. DataOutValid(),
    	. DataOut(),
    	. crc32(),
@@ -142,12 +142,12 @@ if (wStartPayload&ValReg&MacValid) PayloadReg<=1'b1;
 
 if (SoFIn&ValIn)	PackDecode<=1'b0;
 	else if (Sync) PackDecode<=1'b1;
-	
+
 if (SoFIn&ValIn)	WaitSync<=1'b1;
-	else if (Sync) WaitSync<=1'b0;	
-	
-	
-	
+	else if (Sync) WaitSync<=1'b0;
+
+
+
 CRCVal0<=	PackDecode&ValReg;
 
 
@@ -236,14 +236,14 @@ MacValid<=MacValid0&&MacValid1&&MacValid2&&MacValid3&&MacValid4&&MacValid5;
 //EoFOut<=EoFIn&&PayloadReg;
 end
 
-reg [7:0]DataOutRegD0;
-reg [7:0]DataOutRegD1;
-reg ValOutRegD0;
-reg ValOutRegD1;
-reg SoFOutRegD0;
-reg SoFOutRegD1;
-reg EoFOutRegD0;
-reg EoFOutRegD1;
+reg [7:0]DataOutRegD0 = 0;
+reg [7:0]DataOutRegD1 = 0;
+reg ValOutRegD0 = 0;
+reg ValOutRegD1 = 0;
+reg SoFOutRegD0 = 0;
+reg SoFOutRegD1 = 0;
+reg EoFOutRegD0 = 0;
+reg EoFOutRegD1 = 0;
 
 
 //assign DataOut=DataReg4;

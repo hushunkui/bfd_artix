@@ -127,11 +127,11 @@ FrameSync  FrameL2_inst
 );
 
 
-reg [7:0]DATAL2;
-reg SOFL2;
-reg EOFL2;
-reg ValL2;
-reg ErrL2;
+reg [7:0]DATAL2 = 0;
+reg SOFL2 = 0;
+reg EOFL2 = 0;
+reg ValL2 = 0;
+reg ErrL2 = 0;
 
 
 always @(posedge RXC)
@@ -184,12 +184,12 @@ FrameL3  FrameL3_inst
 );
 
 
-reg [7:0]DATAL3;
-reg [31:0]IPSL3;
-reg SOFL3;
-reg EOFL3;
-reg ValL3;
-reg ErrL3;
+reg [7:0]DATAL3 = 0;
+reg [31:0]IPSL3 = 0;
+reg SOFL3 = 0;
+reg EOFL3 = 0;
+reg ValL3 = 0;
+reg ErrL3 = 0;
 
 wire [47:0] wRemoteMACL4;
 
@@ -237,11 +237,11 @@ FrameL4  FrameL4_inst
 
 
 
-reg [7:0]DATA_ARP_L2;
-reg   SOF_ARP_L2;
-reg   EOF_ARP_L2;
-reg   Val_ARP_L2;
-reg   Err_ARP_L2;
+reg [7:0]DATA_ARP_L2 = 0;
+reg   SOF_ARP_L2 = 0;
+reg   EOF_ARP_L2 = 0;
+reg   Val_ARP_L2 = 0;
+reg   Err_ARP_L2 = 0;
 
 
 always @(posedge RXC)

@@ -4,47 +4,47 @@
 
 module EthCRC32(
 
-	input wire clk,			
+	input wire clk,
 	input wire [7:0]DataIn, 	//received data nibble from eth phy
 	input wire DataValid, 		//received data valid from eth phy
 	input wire EndOfPacket, 		//received data valid from eth phy
 	input wire StartOfPacket, 		//received data valid from eth phy
-	input wire Sync, 
+	input wire Sync,
 	output wire CRCErr,
-	
 
-	output reg DataOutSoF,
-	output reg DataOutEoF,
-	output reg DataOutValid,
-	output reg [7 :0]DataOut,
-	
 
-	
-	
-	output  reg [31:0]crc32,
-	output  reg crc32_Ready
+	output reg DataOutSoF = 0,
+	output reg DataOutEoF = 0,
+	output reg DataOutValid = 0,
+	output reg [7 :0]DataOut = 0,
+
+
+
+
+	output  reg [31:0]crc32 = 0,
+	output  reg crc32_Ready = 0
 
 );
 
 
 
-reg StartOfPacketD0;
+reg StartOfPacketD0 = 0;
 
 
-reg EndOfPacketD0;
-reg EndOfPacketD1;
-reg EndOfPacketD2;
-reg DataValidD0;
+reg EndOfPacketD0 = 0;
+reg EndOfPacketD1 = 0;
+reg EndOfPacketD2 = 0;
+reg DataValidD0 = 0;
 
 
 
 reg [31:0]receiver_reg32=32'b0;
 wire [7:0]w_rbyte;
-wire [7:0]w_rrbyte; 
+wire [7:0]w_rrbyte;
 
 
 
-reg endSync;
+reg endSync = 0;
 
 
 
@@ -53,41 +53,41 @@ begin
 
 
 
-   
+
 
 	DataValidD0   <= DataValid;
-	EndOfPacketD1 <= EndOfPacketD0; 
+	EndOfPacketD1 <= EndOfPacketD0;
 	EndOfPacketD2<= EndOfPacketD1;
 	endSync <= EndOfPacketD1&!EndOfPacketD2;
-	
+
 
 
 
 end
 
- 
-		
+
+
 //catch incoming nibles into 32bit reg
 //LSB (Least Significant Bit) goes first
 
 always @(posedge clk)
 
-	begin 
+	begin
 	if(DataValid) receiver_reg32 <= {  DataIn, receiver_reg32[31:8]};
-	
+
 	if(DataValid) StartOfPacketD0<=StartOfPacket;
 	if(DataValid) EndOfPacketD0<=EndOfPacket;
-	
-	
+
+
 	DataOutSoF <= StartOfPacketD0;
 	DataOutEoF <= EndOfPacketD0;
 	DataOut <= receiver_reg32[31:24];
 
-	
+
 	end
-	
-	
-	
+
+
+
 
 
 
@@ -97,22 +97,22 @@ assign w_rbyte = receiver_reg32[31:24];
 
 assign w_rrbyte = {w_rbyte[0],w_rbyte[1],w_rbyte[2],w_rbyte[3],w_rbyte[4],w_rbyte[5],w_rbyte[6],w_rbyte[7]};
 
-	
+
 
 
 reg [31:0]crc32_=32'hFFFFFFFF;
 
 always @(posedge clk)
-	if (endSync ||  Sync) crc32_ <= 32'hFFFFFFFF; 
+	if (endSync ||  Sync) crc32_ <= 32'hFFFFFFFF;
 	else if(DataValidD0)
 	begin
 		crc32_ <= nextCRC32_D8( w_rrbyte , crc32_ );
 	end
 
-	
 
-	
-	
+
+
+
 //reverse bits of CRC32
 integer i;
 always @*
@@ -120,9 +120,9 @@ begin
 	for ( i=0; i < 32; i=i+1 )
 		//crc32[i] = ~crc32_[i];
 		crc32[i] =  ~crc32_[31-i];
-		
 
-		
+
+
 end
 
 
@@ -130,15 +130,15 @@ end
 
 
 
-reg [31:0]crc32_0;
-reg [31:0]crc32_1;
-reg [31:0]crc32_2;
-reg [31:0]crc32_3;
+reg [31:0]crc32_0 = 0;
+reg [31:0]crc32_1 = 0;
+reg [31:0]crc32_2 = 0;
+reg [31:0]crc32_3 = 0;
 
-reg TestCRCA;
-reg TestCRCB;
-reg TestCRCC;
-reg TestCRCD;
+reg TestCRCA = 0;
+reg TestCRCB = 0;
+reg TestCRCC = 0;
+reg TestCRCD = 0;
 
 reg [31:0]crc32OutSerial;
 reg [3 :0]crc32OutSerialValid;
@@ -147,24 +147,24 @@ reg [3 :0]crc32OutSerialValid;
 always @(posedge clk)
 begin
 
-		
+
 		if(DataValidD0)crc32_3 <= crc32_2;
 		if(DataValidD0)crc32_2 <= crc32_1;
 		if(DataValidD0)crc32_1 <= crc32_0;
 		if(DataValidD0)crc32_0 <= crc32;
-	
+
 		/////////
-		
+
 		if(DataValidD0) TestCRCA<=(w_rbyte==crc32  [7:0] );
 		if(DataValidD0) TestCRCB<=(w_rbyte==crc32_0[15:8 ] )&&TestCRCA;
 		if(DataValidD0) TestCRCC<=(w_rbyte==crc32_1[23:16] )&&TestCRCB;
 		if(DataValidD0) TestCRCD<=!((w_rbyte==crc32_2[31:24] )&&TestCRCC);
-	
+
 
 
   DataOutValid<=DataValidD0;
   crc32_Ready <= EndOfPacketD0&~EndOfPacketD1;
-	
+
 end
 
 assign CRCErr = TestCRCD;
@@ -224,5 +224,5 @@ assign CRCErr = TestCRCD;
     nextCRC32_D8 = newcrc;
   end
   endfunction
-  
+
 endmodule

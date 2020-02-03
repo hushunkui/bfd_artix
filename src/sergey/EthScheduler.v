@@ -31,10 +31,10 @@ module EthScheduler
 
     output reg	[1:0]ReqConfirm = 0,
 
-    output reg ValOut,
-    output reg SoFOut,
-    output reg EoFOut,
-    output reg [7:0]DataOut
+    output reg ValOut = 0,
+    output reg SoFOut = 0,
+    output reg EoFOut = 0,
+    output reg [7:0]DataOut = 0
 
 );
 
@@ -47,7 +47,7 @@ module EthScheduler
 
 // reg StopBusy;
 
-reg VaitRequest;
+reg VaitRequest = 0;
 
 
 parameter  IDLE=0, ZERO=1, ONE=2;//, TWO=3, THREE=4;

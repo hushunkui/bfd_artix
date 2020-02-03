@@ -85,15 +85,15 @@ EthScheduler EthScheduler_Inst
 
 
 
-reg Val_D;
+reg Val_D = 0;
 reg SyncRegH =1'b0;
 reg SyncRegL=1'b0;
 
-reg [7:0]DataReg;
-reg ValReg;
-reg EoFReg;
-reg SoFReg;
-reg ErrReg;
+reg [7:0]DataReg = 0;
+reg ValReg = 0;
+reg EoFReg = 0;
+reg SoFReg = 0;
+reg ErrReg = 0;
 
 wire wSync;
 
@@ -131,28 +131,28 @@ wire [7:0]wCRCOut3;
 );
 
 //
-reg [7:0]DataReg0;
-reg [7:0]DataReg1;
-reg [7:0]DataReg2;
-reg [7:0]DataReg3;
-reg [7:0]DataReg4;
-reg [7:0]DataReg5;
-reg [7:0]DataReg6;
-reg [7:0]DataReg7;
-reg [7:0]DataReg8;
+reg [7:0]DataReg0 = 0;
+reg [7:0]DataReg1 = 0;
+reg [7:0]DataReg2 = 0;
+reg [7:0]DataReg3 = 0;
+reg [7:0]DataReg4 = 0;
+reg [7:0]DataReg5 = 0;
+reg [7:0]DataReg6 = 0;
+reg [7:0]DataReg7 = 0;
+reg [7:0]DataReg8 = 0;
 
-reg [7:0]OutValid;
+reg [7:0]OutValid = 0;
 
-reg OutValidReg;
+reg OutValidReg = 0;
 
 
-reg [3:0]DataL;
-reg [3:0]DataH;
+reg [3:0]DataL = 0;
+reg [3:0]DataH = 0;
 
-reg [7:0]CRC0;
-reg [7:0]CRC1;
-reg [7:0]CRC2;
-reg [7:0]CRC3;
+reg [7:0]CRC0 = 0;
+reg [7:0]CRC1 = 0;
+reg [7:0]CRC2 = 0;
+reg [7:0]CRC3 = 0;
 
 reg Busy=1'b0;
 reg BusyStopD0=1'b0;
@@ -162,7 +162,7 @@ reg BusyStopD2=1'b0;
 reg BusyStopD3=1'b0;
 reg BusyStopD4=1'b0;
 
-reg LinkUpReg;
+reg LinkUpReg = 0;
 
 always @(posedge Clk)
 begin

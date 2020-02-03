@@ -69,16 +69,16 @@ endgenerate
 
 always @(posedge mac_rx_clk) begin
     dataout_h[4] <= rx_err;
-    dataout_h[3] <= rx_data[7];
-    dataout_h[2] <= rx_data[6];
-    dataout_h[1] <= rx_data[5];
-    dataout_h[0] <= rx_data[4];
+    dataout_h[3] <= rx_data[3];
+    dataout_h[2] <= rx_data[2];
+    dataout_h[1] <= rx_data[1];
+    dataout_h[0] <= rx_data[0];
 
     dataout_l[4] <= rx_dv;
-    dataout_l[3] <= rx_data[3];
-    dataout_l[2] <= rx_data[2];
-    dataout_l[1] <= rx_data[1];
-    dataout_l[0] <= rx_data[0];
+    dataout_l[3] <= rx_data[7];
+    dataout_l[2] <= rx_data[6];
+    dataout_l[1] <= rx_data[5];
+    dataout_l[0] <= rx_data[4];
 end
 
 endmodule
