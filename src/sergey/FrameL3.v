@@ -13,13 +13,13 @@ module FrameL3
 	output EoFOut,
 	output ValOut,
 	output ErrOut,
-	output reg FrameOut,
+	output reg FrameOut = 0,
 	output [7:0]DataOut,
 	output reg [47:0] RemoteMACOut = 0,
 	output reg [31:0] RemoteIPOut = 0,
 	output reg [23:0] PHeadOut = 0,
-	output reg UDP,
-	output reg TCP
+	output reg UDP = 0,
+	output reg TCP = 0
 
 
 );

@@ -374,6 +374,45 @@ task SendGVSP_ImagePayloadEI_1byte;
 endtask
 
 
+
+task SendTestUDP;
+    input [47:0] mac_dst;
+    input [47:0] mac_src;
+    input [31:0] ip_dst;
+    input [31:0] ip_src;
+    input [15:0] udp_port_src;
+    input [15:0] udp_port_dst;
+    begin
+        SendPreamble();
+        SendMAC(mac_dst);
+        SendMAC(mac_src);
+        SendByte(8'h08, 1'b1);
+        SendByte(8'h00, 1'b1);
+        // IPv4 header
+        SendWord(32'h4500_0000);
+        SendWord(32'h0000_0000);
+        SendWord(32'h0011_0000);
+        SendWord(ip_dst);
+        SendWord(ip_src);
+        // UDP header
+        SendWord({udp_port_src, udp_port_dst}); // src port, dst port
+        SendWord(32'h0000_0000);  // incorrect size!
+        // UDP payload
+        SendWord(32'h0000_0000);
+        SendWord(32'h8300_0000); // packet format = payload, EI
+        // block_id64
+        SendWord(32'h01020304);
+        SendWord(32'h05060708);
+        // packet_id32
+        SendWord(32'h00000001);
+        // payload
+        SendByte(8'h11, 1'b1);
+        // CRC32
+        SendCRC(1'b0);
+    end
+endtask
+
+
 reg uart_rxd = 1;
 
 task SendUARTByte;
@@ -550,6 +589,9 @@ initial begin
     SendTestPacket(48'hCCCC_CCCC_CCCC, 48'h0102_0304_0506, 1'b0);
     #100;
     SendTestPacket(48'hAAAA_FFFF_BBBB, 48'h0102_0304_0506, 1'b1);
+    #100;
+
+    SendTestUDP(48'hC0A8_0505_0505, 48'h0102_0304_0506, 32'hC0A80507, 32'hC0A80507, 16'h4d2, 16'h4d2);
     #100;
 
     @(posedge rxc);

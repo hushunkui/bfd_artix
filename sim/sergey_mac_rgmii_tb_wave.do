@@ -45,7 +45,7 @@ add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/ErrOut
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/RemoteMACOut
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/ARPFrame
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/IP4Frame
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/InnerMAC
+add wave -noupdate -color {Slate Blue} -itemcolor Gold /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/InnerMAC
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/DataReg
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/DataReg0
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/Sync6
@@ -55,10 +55,37 @@ add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/MacValid2
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/MacValid3
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/MacValid4
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/MacValid5
+add wave -noupdate -color {Slate Blue} -itemcolor Gold /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/IPD
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/TCP
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/UDP
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/DataIn
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/ValIn
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/SoFIn
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/EoFIn
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/ErrIn
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/PHeadOut
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/RemoteIPOut
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/RemoteMACOut
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/IPD
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/PortD
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/DataIn
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/ValIn
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/SoFIn
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/EoFIn
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/ErrIn
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/RemoteIPOut
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/RemoteMACOut
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/RemotePortOut
+add wave -noupdate /mac_rgmii_tb/mac/DATA_OUT
+add wave -noupdate /mac_rgmii_tb/mac/ENA_OUT
+add wave -noupdate /mac_rgmii_tb/mac/SOF_OUT
+add wave -noupdate /mac_rgmii_tb/mac/EOF_OUT
+add wave -noupdate /mac_rgmii_tb/mac/ERR_OUT
+add wave -noupdate /mac_rgmii_tb/mac/CLK_OUT
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {0 ps} 0}
-quietly wave cursor active 0
-configure wave -namecolwidth 451
+WaveRestoreCursors {{Cursor 1} {7037576 ps} 0}
+quietly wave cursor active 1
+configure wave -namecolwidth 412
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
 configure wave -signalnamewidth 0
@@ -72,4 +99,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {13650 ns}
+WaveRestoreZoom {11970087 ps} {12341304 ps}
