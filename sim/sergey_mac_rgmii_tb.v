@@ -203,7 +203,7 @@ task SendARPPacket;
         SendMAC(mac_dst);
         SendMAC(mac_src);
         // Ethertype ARP
-        SendByte(8'h08, 1'b0);
+        SendByte(8'h08, 1'b1);
         SendByte(8'h06, 1'b1);
         // HTYPE 1
         SendByte(8'h00, 1'b1);
@@ -603,14 +603,21 @@ initial begin
     // SendARPPacket(48'hFFFF_FFFF_FFFF, 48'hE091_F5B4_06B0, 32'hC0A80101, 32'hC0A80120);
     #1_000;
 
-    SendTestPacket(48'hFFFF_FFFF_FFFF, 48'hC0A8_0505_0505, 1'b0);
-    #1_000;
-    SendTestPacket(48'hC0A8_0505_0505, 48'h0102_0304_0506, 1'b0);
-    #1_000;
-    SendTestPacket(48'hCCCC_CCCC_CCCC, 48'h0102_0304_0506, 1'b0);
+    SendARPPacket(48'hC0A8_0505_0505, 48'hC0A8_0505_0505, 32'hC0A80507, 32'hC0A80507);
     #100;
-    SendTestPacket(48'hAAAA_FFFF_BBBB, 48'h0102_0304_0506, 1'b1);
+    SendARPPacket(48'hC0A8_0505_0505, 48'hC0A8_0505_0505, 32'hC0A80507, 32'hC0A80507);
     #100;
+    SendARPPacket(48'hC0A8_0505_0505, 48'hC0A8_0505_0505, 32'hC0A80507, 32'hC0A80507);
+    #100;
+
+    // SendTestPacket(48'hFFFF_FFFF_FFFF, 48'hC0A8_0505_0505, 1'b0);
+    // #1_000;
+    // SendTestPacket(48'hC0A8_0505_0505, 48'h0102_0304_0506, 1'b0);
+    // #1_000;
+    // SendTestPacket(48'hCCCC_CCCC_CCCC, 48'h0102_0304_0506, 1'b0);
+    // #100;
+    // SendTestPacket(48'hAAAA_FFFF_BBBB, 48'h0102_0304_0506, 1'b1);
+    // #100;
 
     SendTestUDP(48'hC0A8_0505_0505, 48'h0102_0304_0506, 32'hC0A80507, 32'hC0A80507, 16'h4d2, 16'h4d2);
     #100;

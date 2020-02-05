@@ -20,8 +20,8 @@ add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/SOF
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/EOF
 add wave -noupdate /mac_rgmii_tb/mac/dbg_rgmii_rx_data
 add wave -noupdate /mac_rgmii_tb/mac/dbg_rgmii_rx_den
-add wave -noupdate /mac_rgmii_tb/mac/dbg_rgmii_rx_eof
 add wave -noupdate /mac_rgmii_tb/mac/dbg_rgmii_rx_sof
+add wave -noupdate /mac_rgmii_tb/mac/dbg_rgmii_rx_eof
 add wave -noupdate -color {Slate Blue} -itemcolor Gold /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/InnerMAC
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/ARPFrame
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/IP4Frame
@@ -68,6 +68,32 @@ add wave -noupdate /mac_rgmii_tb/mac/SOF_OUT
 add wave -noupdate /mac_rgmii_tb/mac/EOF_OUT
 add wave -noupdate /mac_rgmii_tb/mac/ERR_OUT
 add wave -noupdate /mac_rgmii_tb/mac/CLK_OUT
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/InnerMAC
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/RemoteMAC
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/InnerIP
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/DataIn
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/ValIn
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/SoFIn
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/EoFIn
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/ErrIn
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/HeaderCorrect
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/IPCheck0
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/IPCheck1
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/IPCheck2
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/IPCheck3
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/PackValid
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/ValReg
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/EndValD0
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/EoFReg
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/ErrReg
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/OutRequest
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/Stop_Request
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/SyncOut
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/ArpReq
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/DataOut
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/ValOut
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/SoFOut
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/EoFOut
 add wave -noupdate -divider TX
 add wave -noupdate /mac_rgmii_tb/mac/ReqIn0
 add wave -noupdate /mac_rgmii_tb/mac/ReqConfirm
@@ -113,4 +139,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {24150 ns}
+WaveRestoreZoom {2079587 ps} {12813187 ps}
