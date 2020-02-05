@@ -31,6 +31,9 @@ add wave -noupdate /mac_rgmii_tb/mac/dbg_rgmii_rx_data
 add wave -noupdate /mac_rgmii_tb/mac/dbg_rgmii_rx_den
 add wave -noupdate /mac_rgmii_tb/mac/dbg_rgmii_rx_eof
 add wave -noupdate /mac_rgmii_tb/mac/dbg_rgmii_rx_sof
+add wave -noupdate -color {Slate Blue} -itemcolor Gold /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/InnerMAC
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/ARPFrame
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/IP4Frame
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/DataIn
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/ValIn
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/EoFIn
@@ -43,18 +46,6 @@ add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/SoFOut
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/EoFOut
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/ErrOut
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/RemoteMACOut
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/ARPFrame
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/IP4Frame
-add wave -noupdate -color {Slate Blue} -itemcolor Gold /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/InnerMAC
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/DataReg
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/DataReg0
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/Sync6
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/MacValid0
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/MacValid1
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/MacValid2
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/MacValid3
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/MacValid4
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_inst/MacValid5
 add wave -noupdate -color {Slate Blue} -itemcolor Gold /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/IPD
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/TCP
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/UDP
@@ -64,18 +55,22 @@ add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/SoFIn
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/EoFIn
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/ErrIn
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/PHeadOut
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/RemoteIPOut
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/RemoteMACOut
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/IPD
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/PortD
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL3_inst/RemoteIPOut
+add wave -noupdate -color {Slate Blue} -itemcolor Gold /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/IPD
+add wave -noupdate -color {Slate Blue} -itemcolor Gold /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/PortD
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/DataIn
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/ValIn
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/SoFIn
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/EoFIn
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/ErrIn
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/RemoteIPOut
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/FrameSize
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/RemoteMACOut
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/RemoteIPOut
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/RemotePortOut
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/CheckSumEna
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/CheckSum
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL4_inst/CheckCounter
 add wave -noupdate /mac_rgmii_tb/mac/DATA_OUT
 add wave -noupdate /mac_rgmii_tb/mac/ENA_OUT
 add wave -noupdate /mac_rgmii_tb/mac/SOF_OUT
@@ -99,4 +94,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {11970087 ps} {12341304 ps}
+WaveRestoreZoom {0 ps} {25178144 ps}
