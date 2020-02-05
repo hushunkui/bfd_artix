@@ -95,7 +95,7 @@ wire [ETHCOUNT-1:0]     test_mac_tx_tvalid;
 wire [ETHCOUNT-1:0]     test_mac_tx_tuser ;
 wire [ETHCOUNT-1:0]     test_mac_tx_tlast ;
 wire [ETHCOUNT-1:0]     test_mac_tx_tready;
-wire [ETHCOUNT-1:0]     test_mac_tx_req;
+wire [ETHCOUNT-1:0]     test_mac_tx_rq;
 
 wire [7:0]              test_mac_rx_tdata [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     test_mac_rx_tvalid;
@@ -105,7 +105,7 @@ wire [ETHCOUNT-1:0]     test_mac_start;
 wire [ETHCOUNT-1:0]     test_mac_rx_tsof;
 wire [ETHCOUNT-1:0]     test_mac_rx_terr;
 
-wire [0:0] ReqConfirm [ETHCOUNT-1:0];
+wire [0:0] mac_tx_ack [ETHCOUNT-1:0];
 
 wire mac_gtx_clk;
 wire mac_gtx_clk90;
@@ -521,7 +521,7 @@ generate
             .ValIn0 (test_mac_tx_tvalid[x]), //input
             .SoFIn0 (test_mac_tx_tuser [x]), //input
             .EoFIn0 (test_mac_tx_tlast [x]), //input
-            .ReqIn0 (test_mac_tx_req   [x]), //input
+            .ReqIn0 (test_mac_tx_rq    [x]), //input
             .DataIn0(test_mac_tx_tdata [x]), //input [7:0]
 
             // .ValIn1 (1'b0),//input
@@ -530,7 +530,7 @@ generate
             // .ReqIn1 (1'b0),//input
             // .DataIn1(0),//input [7:0]
 
-            .ReqConfirm(ReqConfirm[x]),//output
+            .ReqConfirm(mac_tx_ack[x]),//output
 
             .dbg_rgmii_rx_data(),
             .dbg_rgmii_rx_den(),
@@ -581,7 +581,8 @@ generate
             .mac_tx_valid(test_mac_tx_tvalid[x]),
             .mac_tx_sof  (test_mac_tx_tuser [x]),
             .mac_tx_eof  (test_mac_tx_tlast [x]),
-            .mac_tx_rdy  (ReqConfirm[x][0]),
+            .mac_tx_rq   (test_mac_tx_rq[x]),
+            .mac_tx_ack  (mac_tx_ack[x][0]),
 
             .start(test_mac_start[x]),
             .pkt_size(test_mac_pkt_size),

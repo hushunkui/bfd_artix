@@ -32,6 +32,10 @@ vlog -modelsimini $inifile ../src/core_gen/clk25_wiz0/clk25_wiz0_clk_wiz.v
 #vlog -modelsimini $inifile ../src/mac_fifo_rx.v -sv +define+SIM_FSM
 #vlog -modelsimini $inifile ../src/mac_fifo.v
 
+vcom -modelsimini $inifile ../src/vicg_common_pkg.vhd
+vcom -modelsimini $inifile ../src/sata_scrambler.vhd
+vlog -modelsimini $inifile ../src/test_tx.v -sv +define+SIM_FSM
+
 vlog -modelsimini $inifile ../src/sergey/CustomGMAC_Wrap.v
 vlog -modelsimini $inifile ../src/sergey/CustomGMAC.v
 vlog -modelsimini $inifile ../src/sergey/ARP_L2.v

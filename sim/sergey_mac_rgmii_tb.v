@@ -562,6 +562,27 @@ wire clk200M;
 wire mac_gtx_clk;
 wire mac_gtx_clk90;
 
+wire txc;
+wire tx_ctl;
+wire [3:0] txd;
+
+wire [7:0] mac_tx_data;
+wire       mac_tx_valid;
+wire       mac_tx_sof;
+wire       mac_tx_eof;
+wire       mac_tx_rq;
+wire [0:0] mac_tx_ack;
+
+wire [7:0] mac_rx_data;
+wire       mac_rx_valid;
+wire       mac_rx_sof;
+wire       mac_rx_eof;
+wire       mac_rx_err;
+
+
+wire sysclk;
+reg start = 0;
+
 initial begin
     // $dumpfile("icarus/dump.fst");
     // $dumpvars;
@@ -594,35 +615,41 @@ initial begin
     SendTestUDP(48'hC0A8_0505_0505, 48'h0102_0304_0506, 32'hC0A80507, 32'hC0A80507, 16'h4d2, 16'h4d2);
     #100;
 
-    @(posedge rxc);
-    usr_tx_tdata = 0;
-    usr_tx_tvalid = 1'b1;
-    usr_tx_tlast = 1'b0;
-    repeat (64) begin
-        @(posedge rxc);
-        usr_tx_tdata = 0;
-        usr_tx_tvalid = 1'b1;
-        usr_tx_tlast = 1'b0;
-    end
-    @(posedge rxc);
-    usr_tx_tvalid = 1'b1;
-    usr_tx_tlast = 1'b1;
-    @(posedge rxc);
-    usr_tx_tvalid = 1'b0;
-    usr_tx_tlast = 1'b0;
+    @(posedge sysclk);
+    start = 1'b1;
+    #5_000;
+    @(posedge sysclk);
+    start = 1'b0;
+    #5_000;
+    // @(posedge rxc);
+    // usr_tx_tdata = 0;
+    // usr_tx_tvalid = 1'b1;
+    // usr_tx_tlast = 1'b0;
+    // repeat (64) begin
+    //     @(posedge rxc);
+    //     usr_tx_tdata = 0;
+    //     usr_tx_tvalid = 1'b1;
+    //     usr_tx_tlast = 1'b0;
+    // end
+    // @(posedge rxc);
+    // usr_tx_tvalid = 1'b1;
+    // usr_tx_tlast = 1'b1;
+    // @(posedge rxc);
+    // usr_tx_tvalid = 1'b0;
+    // usr_tx_tlast = 1'b0;
 
-    #30_000;
-    SendGVCP_Ack();
-    #10_000;
-    SendGVSP_ImagePayload();
-    #10_000;
-    SendGVSP_ImagePayloadEI();
-    #10_000;
-    SendGVSP_ImagePayloadEI_1byte();
-    #10_000;
+    // #30_000;
+    // SendGVCP_Ack();
+    // #10_000;
+    // SendGVSP_ImagePayload();
+    // #10_000;
+    // SendGVSP_ImagePayloadEI();
+    // #10_000;
+    // SendGVSP_ImagePayloadEI_1byte();
+    // #10_000;
 
-    $display("\007");
-    $finish;
+    // $display("\007");
+    // $finish;
 end
 
 
@@ -636,25 +663,7 @@ clk25_wiz0 pll0(
     .clk_in1(clk)
 );
 
-wire txc;
-wire tx_ctl;
-wire [3:0] txd;
 
-wire [7:0] usr_rx_tdata;
-wire       usr_rx_tvalid;
-wire       usr_rx_tlast;
-
-wire [7:0] mac_tx_tdata ;
-wire       mac_tx_tvalid;
-wire       mac_tx_tlast ;
-wire       mac_tx_tready;
-wire       mac_tx_tuser ;
-wire       mac_tx_sof ;
-
-wire [7:0] mac_rx_tdata ;
-wire       mac_rx_tvalid;
-wire       mac_rx_tlast ;
-wire       mac_rx_tuser ;
 
 // mac_rgmii mac2(
 //     .status_o(),
@@ -702,13 +711,13 @@ CustomGMAC_Wrap  mac(
     .MODE(),
     .LINK_UP(),
 
-    .ValIn0(1'b0),
-    .SoFIn0(1'b0),
-    .EoFIn0(1'b0),
-    .ReqIn0(1'b0),
-    .DataIn0(0),
+    .DataIn0(mac_tx_data),
+    .ValIn0(mac_tx_valid),
+    .SoFIn0(mac_tx_sof),
+    .EoFIn0(mac_tx_eof),
+    .ReqIn0(mac_tx_rq),
 
-    .ReqConfirm(),
+    .ReqConfirm(mac_tx_ack),
 
     .dbg_rgmii_rx_data(),
     .dbg_rgmii_rx_den(),
@@ -718,14 +727,31 @@ CustomGMAC_Wrap  mac(
     .Remote_MACOut(),//output [47:0]
     .Remote_IP_Out(),//output [31:0]
     .RemotePortOut(),//output [15:0]
-    .CLK_OUT(),
-    .SOF_OUT(),
-    .EOF_OUT(),
-    .ENA_OUT(),
-    .ERR_OUT(),
-    .DATA_OUT(),//output [7 :0]
+    .CLK_OUT(sysclk),
+    .SOF_OUT(mac_rx_sof),
+    .EOF_OUT(mac_rx_eof),
+    .ENA_OUT(mac_rx_valid),
+    .ERR_OUT(mac_rx_err),
+    .DATA_OUT(mac_rx_data),
     .InputCRC_ErrorCounter()//output [31 :0]
+);
 
+test_tx #(
+    .TEST_DATA_WIDTH(8)
+) test_tx (
+    .mac_tx_data (mac_tx_data ),
+    .mac_tx_valid(mac_tx_valid),
+    .mac_tx_sof  (mac_tx_sof  ),
+    .mac_tx_eof  (mac_tx_eof  ),
+    .mac_tx_rq   (mac_tx_rq   ),
+    .mac_tx_ack  (mac_tx_ack[0]),
+
+    .start(start),
+    .pkt_size(16'd512),
+    .pause_size(16'd32),
+
+    .clk(sysclk),
+    .rst(rst)
 );
 
 endmodule

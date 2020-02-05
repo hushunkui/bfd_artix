@@ -9,7 +9,8 @@ module test_tx #(
     output reg mac_tx_valid = 1'b0,
     output reg mac_tx_sof = 1'b0,
     output reg mac_tx_eof = 1'b0,
-    input  mac_tx_rdy,
+    output reg mac_tx_rq = 1'b0,
+    input  mac_tx_ack,
 
     input start,
     input [15:0] pkt_size,
@@ -47,7 +48,7 @@ sata_scrambler #(
     .G_INIT_VAL (16'h55AA)
 ) scrambler (
     .p_in_SOF    (srcambler_sof),
-    .p_in_en     (mac_tx_valid & mac_tx_rdy),
+    .p_in_en     (mac_tx_valid),
     .p_out_result(data),
 
     .p_in_clk(clk),
@@ -71,7 +72,8 @@ always @(posedge clk) begin
             pkt_size_cur <= pkt_size;
             pause_size_cur <= pause_size;
             if (start) begin
-                if (mac_tx_rdy) begin
+                mac_tx_rq <= 1'b1;
+                if (mac_tx_ack) begin
                     mac_tx_valid <= 1'b1;
                     mac_tx_sof <= 1'b1;
                     mac_tx_eof <= 1'b0;
@@ -83,21 +85,20 @@ always @(posedge clk) begin
         end
 
         TX: begin
-            if (mac_tx_rdy) begin
-                mac_tx_sof <= 1'b0;
-                if (dcnt == (pkt_size_cur - 2)) begin
-                    mac_tx_eof <= 1'b1;
-                end else if (dcnt == (pkt_size_cur - 1)) begin
-                    mac_tx_eof <= 1'b0;
-                    mac_tx_valid <= 1'b0;
-                end
+            mac_tx_sof <= 1'b0;
+            if (dcnt == (pkt_size_cur - 2)) begin
+                mac_tx_rq <= 1'b0;
+                mac_tx_eof <= 1'b1;
+            end else if (dcnt == (pkt_size_cur - 1)) begin
+                mac_tx_eof <= 1'b0;
+                mac_tx_valid <= 1'b0;
+            end
 
-                if (dcnt == (pkt_size_cur - 1)) begin
-                    dcnt <= 0;
-                    fsm_cs <= PAUSE;
-                end else begin
-                    dcnt <= dcnt + 1;
-                end
+            if (dcnt == (pkt_size_cur - 1)) begin
+                dcnt <= 0;
+                fsm_cs <= PAUSE;
+            end else begin
+                dcnt <= dcnt + 1;
             end
         end
 

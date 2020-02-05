@@ -2,6 +2,7 @@ onerror {resume}
 quietly WaveActivateNextPane {} 0
 add wave -noupdate /mac_rgmii_tb/pll0_locked
 add wave -noupdate /mac_rgmii_tb/clk200M
+add wave -noupdate -divider RX
 add wave -noupdate /mac_rgmii_tb/mac/RXC
 add wave -noupdate /mac_rgmii_tb/mac/RXD
 add wave -noupdate /mac_rgmii_tb/mac/RX_CTL
@@ -13,16 +14,6 @@ add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/RGMIIDDRRX_in
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/RGMIIDDRRX_inst/rx_err
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/RGMIIDDRRX_inst/dataout_h
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/RGMIIDDRRX_inst/dataout_l
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/wDataH
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/wDataL
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/sr0_data
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/sr0_dv
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/sr1_data
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/sr1_dv
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/rgmii_sof
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/rgmii_eof
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/rgmii_data
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/rgmii_dv
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/DATA_OUT
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/ENA
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/SOF
@@ -77,10 +68,38 @@ add wave -noupdate /mac_rgmii_tb/mac/SOF_OUT
 add wave -noupdate /mac_rgmii_tb/mac/EOF_OUT
 add wave -noupdate /mac_rgmii_tb/mac/ERR_OUT
 add wave -noupdate /mac_rgmii_tb/mac/CLK_OUT
+add wave -noupdate -divider TX
+add wave -noupdate /mac_rgmii_tb/mac/ReqIn0
+add wave -noupdate /mac_rgmii_tb/mac/ReqConfirm
+add wave -noupdate /mac_rgmii_tb/mac/DataIn0
+add wave -noupdate /mac_rgmii_tb/mac/ValIn0
+add wave -noupdate /mac_rgmii_tb/mac/SoFIn0
+add wave -noupdate /mac_rgmii_tb/mac/EoFIn0
+add wave -noupdate /mac_rgmii_tb/test_tx/start
+add wave -noupdate -color {Slate Blue} -itemcolor Gold /mac_rgmii_tb/test_tx/fsm_cs
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/MODE
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/DataIn0
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/ValIn0
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/EoFIn0
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/SoFIn0
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/DataIn1
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/ValIn1
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/SoFIn1
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/EoFIn1
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/SyncRegL
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/OutValidReg
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/DataReg8
+add wave -noupdate {/mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/DDR_OUT_inst/datain_h[5]}
+add wave -noupdate {/mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/DDR_OUT_inst/datain_l[5]}
+add wave -noupdate {/mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/DDR_OUT_inst/datain_h[4]}
+add wave -noupdate {/mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/DDR_OUT_inst/datain_l[4]}
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/DDR_OUT_inst/phy_txc_obuf
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/DDR_OUT_inst/phy_tx_ctl_obuf
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/DDR_OUT_inst/phy_txd_obuf
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {7037576 ps} 0}
-quietly wave cursor active 1
-configure wave -namecolwidth 412
+WaveRestoreCursors {{Cursor 1} {0 ps} 0}
+quietly wave cursor active 0
+configure wave -namecolwidth 462
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
 configure wave -signalnamewidth 0
@@ -94,4 +113,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {25178144 ps}
+WaveRestoreZoom {0 ps} {24150 ns}
