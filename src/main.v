@@ -107,8 +107,9 @@ wire [ETHCOUNT-1:0]     test_mac_rx_terr;
 
 wire [0:0] mac_tx_ack [ETHCOUNT-1:0];
 
-wire mac_gtx_clk;
-wire mac_gtx_clk90;
+wire clk125M;
+wire clk125M_p90;
+wire clk375M;
 
 
 // wire [31:0] firmware_date;
@@ -214,10 +215,10 @@ assign sysrst = 1'b0;
 wire mac_pll_locked;
 wire clk200M;
 clk25_wiz0 pll0(
-    .clk_out1(mac_gtx_clk),
-    .clk_out2(mac_gtx_clk90),
-    .clk_out3(),
-    .clk_out4(clk200M),
+    .clk_out1(clk200M),//(clk125M),
+    .clk_out2(clk125M),//(clk125M_p90),
+    .clk_out3(clk375M),
+    .clk_out4(clk125M_p90),
     .locked(mac_pll_locked),
     .clk_in1(sysclk25_g),
     .reset(sysrst)
@@ -266,7 +267,7 @@ system system_i(
     .aurora_gt_refclk_clk_n(gt_refclk_n),//(mgt_refclk_n),//
     .aurora_gt_refclk_clk_p(gt_refclk_p),//(mgt_refclk_p),//
     .aurora_gt_rst(gt_rst),
-    .aurora_init_clk(mac_gtx_clk),
+    .aurora_init_clk(clk125M),
     .aurora_rst(aurora_rst),
     .aurora_usr_clk(aurora_usr_clk),
 
@@ -291,7 +292,7 @@ system system_i(
     .M_AXI_0_rresp   (M_AXI_0_rresp  ),
     .M_AXI_0_rready  (M_AXI_0_rready ),
 
-    .aclk(mac_gtx_clk),
+    .aclk(clk125M),
     .areset_n(mac_pll_locked)
 );
 
@@ -341,7 +342,7 @@ usr_logic #(
     .s_axi_rready  (M_AXI_0_rready ),
 
     .s_axi_resetn (mac_pll_locked),
-    .s_axi_clk (mac_gtx_clk)
+    .s_axi_clk (clk125M)
 );
 
 assign eth_phy_mdio = (ethphy_mdio_dir) ? ethphy_mdio_data : 1'bz;
@@ -380,7 +381,7 @@ assign eth_phy_mdio = (ethphy_mdio_dir) ? ethphy_mdio_data : 1'bz;
 
 //     .dout  (aurora_usr_data),                // output wire [15 : 0] dout
 //     .rd_en (~aurora_rx_fifo_empty),
-//     .rd_clk(mac_gtx_clk),
+//     .rd_clk(clk125M),
 
 //     .full(aurora_rx_fifo_full),
 //     .empty(aurora_rx_fifo_empty),
@@ -393,7 +394,7 @@ assign eth_phy_mdio = (ethphy_mdio_dir) ? ethphy_mdio_data : 1'bz;
 // aurora_tx_fifo aurora_tx_fifo (
 //     .din   (aurora_usr_data),                 // input wire [15 : 0] din
 //     .wr_en (~aurora_rx_fifo_empty),
-//     .wr_clk(mac_gtx_clk),
+//     .wr_clk(clk125M),
 
 //     .dout  (aurora_fifo_do),                // output wire [31 : 0] dout
 //     .rd_en (~aurora_tx_empty & aurora_axi_tx_tready),
@@ -454,7 +455,7 @@ assign  spi_miso = 1'bz;
 // endgenerate
 
 // assign usr_lvds = 14'h2AAA;
-// always @(posedge mac_gtx_clk) begin
+// always @(posedge clk125M) begin
 //     usr_lvds_io <= usr_lvds_io + 1;
 // end
 
@@ -495,7 +496,7 @@ generate
         //     end
         // end
 
-        always @(posedge mac_gtx_clk) begin
+        always @(posedge clk125M) begin
             mac_rx_cnterr_mjtag[x] <= mac_rx_cnterr[x];
             mac_link_mjtag[x] <= mac_link[x];
         end
@@ -505,7 +506,8 @@ generate
         end
 
         CustomGMAC_Wrap rgmii (
-            .CLK(clk200M), //input
+            .clk375(clk375M),
+            .clk125(clk125M),
 
             .RXC   (rgmii_rxc   [x]         ), //input
             .RX_CTL(rgmii_rx_ctl[x]         ), //input
@@ -630,8 +632,8 @@ generate
         //     .mac_tx_valid (mac_tx_tvalid[x]),
         //     .mac_tx_sof   (mac_tx_tuser [x]),
         //     .mac_tx_eof   (mac_tx_tlast [x]),
-        //     .mac_tx_clk_90(mac_gtx_clk90),
-        //     .mac_tx_clk   (mac_gtx_clk),
+        //     .mac_tx_clk_90(clk125M_p90),
+        //     .mac_tx_clk   (clk125M),
 
         //     .rst(~mac_pll_locked)
         // );
@@ -658,7 +660,7 @@ generate
         //     .rx_axis_fifo_tlast (test_mac_rx_tlast [x]            ), //output
 
         //     //MAC IF
-        //     .tx_mac_aclk        (mac_gtx_clk  ), //input
+        //     .tx_mac_aclk        (clk125M  ), //input
         //     .tx_mac_resetn      (mac_fifo_resetn[x]), //input
         //     .tx_axis_mac_tdata  (mac_tx_tdata [x]), //output [7:0]
         //     .tx_axis_mac_tvalid (mac_tx_tvalid[x]), //output
@@ -723,7 +725,7 @@ generate
         //         mac_tx_tlast [x],
         //         mac_tx_tuser [x]
         //     }),
-        //     .clk(mac_gtx_clk)
+        //     .clk(clk125M)
         // );
 
         // ila_0 tx_ila (
@@ -908,7 +910,7 @@ fpga_test_01 #(
     .p_out_1s   (),
 
     .p_in_clken (1'b1),
-    .p_in_clk   (mac_gtx_clk), //(mac_gtx_clk),//(sysclk25),
+    .p_in_clk   (clk125M), //(clk125M),//(sysclk25),
     .p_in_rst   (~mac_pll_locked)
 );
 
@@ -972,7 +974,7 @@ assign dbg_out[1] = clk20_div | sysclk25_div | led_blink | reg_ctrl[0];// &
 //         test_mac_rx_tvalid[0],
 //         test_mac_rx_tlast[0]
 //     }),
-//     .clk(mac_gtx_clk)
+//     .clk(clk125M)
 // );
 
 
