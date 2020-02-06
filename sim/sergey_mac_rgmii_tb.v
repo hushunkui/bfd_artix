@@ -558,7 +558,8 @@ reg       usr_tx_tlast = 1'b0;
 reg rst = 1'b0;
 
 wire pll0_locked;
-wire clk200M;
+
+
 wire mac_gtx_clk;
 wire mac_gtx_clk90;
 
@@ -659,12 +660,14 @@ initial begin
     // $finish;
 end
 
+wire wclk125;
+wire wclk375;
 
 clk25_wiz0 pll0(
-    .clk_out1(mac_gtx_clk), //125MHz
-    .clk_out2(mac_gtx_clk90),
-    .clk_out3(),
-    .clk_out4(clk200M),
+    .clk_out1(wclk375), //125MHz
+    .clk_out2(wclk125),
+    .clk_out3(mac_gtx_clk),
+    .clk_out4(mac_gtx_clk90),
     .reset(rst),
     .locked(pll0_locked),
     .clk_in1(clk)
@@ -705,7 +708,9 @@ clk25_wiz0 pll0(
 // );
 
 CustomGMAC_Wrap  mac(
-    .CLK(clk200M),
+    
+    . clk375(wclk375),
+    . clk125(wclk125),
 
     .RXC   (rxc   ),
     .RX_CTL(rx_ctl),

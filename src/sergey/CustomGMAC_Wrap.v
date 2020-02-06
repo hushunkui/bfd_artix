@@ -1,8 +1,11 @@
 module CustomGMAC_Wrap
 #( parameter InnerMAC=48'hC0A805050505 )
 (
+
+    input clk375,
+    input clk125,
+    
     input   RXC,
-    input   CLK,
     input   RX_CTL,
     input   [3:0]RXD,
 
@@ -43,17 +46,19 @@ wire phy_rxc_ibuf;
 wire phy_rxc_bufio;
 wire phy_rxclk;
 
-IBUF ibuf_rxclk (.I(RXC), .O(phy_rxc_ibuf));
-BUFG bufio_rxclk (.I(phy_rxc_ibuf), .O(phy_rxc_bufio));
-BUFG bufr_rxclk (.I(phy_rxc_ibuf), .O(phy_rxclk)); //, .CE(1'b1), .CLR(0));
+//IBUF ibuf_rxclk (.I(RXC), .O(phy_rxc_ibuf));
+//BUFG bufio_rxclk (.I(phy_rxc_ibuf), .O(phy_rxc_bufio));
+//BUFG bufr_rxclk (.I(phy_rxc_ibuf), .O(phy_rxclk)); //, .CE(1'b1), .CLR(0));
 
 assign CLK_OUT=phy_rxclk;
 
 CustomGMAC  CustomGMAC_Inst
 (
+    . clk375(clk375),
+    . clk125(clk125),
+    
     .RXC_DDR(phy_rxc_bufio),
-    .RXC(phy_rxclk),
-    .CLK(CLK),
+    .RXC(RXC),
     .RX_CTL(RX_CTL),
     .RXD(RXD),
     .InnerMAC (48'hC0A805050505 ),

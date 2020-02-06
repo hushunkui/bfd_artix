@@ -1,8 +1,10 @@
 module CustomGMAC
 (
+    input clk375,
+    input clk125,
+    
     input RXC,
     input RXC_DDR,
-    input CLK,
     input RX_CTL,
     input [3 :0]RXD,
     input [47:0]InnerMAC ,
@@ -63,22 +65,43 @@ wire [1:0]wSpeed;
 
 
 
-RGMII_rx RGMII_rx_inst (
-    .clk200  (CLK   ),
-    .RXC_DDR  (RXC_DDR     ),
-    .RXC      (RXC     ),
-    .RX_CTL   ( RX_CTL ),
-    .RXD      ( RXD    ),
-    .RX_ERR   (  ),
-    .RX_DV    (   ),
-    .ENA   ( wValRGMII  ),
-    .DATA_OUT ( wDATARGMII ),
-    .SOF   ( wSOFRGMII  ),
-    .EOF      ( wEOFRGMII  ),
-    .LINK_UP  ( wLinkUP),
-    .DUPLEX   ( wDuplexMode),
-    .SPEED    ( wSpeed)
-);
+//RGMII_rx RGMII_rx_inst (
+//    .clk200  (CLK   ),
+//    .RXC_DDR  (RXC_DDR     ),
+//    .RXC      (clk125     ),
+//    .RX_CTL   ( RX_CTL ),
+//    .RXD      ( RXD    ),
+//    .RX_ERR   (  ),
+//    .RX_DV    (   ),
+//    .ENA   ( wValRGMII  ),
+//    .DATA_OUT ( wDATARGMII ),
+//    .SOF   ( wSOFRGMII  ),
+//    .EOF      ( wEOFRGMII  ),
+//    .LINK_UP  ( wLinkUP),
+//    .DUPLEX   ( wDuplexMode),
+//    .SPEED    ( wSpeed)
+//);
+
+
+
+ RGMIIOverClockModule RGMIIOverClockModule_inst(
+    . clk375(clk375),
+    . clk125(clk125),
+    . RGMII_Data(RXD),
+    . RGMII_Ctrl(RX_CTL),
+    . RGMII_Clk(RXC),
+    
+    
+    . Data_Out(wDATARGMII),
+    . Val_Out(wValRGMII),
+    . Err_Out(),
+    . SoF_Out(wSOFRGMII),
+    . EoF_Out(wEOFRGMII),
+    
+    .  LINK_UP(wLinkUP),
+    .  DUPLEX(wDuplexMode),
+    .  SPEED(wSpeed)
+    );
 
 
 assign dbg_rgmii_rx_data = wDATARGMII;
@@ -111,7 +134,7 @@ wire [47:0] wRemoteMACL2;
 
 FrameSync  FrameL2_inst
 (
-    .Clk       ( RXC        ),
+    .Clk       ( clk125        ),
     .SoFIn     ( wSOFRGMII  ),
     .EoFIn     ( wEOFRGMII  ),
     .ValIn     ( wValRGMII  ),
@@ -135,7 +158,7 @@ reg ValL2 = 0;
 reg ErrL2 = 0;
 
 
-always @(posedge RXC)
+always @(posedge clk125)
 begin
 if (wEOFL2&&wErrL2) InputCRC_ErrorCounter<=InputCRC_ErrorCounter+1'b1;
 
@@ -163,7 +186,7 @@ wire [47:0] wRemoteMACL3;
 
 FrameL3  FrameL3_inst
 (
-    .Clk    ( RXC    ),
+    .Clk    ( clk125    ),
     .SoFIn  ( SOFL2 ),
     .EoFIn  ( EOFL2 ),
     .ValIn  ( ValL2 ),
@@ -195,7 +218,7 @@ reg ErrL3 = 0;
 wire [47:0] wRemoteMACL4;
 
 
-always @(posedge RXC)
+always @(posedge clk125)
 begin
 if (wUDPL3) DATAL3 <=wDATAL3; else DATAL3 <=1'b0;
 if (wUDPL3) SOFL3  <=wSOFL3;  else SOFL3  <=1'b0;
@@ -208,7 +231,7 @@ end
 
 FrameL4  FrameL4_inst
 (
-    .Clk    ( RXC    ),
+    .Clk    ( clk125    ),
     .SoFIn  ( SOFL3 ) ,
     .EoFIn  ( EOFL3 ) ,
     .ValIn  ( ValL3 ) ,
@@ -245,7 +268,7 @@ reg   Val_ARP_L2 = 0;
 reg   Err_ARP_L2 = 0;
 
 
-always @(posedge RXC)
+always @(posedge clk125)
 begin
 if (wARP) DATA_ARP_L2 <=wDATAL2; else DATA_ARP_L2 <=1'b0;
 if (wARP) SOF_ARP_L2  <=wSOFL2;  else SOF_ARP_L2  <=1'b0;
@@ -270,7 +293,7 @@ wire [1:0] wReqConfirm;
 
 ARP_L2  ARP_L2_inst
 (
-    . Clk  (RXC),
+    . Clk  (clk125),
     . SoFIn  (SOF_ARP_L2),
     . EoFIn  (EOF_ARP_L2),
     . ValIn  (Val_ARP_L2),
@@ -292,7 +315,7 @@ ARP_L2  ARP_L2_inst
 
 FrameL2_Out  FrameL2_Out_inst
 (
-    .Clk ( RXC      ),
+    .Clk ( clk125      ),
     .MODE( wSpeed[1]),
 
     .LINK_UP (wLinkUP),
