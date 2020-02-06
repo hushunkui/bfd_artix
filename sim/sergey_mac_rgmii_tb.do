@@ -21,6 +21,7 @@ vlog  $env(XILINX_VV)/data/verilog/src/glbl.v
 
 vlog -modelsimini $inifile ../src/core_gen/clk25_wiz0/clk25_wiz0.v
 vlog -modelsimini $inifile ../src/core_gen/clk25_wiz0/clk25_wiz0_clk_wiz.v
+vlog -modelsimini $inifile ../src/core_gen/axis_data_fifo_0/sim/axis_data_fifo_0.v
 
 #vlog ../src/mac_crc.v
 #vlog -modelsimini $inifile ../src/mac_rgmii.v
@@ -46,13 +47,17 @@ vlog -modelsimini $inifile ../src/sergey/FrameL2_Out.v
 vlog -modelsimini $inifile ../src/sergey/FrameL3.v
 vlog -modelsimini $inifile ../src/sergey/FrameL4.v
 vlog -modelsimini $inifile ../src/sergey/FrameSync.v
-vlog -modelsimini $inifile ../src/sergey/LinkStatus.v
+#vlog -modelsimini $inifile ../src/sergey/LinkStatus.v
+vlog -modelsimini $inifile ../src/sergey/Link_Status.v
 vlog -modelsimini $inifile ../src/sergey/rgmii_rx.v
-vlog -modelsimini $inifile ../src/sergey/RGMIIDDR_xil.v
+#vlog -modelsimini $inifile ../src/sergey/RGMIIDDR_xil.v
+vlog -modelsimini $inifile ../src/sergey/RGMIIOverClockModule.v
+vlog -modelsimini $inifile ../src/sergey/RGMIIOverClock.v
+vlog -modelsimini $inifile ../src/sergey/RGMII_ClockSpeed_Test.v
 vlog -modelsimini $inifile ../src/sergey/DDR_OUT_xil.v
 vlog ./sergey_mac_rgmii_tb.v
 
-vsim -modelsimini $inifile -t 1ps -novopt +notimingchecks -L unisims_ver -L secureip -lib work mac_rgmii_tb glbl
+vsim -modelsimini $inifile -t 1ps -novopt +notimingchecks -L unisims_ver -L secureip -L fifo_generator_v13_2_2 -lib work mac_rgmii_tb glbl
 
 
 #--------------------------
