@@ -6,18 +6,6 @@ add wave -noupdate -divider RX
 add wave -noupdate /mac_rgmii_tb/mac/RXC
 add wave -noupdate /mac_rgmii_tb/mac/RXD
 add wave -noupdate /mac_rgmii_tb/mac/RX_CTL
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/wSpeed
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/LinkStatus_inst/LINK_UP
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/RGMIIDDRRX_inst/rst
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/RGMIIDDRRX_inst/rx_data
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/RGMIIDDRRX_inst/rx_dv
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/RGMIIDDRRX_inst/rx_err
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/RGMIIDDRRX_inst/dataout_h
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/RGMIIDDRRX_inst/dataout_l
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/DATA_OUT
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/ENA
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/SOF
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/RGMII_rx_inst/EOF
 add wave -noupdate /mac_rgmii_tb/mac/dbg_rgmii_rx_data
 add wave -noupdate /mac_rgmii_tb/mac/dbg_rgmii_rx_den
 add wave -noupdate /mac_rgmii_tb/mac/dbg_rgmii_rx_sof
@@ -139,4 +127,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {2079587 ps} {12813187 ps}
+WaveRestoreZoom {0 ps} {18900 ns}

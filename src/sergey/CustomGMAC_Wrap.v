@@ -4,7 +4,7 @@ module CustomGMAC_Wrap
 
     input clk375,
     input clk125,
-    
+
     input   RXC,
     input   RX_CTL,
     input   [3:0]RXD,
@@ -32,7 +32,6 @@ module CustomGMAC_Wrap
     output [47:0] Remote_MACOut,
     output [31:0] Remote_IP_Out,
     output [15:0] RemotePortOut,
-    output CLK_OUT,
     output SOF_OUT,
     output EOF_OUT,
     output ENA_OUT,
@@ -42,21 +41,12 @@ module CustomGMAC_Wrap
 
 );
 
-wire phy_rxc_ibuf;
-wire phy_rxc_bufio;
-wire phy_rxclk;
-
-//IBUF ibuf_rxclk (.I(RXC), .O(phy_rxc_ibuf));
-//BUFG bufio_rxclk (.I(phy_rxc_ibuf), .O(phy_rxc_bufio));
-//BUFG bufr_rxclk (.I(phy_rxc_ibuf), .O(phy_rxclk)); //, .CE(1'b1), .CLR(0));
-
-assign CLK_OUT=phy_rxclk;
 
 CustomGMAC  CustomGMAC_Inst
 (
     . clk375(clk375),
     . clk125(clk125),
-    
+
     .RXC_DDR(phy_rxc_bufio),
     .RXC(RXC),
     .RX_CTL(RX_CTL),

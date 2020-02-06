@@ -2,7 +2,7 @@
 #author: Golovachenko Viktor
 #
 
-set bit_file ./firmware/bfd_artix_firmware.bit
+set bit_file ./firmware/bfd_artix_firmware_v30012020_202047.bit
 set fpga_index 0
 
 if {![file exist $bit_file]} {

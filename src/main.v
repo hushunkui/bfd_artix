@@ -66,7 +66,7 @@ wire [ETHCOUNT-1:0]     mac_rx_tlast ;
 wire [ETHCOUNT-1:0]     mac_rx_tuser ;
 wire [ETHCOUNT-1:0]     mac_rx_clk;
 wire [ETHCOUNT-1:0]     mac_fifo_resetn;
-wire  [31:0]             mac_rx_cnterr [ETHCOUNT-1:0];
+wire [31:0]             mac_rx_cnterr [ETHCOUNT-1:0];
 reg  [31:0]             mac_rx_cnterr_mjtag [ETHCOUNT-1:0];
 reg  [31:0]             mac_rx_cnterr_aurclk [ETHCOUNT-1:0];
 
@@ -106,6 +106,11 @@ wire [ETHCOUNT-1:0]     test_mac_rx_tsof;
 wire [ETHCOUNT-1:0]     test_mac_rx_terr;
 
 wire [0:0] mac_tx_ack [ETHCOUNT-1:0];
+
+wire [7:0]              dbg_rgmii_rx_data [ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0]     dbg_rgmii_rx_den;
+wire [ETHCOUNT-1:0]     dbg_rgmii_rx_sof;
+wire [ETHCOUNT-1:0]     dbg_rgmii_rx_eof;
 
 wire clk125M;
 wire clk125M_p90;
@@ -484,7 +489,7 @@ generate
 
         assign test_mac_start[x] = reg_ctrl[x];// | vio_test_start[x];
 
-        // always @(posedge mac_rx_clk[x]) begin
+        // always @(posedge clk125M) begin
         //     if (reg_ctrl[24]) begin
         //         mac_rx_cnterr[x] <= 0;
         //     end else begin
@@ -534,15 +539,14 @@ generate
 
             .ReqConfirm(mac_tx_ack[x]),//output
 
-            .dbg_rgmii_rx_data(),
-            .dbg_rgmii_rx_den(),
-            .dbg_rgmii_rx_sof(),
-            .dbg_rgmii_rx_eof(),
+            .dbg_rgmii_rx_data(dbg_rgmii_rx_data[x]),
+            .dbg_rgmii_rx_den (dbg_rgmii_rx_den [x]),
+            .dbg_rgmii_rx_sof (dbg_rgmii_rx_sof [x]),
+            .dbg_rgmii_rx_eof (dbg_rgmii_rx_eof [x]),
 
             .Remote_MACOut(), //output   [47:0]
             .Remote_IP_Out(), //output   [31:0]
             .RemotePortOut(), //output   [15:0]
-            .CLK_OUT(mac_rx_clk[x]), //output
             .SOF_OUT(test_mac_rx_tsof[x]), //output
             .EOF_OUT(test_mac_rx_tlast[x]), //output
             .ENA_OUT(test_mac_rx_tvalid[x]), //output
@@ -563,20 +567,32 @@ generate
             .err(),
             .test_data(),
 
-            .clk(mac_rx_clk[x]),
+            .clk(clk125M),
             .rst(~mac_pll_locked)
         );
+
+        // ila_0 rx_ila (
+        //     .probe0({
+        //         mac_rx_cnterr[x][9:0],
+        //         test_mac_rx_tdata[x],           //11
+        //         test_mac_rx_tvalid[x],         //3
+        //         test_mac_rx_tsof[x], //sof   //2
+        //         test_mac_rx_tlast[x]  //eof  //1
+        //     }),
+        //     .clk(clk125M)
+        // );
 
         ila_0 rx_ila (
             .probe0({
                 mac_rx_cnterr[x][9:0],
-                test_mac_rx_tdata[x],           //11
-                test_mac_rx_tvalid[x],         //3
-                test_mac_rx_tsof[x], //sof   //2
-                test_mac_rx_tlast[x]  //eof  //1
+                dbg_rgmii_rx_data[x],
+                dbg_rgmii_rx_den [x],
+                dbg_rgmii_rx_sof [x],
+                dbg_rgmii_rx_eof [x]
             }),
-            .clk(mac_rx_clk[x])
+            .clk(clk125M)
         );
+
 
         test_tx test_tx_eth0 (
             .mac_tx_data (test_mac_tx_tdata [x]),
@@ -590,7 +606,7 @@ generate
             .pkt_size(test_mac_pkt_size),
             .pause_size(test_mac_pause_size),
 
-            .clk(mac_rx_clk[x]),
+            .clk(clk125M),
             .rst(~mac_pll_locked)
         );
 
@@ -601,7 +617,7 @@ generate
                 test_mac_tx_tuser[x], //sof   //2
                 test_mac_tx_tlast[x]  //eof  //1
             }),
-            .clk(mac_rx_clk[x])
+            .clk(clk125M)
         );
 
         // mac_rgmii rgmii (
@@ -625,7 +641,7 @@ generate
         //     .mac_rx_ok_o    (mac_rx_ok[x]),
         //     .mac_rx_bd_o    (mac_rx_bd[x]),
         //     .mac_rx_er_o    (mac_rx_er[x]),
-        //     .mac_rx_clk_o   (mac_rx_clk[x]),
+        //     .mac_rx_clk_o   (clk125M),
         //     // .dbg_mac_rx_fr_good(mac_rx_fr_good_dbg[x]),
 
         //     .mac_tx_data  (mac_tx_tdata [x]),
@@ -673,7 +689,7 @@ generate
         //     .tx_collision       (1'b0), //input
         //     .tx_retransmit      (1'b0), //input
 
-        //     .rx_mac_aclk        (mac_rx_clk[x]   ),//input
+        //     .rx_mac_aclk        (clk125M   ),//input
         //     .rx_mac_resetn      (mac_fifo_resetn[x]),//input
         //     .rx_axis_mac_tdata  (mac_rx_tdata [x]),//input [7:0]
         //     .rx_axis_mac_tvalid (mac_rx_tvalid[x]),//input
@@ -697,7 +713,7 @@ generate
         //         mac_rx_tuser[x], //sof   //2
         //         mac_rx_tlast[x]  //eof  //1
         //     }),
-        //     .clk(mac_rx_clk[x])
+        //     .clk(clk125M)
         // );
 
         // ila_0 rx_ila (
@@ -714,7 +730,7 @@ generate
         //         mac_rx_tuser[x], //sof   //2
         //         mac_rx_tlast[x]  //eof  //1
         //     }),
-        //     .clk(mac_rx_clk[x])
+        //     .clk(clk125M)
         // );
 
         // ila_0 tx_ila (
@@ -803,7 +819,7 @@ endgenerate
 //     .err(test_err[0]),
 //     .test_data(test_data[0]),
 
-//     .clk(mac_rx_clk[x]),
+//     .clk(clk125M),
 //     .rst(~mac_pll_locked)
 // );
 

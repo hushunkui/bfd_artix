@@ -581,8 +581,12 @@ wire       mac_rx_eof;
 wire       mac_rx_err;
 
 
-wire sysclk;
 reg start = 0;
+
+wire clk200M;
+wire clk125M;
+wire clk375M;
+wire clk125M_p90;
 
 initial begin
     // $dumpfile("icarus/dump.fst");
@@ -591,6 +595,8 @@ initial begin
     usr_tx_tdata = 0;
     usr_tx_tvalid = 1'b0;
     usr_tx_tlast = 1'b0;
+
+    start = 1'b0;
 
     rst = 1'b0;
     #500;
@@ -623,10 +629,10 @@ initial begin
     SendTestUDP(48'hC0A8_0505_0505, 48'h0102_0304_0506, 32'hC0A80507, 32'hC0A80507, 16'h4d2, 16'h4d2);
     #100;
 
-    @(posedge sysclk);
+    @(posedge clk125M);
     start = 1'b1;
     #5_000;
-    @(posedge sysclk);
+    @(posedge clk125M);
     start = 1'b0;
     #5_000;
     // @(posedge rxc);
@@ -660,10 +666,7 @@ initial begin
     // $finish;
 end
 
-wire clk200M;
-wire clk125M;
-wire clk375M;
-wire clk125M_p90;
+
 
 clk25_wiz0 pll0(
     .clk_out1(clk200M),//(clk125M),
@@ -741,7 +744,6 @@ CustomGMAC_Wrap  mac(
     .Remote_MACOut(),//output [47:0]
     .Remote_IP_Out(),//output [31:0]
     .RemotePortOut(),//output [15:0]
-    .CLK_OUT(sysclk),
     .SOF_OUT(mac_rx_sof),
     .EOF_OUT(mac_rx_eof),
     .ENA_OUT(mac_rx_valid),
@@ -764,7 +766,7 @@ test_tx #(
     .pkt_size(16'd512),
     .pause_size(16'd32),
 
-    .clk(sysclk),
+    .clk(clk125M),
     .rst(rst)
 );
 

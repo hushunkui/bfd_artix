@@ -67,10 +67,10 @@ RGMIIOverClockSampler RGMIIOverClockSampler_inst(
 
  wire wFIFOValid;
  wire [15:0]wFIFODat;
- reg [2:0]FIFOValidDelay;
+ reg [8:0]FIFOValidDelay;
  always @ (posedge clk125)
 begin
-FIFOValidDelay<={wFIFOValid,FIFOValidDelay[2:1]};
+FIFOValidDelay<={wFIFOValid,FIFOValidDelay[8:1]};
 end
  axis_data_fifo_0 axis_data_fifo_0_inst (
   .s_aresetn(1'b1),          // input wire s_aresetn

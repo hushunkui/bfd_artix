@@ -2,7 +2,7 @@ module CustomGMAC
 (
     input clk375,
     input clk125,
-    
+
     input RXC,
     input RXC_DDR,
     input RX_CTL,
@@ -90,14 +90,14 @@ wire [1:0]wSpeed;
     . RGMII_Data(RXD),
     . RGMII_Ctrl(RX_CTL),
     . RGMII_Clk(RXC),
-    
-    
+
+
     . Data_Out(wDATARGMII),
     . Val_Out(wValRGMII),
     . Err_Out(),
     . SoF_Out(wSOFRGMII),
     . EoF_Out(wEOFRGMII),
-    
+
     .  LINK_UP(wLinkUP),
     .  DUPLEX(wDuplexMode),
     .  SPEED(wSpeed)
