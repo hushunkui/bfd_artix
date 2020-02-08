@@ -62,7 +62,9 @@ module axis_data_fifo_0 (
   s_axis_tdata,
   m_axis_tvalid,
   m_axis_tready,
-  m_axis_tdata
+  m_axis_tdata,
+  axis_wr_data_count,
+  axis_rd_data_count
 );
 
 (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME master_aclk, ASSOCIATED_BUSIF M_AXIS:M_AXI, FREQ_HZ 100000000, PHASE 0.000" *)
@@ -88,6 +90,8 @@ input wire m_axis_tready;
 (* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME M_AXIS, TDATA_NUM_BYTES 2, TDEST_WIDTH 0, TID_WIDTH 0, TUSER_WIDTH 0, HAS_TREADY 1, HAS_TSTRB 0, HAS_TKEEP 0, HAS_TLAST 0, FREQ_HZ 100000000, PHASE 0.000, LAYERED_METADATA undef" *)
 (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M_AXIS TDATA" *)
 output wire [15 : 0] m_axis_tdata;
+output wire [6 : 0] axis_wr_data_count;
+output wire [6 : 0] axis_rd_data_count;
 
   fifo_generator_v13_2_2 #(
     .C_COMMON_CLOCK(0),
@@ -255,7 +259,7 @@ output wire [15 : 0] m_axis_tdata;
     .C_HAS_DATA_COUNTS_WRCH(0),
     .C_HAS_DATA_COUNTS_RACH(0),
     .C_HAS_DATA_COUNTS_RDCH(0),
-    .C_HAS_DATA_COUNTS_AXIS(0),
+    .C_HAS_DATA_COUNTS_AXIS(1),
     .C_HAS_PROG_FLAGS_WACH(0),
     .C_HAS_PROG_FLAGS_WDCH(0),
     .C_HAS_PROG_FLAGS_WRCH(0),
@@ -516,8 +520,8 @@ output wire [15 : 0] m_axis_tdata;
     .axis_prog_full_thresh(6'B0),
     .axis_prog_empty_thresh(6'B0),
     .axis_data_count(),
-    .axis_wr_data_count(),
-    .axis_rd_data_count(),
+    .axis_wr_data_count(axis_wr_data_count),
+    .axis_rd_data_count(axis_rd_data_count),
     .axis_sbiterr(),
     .axis_dbiterr(),
     .axis_overflow(),

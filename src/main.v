@@ -112,6 +112,19 @@ wire [ETHCOUNT-1:0]     dbg_rgmii_rx_den;
 wire [ETHCOUNT-1:0]     dbg_rgmii_rx_sof;
 wire [ETHCOUNT-1:0]     dbg_rgmii_rx_eof;
 
+wire [3:0] dbg_fi [ETHCOUNT-1:0];
+wire [9:0] dbg_fi_dcnt [ETHCOUNT-1:0];
+wire [6:0] dbg_fi_wr_data_count [ETHCOUNT-1:0];
+wire [3:0] dbg_fo [ETHCOUNT-1:0];
+wire [9:0] dbg_fo_dcnt [ETHCOUNT-1:0];
+wire [6:0] dbg_fo_rd_data_count [ETHCOUNT-1:0];
+wire [1:0] dbg_fi_wRGMII_Clk [ETHCOUNT-1:0];
+wire [4:0] dbg_fi_wDataDDRL [ETHCOUNT-1:0];
+wire [4:0] dbg_fi_wDataDDRH [ETHCOUNT-1:0];
+wire [3:0] dbg_fi_wCondition [ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0] dbg_fi_LoadDDREnaD0;
+
+
 wire clk125M;
 wire clk125M_p90;
 wire clk375M;
@@ -543,6 +556,17 @@ generate
             .dbg_rgmii_rx_den (dbg_rgmii_rx_den [x]),
             .dbg_rgmii_rx_sof (dbg_rgmii_rx_sof [x]),
             .dbg_rgmii_rx_eof (dbg_rgmii_rx_eof [x]),
+            .dbg_fi(dbg_fi[x]),
+            .dbg_fi_dcnt(dbg_fi_dcnt[x]),
+            .dbg_fi_wr_data_count(dbg_fi_wr_data_count[x]),
+            .dbg_fo(dbg_fo[x]),
+            .dbg_fo_dcnt(dbg_fo_dcnt[x]),
+            .dbg_fo_rd_data_count(dbg_fo_rd_data_count[x]),
+            .dbg_fi_wRGMII_Clk(dbg_fi_wRGMII_Clk[x]),
+            .dbg_fi_wDataDDRL(dbg_fi_wDataDDRL[x]),
+            .dbg_fi_wDataDDRH(dbg_fi_wDataDDRH[x]),
+            .dbg_fi_wCondition(dbg_fi_wCondition[x]),
+            .dbg_fi_LoadDDREnaD0(dbg_fi_LoadDDREnaD0[x]),
 
             .Remote_MACOut(), //output   [47:0]
             .Remote_IP_Out(), //output   [31:0]
@@ -582,16 +606,19 @@ generate
         //     .clk(clk125M)
         // );
 
-        ila_0 rx_ila (
-            .probe0({
-                mac_rx_cnterr[x][9:0],
-                dbg_rgmii_rx_data[x],
-                dbg_rgmii_rx_den [x],
-                dbg_rgmii_rx_sof [x],
-                dbg_rgmii_rx_eof [x]
-            }),
-            .clk(clk125M)
-        );
+        // ila_0 rx_ila (
+        //     .probe0({
+        //         dbg[x][0],//assign dbg[0] = wFIFOValid;
+        //         dbg[x][1],//assign dbg[1] = FIFOValidDelay[0];
+        //         dbg[x][2],//assign dbg[2] = wFIFODat[8];
+        //         mac_rx_cnterr[x][9:0],
+        //         dbg_rgmii_rx_data[x],
+        //         dbg_rgmii_rx_den [x],
+        //         dbg_rgmii_rx_sof [x],
+        //         dbg_rgmii_rx_eof [x]
+        //     }),
+        //     .clk(clk125M)
+        // );
 
 
         test_tx test_tx_eth0 (
@@ -610,15 +637,15 @@ generate
             .rst(~mac_pll_locked)
         );
 
-        ila_0 tx_ila (
-            .probe0({
-                test_mac_tx_tdata[x],           //11
-                test_mac_tx_tvalid[x],         //3
-                test_mac_tx_tuser[x], //sof   //2
-                test_mac_tx_tlast[x]  //eof  //1
-            }),
-            .clk(clk125M)
-        );
+        // ila_0 tx_ila (
+        //     .probe0({
+        //         test_mac_tx_tdata[x],           //11
+        //         test_mac_tx_tvalid[x],         //3
+        //         test_mac_tx_tuser[x], //sof   //2
+        //         test_mac_tx_tlast[x]  //eof  //1
+        //     }),
+        //     .clk(clk125M)
+        // );
 
         // mac_rgmii rgmii (
         //     .status_o(mac_status[x]),//output [3:0]
@@ -773,6 +800,56 @@ generate
 
     end
 endgenerate
+
+ila_1 ila_125M_tx (
+    .probe0({
+        mac_link[3],
+        test_mac_tx_rq[3],
+        mac_tx_ack[3][0],
+        test_mac_tx_tdata[3],           //11
+        test_mac_tx_tvalid[3],         //3
+        test_mac_tx_tuser[3], //sof   //2
+        test_mac_tx_tlast[3]  //eof  //1
+    }),
+    .clk(clk125M)
+);
+
+ila_1 ila_125M_rx (
+    .probe0({
+        // dbg_fo[3][0],//assign dbg[0] = wFIFOValid;
+        // dbg_fo[3][1],//assign dbg[1] = FIFOValidDelay[0];
+        // dbg_fo[3][2],//assign dbg[2] = wFIFODat[8];
+        mac_link[3],
+        dbg_fo[3], //output [3:0]
+        dbg_fo_dcnt[3], //output [9:0]
+        dbg_fo_rd_data_count[3], //output [6:0]
+        mac_rx_cnterr[3][9:0],
+        dbg_rgmii_rx_data[3],
+        dbg_rgmii_rx_den [3],
+        dbg_rgmii_rx_sof [3],
+        dbg_rgmii_rx_eof [3]
+    }),
+    .clk(clk125M)
+);
+
+ila_1 ila_375M (
+    .probe0({
+        dbg_fi_wRGMII_Clk[3],
+        dbg_fi_wDataDDRL[3],
+        dbg_fi_wDataDDRH[3],
+        dbg_fi_wCondition[3],
+        dbg_fi_LoadDDREnaD0[3],
+        // dbg_fo[3][0],//assign dbg[0] = wFIFOValid;
+        // dbg_fo[3][1],//assign dbg[1] = FIFOValidDelay[0];
+        // dbg_fo[3][2],//assign dbg[2] = wFIFODat[8];
+        dbg_fi[3], //output [3:0]
+        dbg_fi_dcnt[3], //output [9:0]
+        dbg_fi_wr_data_count[3] //output [6:0]
+    }),
+    .clk(clk375M)
+);
+
+
 
 // ila_1 aurora_ila (
 //     .probe0({
@@ -930,7 +1007,7 @@ fpga_test_01 #(
     .p_in_rst   (~mac_pll_locked)
 );
 
-assign dbg_led = led_blink & !gt_rst;// !test_gpio[0] & !aurora_gt_rst;// & test_err;
+assign dbg_led = clk125M;//led_blink & !gt_rst;// !test_gpio[0] & !aurora_gt_rst;// & test_err;
 
 assign dbg_out[0] = 1'b0;
 assign dbg_out[1] = clk20_div | sysclk25_div | led_blink | reg_ctrl[0];// &
