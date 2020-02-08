@@ -3,6 +3,7 @@
 //
 `timescale 1ns / 1ps
 module mac_rgmii_tb(
+    output  LINK_UP,
     output reg [7:0] o_rgmii_rx_data = 0,
     output reg o_rgmii_rx_sof = 0,
     output reg o_rgmii_rx_eof = 0,
@@ -735,7 +736,7 @@ CustomGMAC_Wrap  mac(
     .TXDATA(txd   ),
 
     .MODE(),
-    .LINK_UP(),
+    .LINK_UP(LINK_UP),
 
     .DataIn0(mac_tx_data),
     .ValIn0(mac_tx_valid),
@@ -824,7 +825,6 @@ always @ (posedge clk125M) begin
     rgmii_rx_sof <= dbg_rgmii_rx_sof;
     rgmii_rx_eof <= dbg_rgmii_rx_eof;
 
-
     sr0_rgmii_rx_data <= rgmii_rx_data;
     sr1_rgmii_rx_data <= sr0_rgmii_rx_data;
     sr2_rgmii_rx_data <= sr1_rgmii_rx_data;
@@ -860,7 +860,6 @@ always @ (posedge clk125M) begin
     o_rgmii_rx_sof <= sr11_rgmii_rx_sof;
 
     o_rgmii_rx_eof <= rgmii_rx_eof;
-
 end
 
 endmodule

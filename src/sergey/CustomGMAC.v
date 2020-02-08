@@ -69,7 +69,6 @@ wire [7:0]  wDATARGMII;
 
 
 
-wire wLinkUP;
 wire wDuplexMode;
 wire [1:0]wSpeed;
 
@@ -88,7 +87,7 @@ wire [1:0]wSpeed;
 //    .DATA_OUT ( wDATARGMII ),
 //    .SOF   ( wSOFRGMII  ),
 //    .EOF      ( wEOFRGMII  ),
-//    .LINK_UP  ( wLinkUP),
+//    .LINK_UP  ( LINK_UP),
 //    .DUPLEX   ( wDuplexMode),
 //    .SPEED    ( wSpeed)
 //);
@@ -121,7 +120,7 @@ wire [1:0]wSpeed;
     .dbg_fi_wCondition(dbg_fi_wCondition),
     .dbg_fi_LoadDDREnaD0(dbg_fi_LoadDDREnaD0),
 
-    .  LINK_UP(wLinkUP),
+    .  LINK_UP(LINK_UP),
     .  DUPLEX(wDuplexMode),
     .  SPEED(wSpeed)
     );
@@ -341,7 +340,7 @@ FrameL2_Out  FrameL2_Out_inst
     .Clk ( clk125      ),
     .MODE( wSpeed[1]),
 
-    .LINK_UP (wLinkUP),
+    .LINK_UP (LINK_UP),
 
     .ValIn0 (wArpVal ),
     .SoFIn0 (wArpSoF ),

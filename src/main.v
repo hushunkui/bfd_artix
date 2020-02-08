@@ -161,10 +161,10 @@ reg [ETHCOUNT-1:0] sr9_rgmii_rx_sof  = 0;
 reg [ETHCOUNT-1:0] sr10_rgmii_rx_sof = 0;
 reg [ETHCOUNT-1:0] sr11_rgmii_rx_sof = 0;
 
-reg [7:0] rgmii_rx_data_o = 0;
-reg       rgmii_rx_den_o = 0;
-reg       rgmii_rx_sof_o = 0;
-reg       rgmii_rx_eof_o = 0;
+reg [7:0] rgmii_rx_data_o [ETHCOUNT-1:0] ;
+reg [ETHCOUNT-1:0] rgmii_rx_den_o = 0;
+reg [ETHCOUNT-1:0] rgmii_rx_sof_o = 0;
+reg [ETHCOUNT-1:0] rgmii_rx_eof_o = 0;
 
 
 wire clk125M;
@@ -583,7 +583,7 @@ generate
             .ValIn0 (test_mac_tx_tvalid[x]), //input
             .SoFIn0 (test_mac_tx_tuser [x]), //input
             .EoFIn0 (test_mac_tx_tlast [x]), //input
-            .ReqIn0 (test_mac_tx_rq    [x]), //input
+            .ReqIn0 (test_mac_tx_tvalid[x]), //input
             .DataIn0(test_mac_tx_tdata [x]), //input [7:0]
 
             // .ValIn1 (1'b0),//input
@@ -888,51 +888,107 @@ endgenerate
 
 
 eth_txfifo eth0_txfifo (
-    .s_axis_tready(s_axis_tready),  // output wire s_axis_tready
-    .s_axis_tdata(s_axis_tdata),    // input wire [7 : 0] s_axis_tdata
-    .s_axis_tvalid(s_axis_tvalid),  // input wire s_axis_tvalid
-    .s_axis_tuser(s_axis_tuser),    // input wire [0 : 0] s_axis_tuser
-    .s_axis_tlast(s_axis_tlast),    // input wire s_axis_tlast
+    .s_axis_tready(),  // output wire s_axis_tready
+    .s_axis_tdata(rgmii_rx_data_o[1]),    // input wire [7 : 0] s_axis_tdata
+    .s_axis_tvalid(rgmii_rx_den_o[1]),  // input wire s_axis_tvalid
+    .s_axis_tuser({rgmii_rx_sof_o[1]}),    // input wire [0 : 0] s_axis_tuser
+    .s_axis_tlast(rgmii_rx_eof_o[1]),    // input wire s_axis_tlast
 
-    .m_axis_tready(m_axis_tready),  // input wire m_axis_tready
-    .m_axis_tdata(m_axis_tdata),    // output wire [7 : 0] m_axis_tdata
-    .m_axis_tvalid(m_axis_tvalid),  // output wire m_axis_tvalid
-    .m_axis_tuser(m_axis_tuser)    // output wire [0 : 0] m_axis_tuser
-    .m_axis_tlast(m_axis_tlast),    // output wire m_axis_tlast
+    .m_axis_tready(mac_tx_ack[0][0]),  // input wire m_axis_tready
+    .m_axis_tdata(test_mac_tx_tdata [0]),    // output wire [7 : 0] m_axis_tdata
+    .m_axis_tvalid(test_mac_tx_tvalid[0]),  // output wire m_axis_tvalid
+    .m_axis_tuser({test_mac_tx_tuser [0]}),    // output wire [0 : 0] m_axis_tuser
+    .m_axis_tlast(test_mac_tx_tlast [0]),    // output wire m_axis_tlast
 
     .wr_rst_busy(),      // output wire wr_rst_busy
-    .rd_rst_busy(rd_rst_busy),      // output wire rd_rst_busy
-    .s_aclk(s_aclk),                // input wire s_aclk
-    .s_aresetn(s_aresetn),          // input wire s_aresetn
+    .rd_rst_busy(),      // output wire rd_rst_busy
+    .s_aclk(clk125M),                // input wire s_aclk
+    .s_aresetn(eth_phy_rst[0])          // input wire s_aresetn
 );
 
-// ila_1 ila_125M_tx (
-//     .probe0({
-//         mac_link[3],
-//         test_mac_tx_rq[3],
-//         mac_tx_ack[3][0],
-//         test_mac_tx_tdata[3],           //11
-//         test_mac_tx_tvalid[3],         //3
-//         test_mac_tx_tuser[3], //sof   //2
-//         test_mac_tx_tlast[3]  //eof  //1
-//     }),
-//     .clk(clk125M)
-// );
+eth_txfifo eth1_txfifo (
+    .s_axis_tready(),  // output wire s_axis_tready
+    .s_axis_tdata(rgmii_rx_data_o[0]),    // input wire [7 : 0] s_axis_tdata
+    .s_axis_tvalid(rgmii_rx_den_o[0]),  // input wire s_axis_tvalid
+    .s_axis_tuser({rgmii_rx_sof_o[0]}),    // input wire [0 : 0] s_axis_tuser
+    .s_axis_tlast(rgmii_rx_eof_o[0]),    // input wire s_axis_tlast
+
+    .m_axis_tready(mac_tx_ack[1][0]),  // input wire m_axis_tready
+    .m_axis_tdata(test_mac_tx_tdata [1]),    // output wire [7 : 0] m_axis_tdata
+    .m_axis_tvalid(test_mac_tx_tvalid[1]),  // output wire m_axis_tvalid
+    .m_axis_tuser({test_mac_tx_tuser [1]}),    // output wire [0 : 0] m_axis_tuser
+    .m_axis_tlast(test_mac_tx_tlast [1]),    // output wire m_axis_tlast
+
+    .wr_rst_busy(),      // output wire wr_rst_busy
+    .rd_rst_busy(),      // output wire rd_rst_busy
+    .s_aclk(clk125M),                // input wire s_aclk
+    .s_aresetn(eth_phy_rst[1])          // input wire s_aresetn
+);
+
+eth_txfifo eth2_txfifo (
+    .s_axis_tready(),  // output wire s_axis_tready
+    .s_axis_tdata(rgmii_rx_data_o[3]),    // input wire [7 : 0] s_axis_tdata
+    .s_axis_tvalid(rgmii_rx_den_o[3]),  // input wire s_axis_tvalid
+    .s_axis_tuser({rgmii_rx_sof_o[3]}),    // input wire [0 : 0] s_axis_tuser
+    .s_axis_tlast(rgmii_rx_eof_o[3]),    // input wire s_axis_tlast
+
+    .m_axis_tready(mac_tx_ack[2][0]),  // input wire m_axis_tready
+    .m_axis_tdata(test_mac_tx_tdata [2]),    // output wire [7 : 0] m_axis_tdata
+    .m_axis_tvalid(test_mac_tx_tvalid[2]),  // output wire m_axis_tvalid
+    .m_axis_tuser({test_mac_tx_tuser [2]}),    // output wire [0 : 0] m_axis_tuser
+    .m_axis_tlast(test_mac_tx_tlast [2]),    // output wire m_axis_tlast
+
+    .wr_rst_busy(),      // output wire wr_rst_busy
+    .rd_rst_busy(),      // output wire rd_rst_busy
+    .s_aclk(clk125M),                // input wire s_aclk
+    .s_aresetn(eth_phy_rst[2])          // input wire s_aresetn
+);
+
+eth_txfifo eth3_txfifo (
+    .s_axis_tready(),  // output wire s_axis_tready
+    .s_axis_tdata(rgmii_rx_data_o[2]),    // input wire [7 : 0] s_axis_tdata
+    .s_axis_tvalid(rgmii_rx_den_o[2]),  // input wire s_axis_tvalid
+    .s_axis_tuser({rgmii_rx_sof_o[2]}),    // input wire [0 : 0] s_axis_tuser
+    .s_axis_tlast(rgmii_rx_eof_o[2]),    // input wire s_axis_tlast
+
+    .m_axis_tready(mac_tx_ack[3][0]),  // input wire m_axis_tready
+    .m_axis_tdata(test_mac_tx_tdata [3]),    // output wire [7 : 0] m_axis_tdata
+    .m_axis_tvalid(test_mac_tx_tvalid[3]),  // output wire m_axis_tvalid
+    .m_axis_tuser({test_mac_tx_tuser [3]}),    // output wire [0 : 0] m_axis_tuser
+    .m_axis_tlast(test_mac_tx_tlast [3]),    // output wire m_axis_tlast
+
+    .wr_rst_busy(),      // output wire wr_rst_busy
+    .rd_rst_busy(),      // output wire rd_rst_busy
+    .s_aclk(clk125M),                // input wire s_aclk
+    .s_aresetn(eth_phy_rst[3])          // input wire s_aresetn
+);
+
+ila_1 ila_125M_tx (
+    .probe0({
+        mac_link[3],
+        mac_tx_ack[0][0],
+        test_mac_tx_tdata[0],           //11
+        test_mac_tx_tvalid[0],         //3
+        test_mac_tx_tuser[0], //sof   //2
+        test_mac_tx_tlast[0]  //eof  //1
+    }),
+    .clk(clk125M)
+);
 
 ila_1 ila_125M_rx (
     .probe0({
         // dbg_fo[3][0],//assign dbg[0] = wFIFOValid;
         // dbg_fo[3][1],//assign dbg[1] = FIFOValidDelay[0];
         // dbg_fo[3][2],//assign dbg[2] = wFIFODat[8];
-        mac_link[3],
-        dbg_fo[3], //output [3:0]
-        dbg_fo_dcnt[3], //output [9:0]
-        dbg_fo_rd_data_count[3], //output [6:0]
-        mac_rx_cnterr[3][9:0],
-        dbg_rgmii_rx_data[3],
-        dbg_rgmii_rx_den [3],
-        dbg_rgmii_rx_sof [3],
-        dbg_rgmii_rx_eof [3]
+        mac_link[1],
+        dbg_fo[31], //output [3:0]
+        dbg_fo_dcnt[1], //output [9:0]
+        dbg_fo_rd_data_count[1], //output [6:0]
+        mac_rx_cnterr[1][9:0],
+        rgmii_rx_data_o[1],
+        rgmii_rx_den_o [1],
+        rgmii_rx_sof_o [1],
+        rgmii_rx_eof_o [1]
     }),
     .clk(clk125M)
 );

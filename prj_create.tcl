@@ -368,6 +368,7 @@ add_files -norecurse $script_folder/src/sergey/Link_Status.v
 add_files -norecurse $script_folder/src/sergey/RGMIIOverClockModule.v
 add_files -norecurse $script_folder/src/sergey/RGMIIOverClock.v
 add_files -norecurse $script_folder/src/sergey/RGMII_ClockSpeed_Test.v
+add_files -norecurse $script_folder/src/core_gen/eth_txfifo/eth_txfifo.xci
 add_files -norecurse $script_folder/src/core_gen/axis_data_fifo_0/axis_data_fifo_0.xci
 add_files -norecurse $script_folder/src/core_gen/clk25_wiz0/clk25_wiz0.xci
 add_files -norecurse $script_folder/src/core_gen/ila_0/ila_0.xci
