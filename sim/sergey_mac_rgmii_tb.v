@@ -2,7 +2,12 @@
 //author: Romashko Dmitry
 //
 `timescale 1ns / 1ps
-module mac_rgmii_tb();
+module mac_rgmii_tb(
+    output reg [7:0] o_rgmii_rx_data = 0,
+    output reg o_rgmii_rx_sof = 0,
+    output reg o_rgmii_rx_eof = 0,
+    output reg o_rgmii_rx_den = 0
+);
 
 reg clk = 1;
 always #20 clk = ~clk; //25MHz
@@ -580,6 +585,10 @@ wire       mac_rx_sof;
 wire       mac_rx_eof;
 wire       mac_rx_err;
 
+wire [7:0] dbg_rgmii_rx_data;
+wire       dbg_rgmii_rx_den;
+wire       dbg_rgmii_rx_sof;
+wire       dbg_rgmii_rx_eof;
 
 reg start = 0;
 
@@ -611,11 +620,11 @@ initial begin
     #1_000;
 
     SendARPPacket(48'hC0A8_0505_0505, 48'hC0A8_0505_0505, 32'hC0A80507, 32'hC0A80507);
-    #100;
+    #1000;
     SendARPPacket(48'hC0A8_0505_0505, 48'hC0A8_0505_0505, 32'hC0A80507, 32'hC0A80507);
-    #100;
+    #1000;
     SendARPPacket(48'hC0A8_0505_0505, 48'hC0A8_0505_0505, 32'hC0A80507, 32'hC0A80507);
-    #100;
+    #1000;
 
     // SendTestPacket(48'hFFFF_FFFF_FFFF, 48'hC0A8_0505_0505, 1'b0);
     // #1_000;
@@ -627,7 +636,7 @@ initial begin
     // #100;
 
     SendTestUDP(48'hC0A8_0505_0505, 48'h0102_0304_0506, 32'hC0A80507, 32'hC0A80507, 16'h4d2, 16'h4d2);
-    #100;
+    #1000;
 
     @(posedge clk125M);
     start = 1'b1;
@@ -736,10 +745,10 @@ CustomGMAC_Wrap  mac(
 
     .ReqConfirm(mac_tx_ack),
 
-    .dbg_rgmii_rx_data(),
-    .dbg_rgmii_rx_den(),
-    .dbg_rgmii_rx_sof(),
-    .dbg_rgmii_rx_eof(),
+    .dbg_rgmii_rx_data(dbg_rgmii_rx_data),
+    .dbg_rgmii_rx_den(dbg_rgmii_rx_den),
+    .dbg_rgmii_rx_sof(dbg_rgmii_rx_sof),
+    .dbg_rgmii_rx_eof(dbg_rgmii_rx_eof),
 
     .Remote_MACOut(),//output [47:0]
     .Remote_IP_Out(),//output [31:0]
@@ -764,10 +773,94 @@ test_tx #(
 
     .start(start),
     .pkt_size(16'd512),
-    .pause_size(16'd32),
+    .pause_size(16'd128),
 
     .clk(clk125M),
     .rst(rst)
 );
+
+
+reg [7:0] rgmii_rx_data = 0;
+reg       rgmii_rx_den = 0;
+reg       rgmii_rx_sof = 0;
+reg       rgmii_rx_eof = 0;
+
+reg [7:0] sr0_rgmii_rx_data = 0;
+reg [7:0] sr1_rgmii_rx_data = 0;
+reg [7:0] sr2_rgmii_rx_data = 0;
+reg [7:0] sr3_rgmii_rx_data = 0;
+//reg [7:0] o_rgmii_rx_data = 0;
+
+reg sr0_rgmii_rx_den = 0;
+reg sr1_rgmii_rx_den = 0;
+reg sr2_rgmii_rx_den = 0;
+reg sr3_rgmii_rx_den = 0;
+reg sr4_rgmii_rx_den = 0;
+reg sr5_rgmii_rx_den = 0;
+reg sr6_rgmii_rx_den = 0;
+reg sr7_rgmii_rx_den = 0;
+reg sr8_rgmii_rx_den = 0;
+reg sr9_rgmii_rx_den = 0;
+reg sr10_rgmii_rx_den = 0;
+reg sr11_rgmii_rx_den = 0;
+//reg o_rgmii_rx_den = 0;
+
+reg sr0_rgmii_rx_sof  = 0;
+reg sr1_rgmii_rx_sof  = 0;
+reg sr2_rgmii_rx_sof  = 0;
+reg sr3_rgmii_rx_sof  = 0;
+reg sr4_rgmii_rx_sof  = 0;
+reg sr5_rgmii_rx_sof  = 0;
+reg sr6_rgmii_rx_sof  = 0;
+reg sr7_rgmii_rx_sof  = 0;
+reg sr8_rgmii_rx_sof  = 0;
+reg sr9_rgmii_rx_sof  = 0;
+reg sr10_rgmii_rx_sof = 0;
+reg sr11_rgmii_rx_sof = 0;
+
+always @ (posedge clk125M) begin
+    rgmii_rx_data <= dbg_rgmii_rx_data;
+    rgmii_rx_den <= dbg_rgmii_rx_den;
+    rgmii_rx_sof <= dbg_rgmii_rx_sof;
+    rgmii_rx_eof <= dbg_rgmii_rx_eof;
+
+
+    sr0_rgmii_rx_data <= rgmii_rx_data;
+    sr1_rgmii_rx_data <= sr0_rgmii_rx_data;
+    sr2_rgmii_rx_data <= sr1_rgmii_rx_data;
+    sr3_rgmii_rx_data <= sr2_rgmii_rx_data;
+    o_rgmii_rx_data <= sr3_rgmii_rx_data;
+
+    sr0_rgmii_rx_den <= rgmii_rx_den;
+    sr1_rgmii_rx_den <= sr0_rgmii_rx_den;
+    sr2_rgmii_rx_den <= sr1_rgmii_rx_den;
+    sr3_rgmii_rx_den <= sr2_rgmii_rx_den;
+    sr4_rgmii_rx_den <= sr3_rgmii_rx_den;
+    sr5_rgmii_rx_den <= sr4_rgmii_rx_den;
+    sr6_rgmii_rx_den <= sr5_rgmii_rx_den;
+    sr7_rgmii_rx_den <= sr6_rgmii_rx_den;
+    sr8_rgmii_rx_den <= sr7_rgmii_rx_den;
+    sr9_rgmii_rx_den <= sr8_rgmii_rx_den;
+    sr10_rgmii_rx_den <= sr9_rgmii_rx_den;
+    sr11_rgmii_rx_den <= sr10_rgmii_rx_den;
+    o_rgmii_rx_den <= sr11_rgmii_rx_den & rgmii_rx_den;
+
+    sr0_rgmii_rx_sof <= rgmii_rx_sof;
+    sr1_rgmii_rx_sof <= sr0_rgmii_rx_sof;
+    sr2_rgmii_rx_sof <= sr1_rgmii_rx_sof;
+    sr3_rgmii_rx_sof <= sr2_rgmii_rx_sof;
+    sr4_rgmii_rx_sof <= sr3_rgmii_rx_sof;
+    sr5_rgmii_rx_sof <= sr4_rgmii_rx_sof;
+    sr6_rgmii_rx_sof <= sr5_rgmii_rx_sof;
+    sr7_rgmii_rx_sof <= sr6_rgmii_rx_sof;
+    sr8_rgmii_rx_sof <= sr7_rgmii_rx_sof;
+    sr9_rgmii_rx_sof <= sr8_rgmii_rx_sof;
+    sr10_rgmii_rx_sof <= sr9_rgmii_rx_sof;
+    sr11_rgmii_rx_sof <= sr10_rgmii_rx_sof;
+    o_rgmii_rx_sof <= sr11_rgmii_rx_sof;
+
+    o_rgmii_rx_eof <= rgmii_rx_eof;
+
+end
 
 endmodule

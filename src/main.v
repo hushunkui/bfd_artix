@@ -125,6 +125,48 @@ wire [3:0] dbg_fi_wCondition [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0] dbg_fi_LoadDDREnaD0;
 
 
+reg [7:0] rgmii_rx_data_i [ETHCOUNT-1:0];
+reg [ETHCOUNT-1:0] rgmii_rx_den_i = 0;
+reg [ETHCOUNT-1:0] rgmii_rx_sof_i = 0;
+reg [ETHCOUNT-1:0] rgmii_rx_eof_i = 0;
+
+reg [7:0] sr0_rgmii_rx_data [ETHCOUNT-1:0];
+reg [7:0] sr1_rgmii_rx_data [ETHCOUNT-1:0];
+reg [7:0] sr2_rgmii_rx_data [ETHCOUNT-1:0];
+reg [7:0] sr3_rgmii_rx_data [ETHCOUNT-1:0];
+
+reg [ETHCOUNT-1:0] sr0_rgmii_rx_den = 0;
+reg [ETHCOUNT-1:0] sr1_rgmii_rx_den = 0;
+reg [ETHCOUNT-1:0] sr2_rgmii_rx_den = 0;
+reg [ETHCOUNT-1:0] sr3_rgmii_rx_den = 0;
+reg [ETHCOUNT-1:0] sr4_rgmii_rx_den = 0;
+reg [ETHCOUNT-1:0] sr5_rgmii_rx_den = 0;
+reg [ETHCOUNT-1:0] sr6_rgmii_rx_den = 0;
+reg [ETHCOUNT-1:0] sr7_rgmii_rx_den = 0;
+reg [ETHCOUNT-1:0] sr8_rgmii_rx_den = 0;
+reg [ETHCOUNT-1:0] sr9_rgmii_rx_den = 0;
+reg [ETHCOUNT-1:0] sr10_rgmii_rx_den = 0;
+reg [ETHCOUNT-1:0] sr11_rgmii_rx_den = 0;
+
+reg [ETHCOUNT-1:0] sr0_rgmii_rx_sof  = 0;
+reg [ETHCOUNT-1:0] sr1_rgmii_rx_sof  = 0;
+reg [ETHCOUNT-1:0] sr2_rgmii_rx_sof  = 0;
+reg [ETHCOUNT-1:0] sr3_rgmii_rx_sof  = 0;
+reg [ETHCOUNT-1:0] sr4_rgmii_rx_sof  = 0;
+reg [ETHCOUNT-1:0] sr5_rgmii_rx_sof  = 0;
+reg [ETHCOUNT-1:0] sr6_rgmii_rx_sof  = 0;
+reg [ETHCOUNT-1:0] sr7_rgmii_rx_sof  = 0;
+reg [ETHCOUNT-1:0] sr8_rgmii_rx_sof  = 0;
+reg [ETHCOUNT-1:0] sr9_rgmii_rx_sof  = 0;
+reg [ETHCOUNT-1:0] sr10_rgmii_rx_sof = 0;
+reg [ETHCOUNT-1:0] sr11_rgmii_rx_sof = 0;
+
+reg [7:0] rgmii_rx_data_o = 0;
+reg       rgmii_rx_den_o = 0;
+reg       rgmii_rx_sof_o = 0;
+reg       rgmii_rx_eof_o = 0;
+
+
 wire clk125M;
 wire clk125M_p90;
 wire clk375M;
@@ -579,21 +621,64 @@ generate
             .InputCRC_ErrorCounter(mac_rx_cnterr[x]) //output  [31 :0]
         );
 
-        test_rx test_rx_eth0 (
-            .mac_rx_data   (test_mac_rx_tdata [x]   ),
-            .mac_rx_valid  (test_mac_rx_tvalid[x]  ),
-            .mac_rx_sof    (test_mac_rx_tsof[x]    ),
-            .mac_rx_eof    (test_mac_rx_tlast[x]    ),
-            .mac_rx_fr_good(1'b1),
-            .mac_rx_fr_err (1'b0 ),
+        always @ (posedge clk125M) begin
+            rgmii_rx_data_i[x] <= dbg_rgmii_rx_data[x];
+            rgmii_rx_den_i[x] <= dbg_rgmii_rx_den[x];
+            rgmii_rx_sof_i[x] <= dbg_rgmii_rx_sof[x];
+            rgmii_rx_eof_i[x] <= dbg_rgmii_rx_eof[x];
 
-            .start(test_mac_start[x]),
-            .err(),
-            .test_data(),
+            sr0_rgmii_rx_data[x] <= rgmii_rx_data_i[x];
+            sr1_rgmii_rx_data[x] <= sr0_rgmii_rx_data[x];
+            sr2_rgmii_rx_data[x] <= sr1_rgmii_rx_data[x];
+            sr3_rgmii_rx_data[x] <= sr2_rgmii_rx_data[x];
+            rgmii_rx_data_o[x] <= sr3_rgmii_rx_data[x];
 
-            .clk(clk125M),
-            .rst(~mac_pll_locked)
-        );
+            sr0_rgmii_rx_den[x] <= rgmii_rx_den_i[x];
+            sr1_rgmii_rx_den[x] <= sr0_rgmii_rx_den[x];
+            sr2_rgmii_rx_den[x] <= sr1_rgmii_rx_den[x];
+            sr3_rgmii_rx_den[x] <= sr2_rgmii_rx_den[x];
+            sr4_rgmii_rx_den[x] <= sr3_rgmii_rx_den[x];
+            sr5_rgmii_rx_den[x] <= sr4_rgmii_rx_den[x];
+            sr6_rgmii_rx_den[x] <= sr5_rgmii_rx_den[x];
+            sr7_rgmii_rx_den[x] <= sr6_rgmii_rx_den[x];
+            sr8_rgmii_rx_den[x] <= sr7_rgmii_rx_den[x];
+            sr9_rgmii_rx_den[x] <= sr8_rgmii_rx_den[x];
+            sr10_rgmii_rx_den[x] <= sr9_rgmii_rx_den[x];
+            sr11_rgmii_rx_den[x] <= sr10_rgmii_rx_den[x];
+            rgmii_rx_den_o[x] <= sr11_rgmii_rx_den[x] & rgmii_rx_den_i[x];
+
+            sr0_rgmii_rx_sof[x] <= rgmii_rx_sof_i[x];
+            sr1_rgmii_rx_sof[x] <= sr0_rgmii_rx_sof[x];
+            sr2_rgmii_rx_sof[x] <= sr1_rgmii_rx_sof[x];
+            sr3_rgmii_rx_sof[x] <= sr2_rgmii_rx_sof[x];
+            sr4_rgmii_rx_sof[x] <= sr3_rgmii_rx_sof[x];
+            sr5_rgmii_rx_sof[x] <= sr4_rgmii_rx_sof[x];
+            sr6_rgmii_rx_sof[x] <= sr5_rgmii_rx_sof[x];
+            sr7_rgmii_rx_sof[x] <= sr6_rgmii_rx_sof[x];
+            sr8_rgmii_rx_sof[x] <= sr7_rgmii_rx_sof[x];
+            sr9_rgmii_rx_sof[x] <= sr8_rgmii_rx_sof[x];
+            sr10_rgmii_rx_sof[x] <= sr9_rgmii_rx_sof[x];
+            sr11_rgmii_rx_sof[x] <= sr10_rgmii_rx_sof[x];
+            rgmii_rx_sof_o[x] <= sr11_rgmii_rx_sof[x];
+
+            rgmii_rx_eof_o[x] <= rgmii_rx_eof_i[x];
+        end
+
+        // test_rx test_rx_eth0 (
+        //     .mac_rx_data   (test_mac_rx_tdata [x]   ),
+        //     .mac_rx_valid  (test_mac_rx_tvalid[x]  ),
+        //     .mac_rx_sof    (test_mac_rx_tsof[x]    ),
+        //     .mac_rx_eof    (test_mac_rx_tlast[x]    ),
+        //     .mac_rx_fr_good(1'b1),
+        //     .mac_rx_fr_err (1'b0 ),
+
+        //     .start(test_mac_start[x]),
+        //     .err(),
+        //     .test_data(),
+
+        //     .clk(clk125M),
+        //     .rst(~mac_pll_locked)
+        // );
 
         // ila_0 rx_ila (
         //     .probe0({
@@ -621,21 +706,21 @@ generate
         // );
 
 
-        test_tx test_tx_eth0 (
-            .mac_tx_data (test_mac_tx_tdata [x]),
-            .mac_tx_valid(test_mac_tx_tvalid[x]),
-            .mac_tx_sof  (test_mac_tx_tuser [x]),
-            .mac_tx_eof  (test_mac_tx_tlast [x]),
-            .mac_tx_rq   (test_mac_tx_rq[x]),
-            .mac_tx_ack  (mac_tx_ack[x][0]),
+        // test_tx test_tx_eth0 (
+        //     .mac_tx_data (test_mac_tx_tdata [x]),
+        //     .mac_tx_valid(test_mac_tx_tvalid[x]),
+        //     .mac_tx_sof  (test_mac_tx_tuser [x]),
+        //     .mac_tx_eof  (test_mac_tx_tlast [x]),
+        //     .mac_tx_rq   (test_mac_tx_rq[x]),
+        //     .mac_tx_ack  (mac_tx_ack[x][0]),
 
-            .start(test_mac_start[x]),
-            .pkt_size(test_mac_pkt_size),
-            .pause_size(test_mac_pause_size),
+        //     .start(test_mac_start[x]),
+        //     .pkt_size(test_mac_pkt_size),
+        //     .pause_size(test_mac_pause_size),
 
-            .clk(clk125M),
-            .rst(~mac_pll_locked)
-        );
+        //     .clk(clk125M),
+        //     .rst(~mac_pll_locked)
+        // );
 
         // ila_0 tx_ila (
         //     .probe0({
@@ -801,18 +886,38 @@ generate
     end
 endgenerate
 
-ila_1 ila_125M_tx (
-    .probe0({
-        mac_link[3],
-        test_mac_tx_rq[3],
-        mac_tx_ack[3][0],
-        test_mac_tx_tdata[3],           //11
-        test_mac_tx_tvalid[3],         //3
-        test_mac_tx_tuser[3], //sof   //2
-        test_mac_tx_tlast[3]  //eof  //1
-    }),
-    .clk(clk125M)
+
+eth_txfifo eth0_txfifo (
+    .s_axis_tready(s_axis_tready),  // output wire s_axis_tready
+    .s_axis_tdata(s_axis_tdata),    // input wire [7 : 0] s_axis_tdata
+    .s_axis_tvalid(s_axis_tvalid),  // input wire s_axis_tvalid
+    .s_axis_tuser(s_axis_tuser),    // input wire [0 : 0] s_axis_tuser
+    .s_axis_tlast(s_axis_tlast),    // input wire s_axis_tlast
+
+    .m_axis_tready(m_axis_tready),  // input wire m_axis_tready
+    .m_axis_tdata(m_axis_tdata),    // output wire [7 : 0] m_axis_tdata
+    .m_axis_tvalid(m_axis_tvalid),  // output wire m_axis_tvalid
+    .m_axis_tuser(m_axis_tuser)    // output wire [0 : 0] m_axis_tuser
+    .m_axis_tlast(m_axis_tlast),    // output wire m_axis_tlast
+
+    .wr_rst_busy(),      // output wire wr_rst_busy
+    .rd_rst_busy(rd_rst_busy),      // output wire rd_rst_busy
+    .s_aclk(s_aclk),                // input wire s_aclk
+    .s_aresetn(s_aresetn),          // input wire s_aresetn
 );
+
+// ila_1 ila_125M_tx (
+//     .probe0({
+//         mac_link[3],
+//         test_mac_tx_rq[3],
+//         mac_tx_ack[3][0],
+//         test_mac_tx_tdata[3],           //11
+//         test_mac_tx_tvalid[3],         //3
+//         test_mac_tx_tuser[3], //sof   //2
+//         test_mac_tx_tlast[3]  //eof  //1
+//     }),
+//     .clk(clk125M)
+// );
 
 ila_1 ila_125M_rx (
     .probe0({
@@ -832,22 +937,22 @@ ila_1 ila_125M_rx (
     .clk(clk125M)
 );
 
-ila_1 ila_375M (
-    .probe0({
-        dbg_fi_wRGMII_Clk[3],
-        dbg_fi_wDataDDRL[3],
-        dbg_fi_wDataDDRH[3],
-        dbg_fi_wCondition[3],
-        dbg_fi_LoadDDREnaD0[3],
-        // dbg_fo[3][0],//assign dbg[0] = wFIFOValid;
-        // dbg_fo[3][1],//assign dbg[1] = FIFOValidDelay[0];
-        // dbg_fo[3][2],//assign dbg[2] = wFIFODat[8];
-        dbg_fi[3], //output [3:0]
-        dbg_fi_dcnt[3], //output [9:0]
-        dbg_fi_wr_data_count[3] //output [6:0]
-    }),
-    .clk(clk375M)
-);
+// ila_1 ila_375M (
+//     .probe0({
+//         dbg_fi_wRGMII_Clk[3],
+//         dbg_fi_wDataDDRL[3],
+//         dbg_fi_wDataDDRH[3],
+//         dbg_fi_wCondition[3],
+//         dbg_fi_LoadDDREnaD0[3],
+//         // dbg_fo[3][0],//assign dbg[0] = wFIFOValid;
+//         // dbg_fo[3][1],//assign dbg[1] = FIFOValidDelay[0];
+//         // dbg_fo[3][2],//assign dbg[2] = wFIFODat[8];
+//         dbg_fi[3], //output [3:0]
+//         dbg_fi_dcnt[3], //output [9:0]
+//         dbg_fi_wr_data_count[3] //output [6:0]
+//     }),
+//     .clk(clk375M)
+// );
 
 
 

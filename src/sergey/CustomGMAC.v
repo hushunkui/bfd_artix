@@ -346,7 +346,7 @@ FrameL2_Out  FrameL2_Out_inst
     .ValIn0 (wArpVal ),
     .SoFIn0 (wArpSoF ),
     .EoFIn0 (wArpEoF ),
-    .ReqIn0 (wArpReq ),
+    .ReqIn0 (1'b0),//(wArpReq ),
     .DataIn0(wArpData),
 
     .ValIn1 (ValIn0 ),
