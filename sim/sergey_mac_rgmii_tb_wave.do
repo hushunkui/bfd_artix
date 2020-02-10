@@ -55,7 +55,6 @@ add wave -noupdate /mac_rgmii_tb/mac/ENA_OUT
 add wave -noupdate /mac_rgmii_tb/mac/SOF_OUT
 add wave -noupdate /mac_rgmii_tb/mac/EOF_OUT
 add wave -noupdate /mac_rgmii_tb/mac/ERR_OUT
-add wave -noupdate /mac_rgmii_tb/mac/CLK_OUT
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/InnerMAC
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/RemoteMAC
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/InnerIP
@@ -83,14 +82,20 @@ add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/ValOut
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/SoFOut
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/EoFOut
 add wave -noupdate -divider TX
-add wave -noupdate /mac_rgmii_tb/mac/ReqIn0
+add wave -noupdate /mac_rgmii_tb/dbg_rgmii_rx_data
+add wave -noupdate /mac_rgmii_tb/dbg_rgmii_rx_den
+add wave -noupdate /mac_rgmii_tb/dbg_rgmii_rx_eof
+add wave -noupdate /mac_rgmii_tb/dbg_rgmii_rx_sof
+add wave -noupdate /mac_rgmii_tb/rgmii_rx_data_o
+add wave -noupdate /mac_rgmii_tb/rgmii_rx_den_o
+add wave -noupdate /mac_rgmii_tb/rgmii_rx_sof_o
+add wave -noupdate /mac_rgmii_tb/rgmii_rx_eof_o
 add wave -noupdate /mac_rgmii_tb/mac/ReqConfirm
+add wave -noupdate /mac_rgmii_tb/mac/ReqIn0
 add wave -noupdate /mac_rgmii_tb/mac/DataIn0
 add wave -noupdate /mac_rgmii_tb/mac/ValIn0
 add wave -noupdate /mac_rgmii_tb/mac/SoFIn0
 add wave -noupdate /mac_rgmii_tb/mac/EoFIn0
-add wave -noupdate /mac_rgmii_tb/test_tx/start
-add wave -noupdate -color {Slate Blue} -itemcolor Gold /mac_rgmii_tb/test_tx/fsm_cs
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/MODE
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/DataIn0
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/ValIn0
@@ -127,4 +132,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {0 ps} {18900 ns}
+WaveRestoreZoom {7223352 ps} {15440743 ps}

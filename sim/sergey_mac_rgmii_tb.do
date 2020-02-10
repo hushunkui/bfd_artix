@@ -22,6 +22,7 @@ vlog  $env(XILINX_VV)/data/verilog/src/glbl.v
 vlog -modelsimini $inifile ../src/core_gen/clk25_wiz0/clk25_wiz0.v
 vlog -modelsimini $inifile ../src/core_gen/clk25_wiz0/clk25_wiz0_clk_wiz.v
 vlog -modelsimini $inifile ../src/core_gen/axis_data_fifo_0/sim/axis_data_fifo_0.v
+vlog -modelsimini $inifile ../src/core_gen/eth_txfifo/sim/eth_txfifo.v
 
 vcom -modelsimini $inifile ../src/vicg_common_pkg.vhd
 vcom -modelsimini $inifile ../src/sata_scrambler.vhd

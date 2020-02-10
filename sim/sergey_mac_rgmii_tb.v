@@ -4,10 +4,10 @@
 `timescale 1ns / 1ps
 module mac_rgmii_tb(
     output  LINK_UP,
-    output reg [7:0] o_rgmii_rx_data = 0,
-    output reg o_rgmii_rx_sof = 0,
-    output reg o_rgmii_rx_eof = 0,
-    output reg o_rgmii_rx_den = 0
+    output reg [7:0] rgmii_rx_data_o = 0,
+    output reg rgmii_rx_sof_o = 0,
+    output reg rgmii_rx_eof_o = 0,
+    output reg rgmii_rx_den_o = 0
 );
 
 reg clk = 1;
@@ -573,12 +573,14 @@ wire txc;
 wire tx_ctl;
 wire [3:0] txd;
 
-wire [7:0] mac_tx_data;
-wire       mac_tx_valid;
+wire [7:0] mac_tx_tdata;
+wire       mac_tx_tvalid;
 wire       mac_tx_sof;
 wire       mac_tx_eof;
 wire       mac_tx_rq;
 wire [0:0] mac_tx_ack;
+wire [0:0] mac_tx_tuser;
+wire       mac_tx_tlast;
 
 wire [7:0] mac_rx_data;
 wire       mac_rx_valid;
@@ -712,8 +714,8 @@ clk25_wiz0 pll0(
 //     .mac_rx_er_o    (),
 //     .mac_rx_clk_o   (mac_rx_clk),
 
-//     .mac_tx_data (8'd0),
-//     .mac_tx_valid(1'b0),
+//     .mac_tx_tdata (8'd0),
+//     .mac_tx_tvalid(1'b0),
 //     .mac_tx_sof  (1'b0),
 //     .mac_tx_eof  (1'b0),
 //     .mac_tx_clk_90(mac_gtx_clk90),
@@ -738,11 +740,11 @@ CustomGMAC_Wrap  mac(
     .MODE(),
     .LINK_UP(LINK_UP),
 
-    .DataIn0(mac_tx_data),
-    .ValIn0(mac_tx_valid),
+    .DataIn0(mac_tx_tdata),
+    .ValIn0(mac_tx_tvalid),
     .SoFIn0(mac_tx_sof),
     .EoFIn0(mac_tx_eof),
-    .ReqIn0(mac_tx_rq),
+    .ReqIn0(mac_tx_tvalid),
 
     .ReqConfirm(mac_tx_ack),
 
@@ -762,23 +764,23 @@ CustomGMAC_Wrap  mac(
     .InputCRC_ErrorCounter()//output [31 :0]
 );
 
-test_tx #(
-    .TEST_DATA_WIDTH(8)
-) test_tx (
-    .mac_tx_data (mac_tx_data ),
-    .mac_tx_valid(mac_tx_valid),
-    .mac_tx_sof  (mac_tx_sof  ),
-    .mac_tx_eof  (mac_tx_eof  ),
-    .mac_tx_rq   (mac_tx_rq   ),
-    .mac_tx_ack  (mac_tx_ack[0]),
+// test_tx #(
+//     .TEST_DATA_WIDTH(8)
+// ) test_tx (
+//     .mac_tx_tdata (mac_tx_tdata ),
+//     .mac_tx_tvalid(mac_tx_tvalid),
+//     .mac_tx_sof  (mac_tx_sof  ),
+//     .mac_tx_eof  (mac_tx_eof  ),
+//     .mac_tx_rq   (mac_tx_rq   ),
+//     .mac_tx_ack  (mac_tx_ack[0]),
 
-    .start(start),
-    .pkt_size(16'd512),
-    .pause_size(16'd128),
+//     .start(start),
+//     .pkt_size(16'd512),
+//     .pause_size(16'd128),
 
-    .clk(clk125M),
-    .rst(rst)
-);
+//     .clk(clk125M),
+//     .rst(rst)
+// );
 
 
 reg [7:0] rgmii_rx_data = 0;
@@ -790,7 +792,7 @@ reg [7:0] sr0_rgmii_rx_data = 0;
 reg [7:0] sr1_rgmii_rx_data = 0;
 reg [7:0] sr2_rgmii_rx_data = 0;
 reg [7:0] sr3_rgmii_rx_data = 0;
-//reg [7:0] o_rgmii_rx_data = 0;
+//reg [7:0] rgmii_rx_data_o = 0;
 
 reg sr0_rgmii_rx_den = 0;
 reg sr1_rgmii_rx_den = 0;
@@ -804,7 +806,7 @@ reg sr8_rgmii_rx_den = 0;
 reg sr9_rgmii_rx_den = 0;
 reg sr10_rgmii_rx_den = 0;
 reg sr11_rgmii_rx_den = 0;
-//reg o_rgmii_rx_den = 0;
+//reg rgmii_rx_den_o = 0;
 
 reg sr0_rgmii_rx_sof  = 0;
 reg sr1_rgmii_rx_sof  = 0;
@@ -829,7 +831,7 @@ always @ (posedge clk125M) begin
     sr1_rgmii_rx_data <= sr0_rgmii_rx_data;
     sr2_rgmii_rx_data <= sr1_rgmii_rx_data;
     sr3_rgmii_rx_data <= sr2_rgmii_rx_data;
-    o_rgmii_rx_data <= sr3_rgmii_rx_data;
+    rgmii_rx_data_o <= sr3_rgmii_rx_data;
 
     sr0_rgmii_rx_den <= rgmii_rx_den;
     sr1_rgmii_rx_den <= sr0_rgmii_rx_den;
@@ -843,7 +845,7 @@ always @ (posedge clk125M) begin
     sr9_rgmii_rx_den <= sr8_rgmii_rx_den;
     sr10_rgmii_rx_den <= sr9_rgmii_rx_den;
     sr11_rgmii_rx_den <= sr10_rgmii_rx_den;
-    o_rgmii_rx_den <= sr11_rgmii_rx_den & rgmii_rx_den;
+    rgmii_rx_den_o <= sr11_rgmii_rx_den & rgmii_rx_den;
 
     sr0_rgmii_rx_sof <= rgmii_rx_sof;
     sr1_rgmii_rx_sof <= sr0_rgmii_rx_sof;
@@ -857,9 +859,31 @@ always @ (posedge clk125M) begin
     sr9_rgmii_rx_sof <= sr8_rgmii_rx_sof;
     sr10_rgmii_rx_sof <= sr9_rgmii_rx_sof;
     sr11_rgmii_rx_sof <= sr10_rgmii_rx_sof;
-    o_rgmii_rx_sof <= sr11_rgmii_rx_sof;
+    rgmii_rx_sof_o <= sr11_rgmii_rx_sof;
 
-    o_rgmii_rx_eof <= rgmii_rx_eof;
+    rgmii_rx_eof_o <= rgmii_rx_eof;
 end
+
+eth_txfifo eth0_txfifo (
+    .s_axis_tready(),  // output wire s_axis_tready
+    .s_axis_tdata(rgmii_rx_data_o),    // input wire [7 : 0] s_axis_tdata
+    .s_axis_tvalid(rgmii_rx_den_o),  // input wire s_axis_tvalid
+    .s_axis_tuser({rgmii_rx_sof_o}),    // input wire [0 : 0] s_axis_tuser
+    .s_axis_tlast(rgmii_rx_eof_o),    // input wire s_axis_tlast
+
+    .m_axis_tready(mac_tx_ack[0]),  // input wire m_axis_tready
+    .m_axis_tdata(mac_tx_tdata),    // output wire [7 : 0] m_axis_tdata
+    .m_axis_tvalid(mac_tx_tvalid),  // output wire m_axis_tvalid
+    .m_axis_tuser(mac_tx_tuser),    // output wire [0 : 0] m_axis_tuser
+    .m_axis_tlast(mac_tx_tlast),    // output wire m_axis_tlast
+
+    .wr_rst_busy(),      // output wire wr_rst_busy
+    .rd_rst_busy(),      // output wire rd_rst_busy
+    .s_aclk(clk125M),                // input wire s_aclk
+    .s_aresetn(LINK_UP)          // input wire s_aresetn
+);
+
+assign mac_tx_eof = mac_tx_tlast & mac_tx_tvalid & mac_tx_ack[0];
+assign mac_tx_sof = mac_tx_tuser[0] & mac_tx_tvalid & mac_tx_ack[0];
 
 endmodule

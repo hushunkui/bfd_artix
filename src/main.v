@@ -92,8 +92,10 @@ wire [ETHCOUNT-1:0]     rx_fifo_overflow;
 
 wire [7:0]              test_mac_tx_tdata [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     test_mac_tx_tvalid;
-wire [ETHCOUNT-1:0]     test_mac_tx_tuser ;
-wire [ETHCOUNT-1:0]     test_mac_tx_tlast ;
+wire [ETHCOUNT-1:0]     test_mac_tx_sof;
+wire [ETHCOUNT-1:0]     test_mac_tx_eof ;
+wire [0:0]              test_mac_tx_tuser [ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0]     test_mac_tx_tlast;
 wire [ETHCOUNT-1:0]     test_mac_tx_tready;
 wire [ETHCOUNT-1:0]     test_mac_tx_rq;
 
@@ -123,6 +125,9 @@ wire [4:0] dbg_fi_wDataDDRL [ETHCOUNT-1:0];
 wire [4:0] dbg_fi_wDataDDRH [ETHCOUNT-1:0];
 wire [3:0] dbg_fi_wCondition [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0] dbg_fi_LoadDDREnaD0;
+
+wire fifo01_rst;
+wire fifo23_rst;
 
 
 reg [7:0] rgmii_rx_data_i [ETHCOUNT-1:0];
@@ -540,7 +545,7 @@ IDELAYCTRL idelayctrl (
 genvar x;
 generate
     for (x=0; x < ETHCOUNT; x=x+1)  begin : eth
-        assign eth_phy_rst[x] = mac_pll_locked & ethphy_rst[x];
+        assign eth_phy_rst[x] = mac_pll_locked;// & ethphy_rst[x];
 
         assign test_mac_start[x] = reg_ctrl[x];// | vio_test_start[x];
 
@@ -565,6 +570,9 @@ generate
             mac_rx_cnterr_aurclk[x] <= mac_rx_cnterr[x];
         end
 
+        assign test_mac_tx_eof [x] = test_mac_tx_tlast[x] & test_mac_tx_tvalid[x] & mac_tx_ack[x][0];
+        assign test_mac_tx_sof [x] = test_mac_tx_tuser[x][0] & test_mac_tx_tvalid[x] & mac_tx_ack[x][0];
+
         CustomGMAC_Wrap rgmii (
             .clk375(clk375M),
             .clk125(clk125M),
@@ -581,8 +589,8 @@ generate
             .LINK_UP(mac_link[x]),//output
 
             .ValIn0 (test_mac_tx_tvalid[x]), //input
-            .SoFIn0 (test_mac_tx_tuser [x]), //input
-            .EoFIn0 (test_mac_tx_tlast [x]), //input
+            .SoFIn0 (test_mac_tx_sof [x]), //input
+            .EoFIn0 (test_mac_tx_eof [x]), //input
             .ReqIn0 (test_mac_tx_tvalid[x]), //input
             .DataIn0(test_mac_tx_tdata [x]), //input [7:0]
 
@@ -709,8 +717,8 @@ generate
         // test_tx test_tx_eth0 (
         //     .mac_tx_data (test_mac_tx_tdata [x]),
         //     .mac_tx_valid(test_mac_tx_tvalid[x]),
-        //     .mac_tx_sof  (test_mac_tx_tuser [x]),
-        //     .mac_tx_eof  (test_mac_tx_tlast [x]),
+        //     .mac_tx_sof  (test_mac_tx_sof [x]),
+        //     .mac_tx_eof  (test_mac_tx_eof [x]),
         //     .mac_tx_rq   (test_mac_tx_rq[x]),
         //     .mac_tx_ack  (mac_tx_ack[x][0]),
 
@@ -726,8 +734,8 @@ generate
         //     .probe0({
         //         test_mac_tx_tdata[x],           //11
         //         test_mac_tx_tvalid[x],         //3
-        //         test_mac_tx_tuser[x], //sof   //2
-        //         test_mac_tx_tlast[x]  //eof  //1
+        //         test_mac_tx_sof[x], //sof   //2
+        //         test_mac_tx_eof[x]  //eof  //1
         //     }),
         //     .clk(clk125M)
         // );
@@ -777,7 +785,7 @@ generate
         //     .tx_fifo_resetn     (mac_fifo_resetn[x]), //input
         //     .tx_axis_fifo_tdata (test_mac_tx_tdata [x][(0*8) +: 8]),//input [7:0]
         //     .tx_axis_fifo_tvalid(test_mac_tx_tvalid[x]            ),//input
-        //     .tx_axis_fifo_tlast (test_mac_tx_tlast [x]            ),//input
+        //     .tx_axis_fifo_tlast (test_mac_tx_eof [x]            ),//input
         //     .tx_axis_fifo_tready(test_mac_tx_tready[x]), //output
 
         //     .rx_fifo_aclk       (aurora_usr_clk), //input
@@ -871,7 +879,7 @@ generate
         // ila_0 tx_ila (
         //     .probe0({
         //         test_mac_tx_tvalid[x],
-        //         test_mac_tx_tlast[x],
+        //         test_mac_tx_eof[x],
         //         test_mac_tx_tready[x],
         //         test_mac_tx_tdata[x], //8b
         //         test_mac_rx_tvalid[x],
@@ -886,6 +894,51 @@ generate
     end
 endgenerate
 
+ila_1 ila_125M_rx1 (
+    .probe0({
+        fifo01_rst,
+        mac_rx_cnterr[1][9:0],
+        mac_tx_ack[0][0],  // input wire m_axis_tready
+        test_mac_tx_tdata [0],    // output wire [7 : 0] m_axis_tdata
+        test_mac_tx_tvalid[0],  // output wire m_axis_tvalid
+        test_mac_tx_sof [0],
+        test_mac_tx_eof [0],
+        rgmii_rx_data_o[1], //8
+        rgmii_rx_den_o [1],
+        rgmii_rx_sof_o [1],
+        rgmii_rx_eof_o [1],
+        dbg_rgmii_rx_data[1], //8
+        dbg_rgmii_rx_den [1],
+        dbg_rgmii_rx_sof [1],
+        dbg_rgmii_rx_eof [1]
+    }),
+    .clk(clk125M)
+);
+
+ila_1 ila_125M_rx0 (
+    .probe0({
+        fifo01_rst,
+        mac_rx_cnterr[0][9:0],
+        mac_tx_ack[1][0],  // input wire m_axis_tready
+        test_mac_tx_tdata [1],    // output wire [7 : 0] m_axis_tdata
+        test_mac_tx_tvalid[1],  // output wire m_axis_tvalid
+        test_mac_tx_sof [1],
+        test_mac_tx_eof [1],
+        rgmii_rx_data_o[0], //8
+        rgmii_rx_den_o [0],
+        rgmii_rx_sof_o [0],
+        rgmii_rx_eof_o [0],
+        dbg_rgmii_rx_data[0], //8
+        dbg_rgmii_rx_den [0],
+        dbg_rgmii_rx_sof [0],
+        dbg_rgmii_rx_eof [0]
+    }),
+    .clk(clk125M)
+);
+
+assign fifo01_rst = mac_link[0] & mac_link[1];
+assign fifo23_rst = mac_link[2] & mac_link[3];
+
 
 eth_txfifo eth0_txfifo (
     .s_axis_tready(),  // output wire s_axis_tready
@@ -897,13 +950,13 @@ eth_txfifo eth0_txfifo (
     .m_axis_tready(mac_tx_ack[0][0]),  // input wire m_axis_tready
     .m_axis_tdata(test_mac_tx_tdata [0]),    // output wire [7 : 0] m_axis_tdata
     .m_axis_tvalid(test_mac_tx_tvalid[0]),  // output wire m_axis_tvalid
-    .m_axis_tuser({test_mac_tx_tuser [0]}),    // output wire [0 : 0] m_axis_tuser
+    .m_axis_tuser(test_mac_tx_tuser [0]),    // output wire [0 : 0] m_axis_tuser
     .m_axis_tlast(test_mac_tx_tlast [0]),    // output wire m_axis_tlast
 
     .wr_rst_busy(),      // output wire wr_rst_busy
     .rd_rst_busy(),      // output wire rd_rst_busy
     .s_aclk(clk125M),                // input wire s_aclk
-    .s_aresetn(eth_phy_rst[0])          // input wire s_aresetn
+    .s_aresetn(fifo01_rst)          // input wire s_aresetn
 );
 
 eth_txfifo eth1_txfifo (
@@ -916,13 +969,13 @@ eth_txfifo eth1_txfifo (
     .m_axis_tready(mac_tx_ack[1][0]),  // input wire m_axis_tready
     .m_axis_tdata(test_mac_tx_tdata [1]),    // output wire [7 : 0] m_axis_tdata
     .m_axis_tvalid(test_mac_tx_tvalid[1]),  // output wire m_axis_tvalid
-    .m_axis_tuser({test_mac_tx_tuser [1]}),    // output wire [0 : 0] m_axis_tuser
+    .m_axis_tuser(test_mac_tx_tuser [1]),    // output wire [0 : 0] m_axis_tuser
     .m_axis_tlast(test_mac_tx_tlast [1]),    // output wire m_axis_tlast
 
     .wr_rst_busy(),      // output wire wr_rst_busy
     .rd_rst_busy(),      // output wire rd_rst_busy
     .s_aclk(clk125M),                // input wire s_aclk
-    .s_aresetn(eth_phy_rst[1])          // input wire s_aresetn
+    .s_aresetn(fifo01_rst)          // input wire s_aresetn
 );
 
 eth_txfifo eth2_txfifo (
@@ -935,13 +988,13 @@ eth_txfifo eth2_txfifo (
     .m_axis_tready(mac_tx_ack[2][0]),  // input wire m_axis_tready
     .m_axis_tdata(test_mac_tx_tdata [2]),    // output wire [7 : 0] m_axis_tdata
     .m_axis_tvalid(test_mac_tx_tvalid[2]),  // output wire m_axis_tvalid
-    .m_axis_tuser({test_mac_tx_tuser [2]}),    // output wire [0 : 0] m_axis_tuser
+    .m_axis_tuser(test_mac_tx_tuser [2]),    // output wire [0 : 0] m_axis_tuser
     .m_axis_tlast(test_mac_tx_tlast [2]),    // output wire m_axis_tlast
 
     .wr_rst_busy(),      // output wire wr_rst_busy
     .rd_rst_busy(),      // output wire rd_rst_busy
     .s_aclk(clk125M),                // input wire s_aclk
-    .s_aresetn(eth_phy_rst[2])          // input wire s_aresetn
+    .s_aresetn(fifo23_rst)          // input wire s_aresetn
 );
 
 eth_txfifo eth3_txfifo (
@@ -954,44 +1007,44 @@ eth_txfifo eth3_txfifo (
     .m_axis_tready(mac_tx_ack[3][0]),  // input wire m_axis_tready
     .m_axis_tdata(test_mac_tx_tdata [3]),    // output wire [7 : 0] m_axis_tdata
     .m_axis_tvalid(test_mac_tx_tvalid[3]),  // output wire m_axis_tvalid
-    .m_axis_tuser({test_mac_tx_tuser [3]}),    // output wire [0 : 0] m_axis_tuser
+    .m_axis_tuser(test_mac_tx_tuser [3]),    // output wire [0 : 0] m_axis_tuser
     .m_axis_tlast(test_mac_tx_tlast [3]),    // output wire m_axis_tlast
 
     .wr_rst_busy(),      // output wire wr_rst_busy
     .rd_rst_busy(),      // output wire rd_rst_busy
     .s_aclk(clk125M),                // input wire s_aclk
-    .s_aresetn(eth_phy_rst[3])          // input wire s_aresetn
+    .s_aresetn(fifo23_rst)          // input wire s_aresetn
 );
 
-ila_1 ila_125M_tx (
-    .probe0({
-        mac_link[3],
-        mac_tx_ack[0][0],
-        test_mac_tx_tdata[0],           //11
-        test_mac_tx_tvalid[0],         //3
-        test_mac_tx_tuser[0], //sof   //2
-        test_mac_tx_tlast[0]  //eof  //1
-    }),
-    .clk(clk125M)
-);
+// ila_1 ila_125M_tx (
+//     .probe0({
+//         mac_link[3],
+//         mac_tx_ack[0][0],
+//         test_mac_tx_tdata[0],           //11
+//         test_mac_tx_tvalid[0],         //3
+//         test_mac_tx_sof[0], //sof   //2
+//         test_mac_tx_eof[0]  //eof  //1
+//     }),
+//     .clk(clk125M)
+// );
 
-ila_1 ila_125M_rx (
-    .probe0({
-        // dbg_fo[3][0],//assign dbg[0] = wFIFOValid;
-        // dbg_fo[3][1],//assign dbg[1] = FIFOValidDelay[0];
-        // dbg_fo[3][2],//assign dbg[2] = wFIFODat[8];
-        mac_link[1],
-        dbg_fo[31], //output [3:0]
-        dbg_fo_dcnt[1], //output [9:0]
-        dbg_fo_rd_data_count[1], //output [6:0]
-        mac_rx_cnterr[1][9:0],
-        rgmii_rx_data_o[1],
-        rgmii_rx_den_o [1],
-        rgmii_rx_sof_o [1],
-        rgmii_rx_eof_o [1]
-    }),
-    .clk(clk125M)
-);
+// ila_1 ila_125M_rx (
+//     .probe0({
+//         // dbg_fo[3][0],//assign dbg[0] = wFIFOValid;
+//         // dbg_fo[3][1],//assign dbg[1] = FIFOValidDelay[0];
+//         // dbg_fo[3][2],//assign dbg[2] = wFIFODat[8];
+//         mac_link[1],
+//         dbg_fo[31], //output [3:0]
+//         dbg_fo_dcnt[1], //output [9:0]
+//         dbg_fo_rd_data_count[1], //output [6:0]
+//         mac_rx_cnterr[1][9:0],
+//         rgmii_rx_data_o[1],
+//         rgmii_rx_den_o [1],
+//         rgmii_rx_sof_o [1],
+//         rgmii_rx_eof_o [1]
+//     }),
+//     .clk(clk125M)
+// );
 
 // ila_1 ila_375M (
 //     .probe0({
@@ -1040,8 +1093,8 @@ ila_1 ila_125M_rx (
 // test_phy test_rx_eth0 (
 //     .mac_tx_data  (test_mac_tx_tdata [1]),
 //     .mac_tx_valid (test_mac_tx_tvalid[1]),
-//     .mac_tx_sof   (test_mac_tx_tuser [1]),
-//     .mac_tx_eof   (test_mac_tx_tlast [1]),
+//     .mac_tx_sof   (test_mac_tx_sof [1]),
+//     .mac_tx_eof   (test_mac_tx_eof [1]),
 //     .mac_tx_rdy   (test_mac_tx_tready[1]),
 
 //     .mac_rx_data   (test_mac_rx_tdata [0]),
@@ -1064,8 +1117,8 @@ ila_1 ila_125M_rx (
 // test_phy test_rx_eth1 (
 //     .mac_tx_data  (test_mac_tx_tdata [0]),
 //     .mac_tx_valid (test_mac_tx_tvalid[0]),
-//     .mac_tx_sof   (test_mac_tx_tuser [0]),
-//     .mac_tx_eof   (test_mac_tx_tlast [0]),
+//     .mac_tx_sof   (test_mac_tx_sof [0]),
+//     .mac_tx_eof   (test_mac_tx_eof [0]),
 //     .mac_tx_rdy   (test_mac_tx_tready[0]),
 
 //     .mac_rx_data   (test_mac_rx_tdata [1]),
@@ -1088,8 +1141,8 @@ ila_1 ila_125M_rx (
 // test_phy test_rx_eth2 (
 //     .mac_tx_data  (test_mac_tx_tdata [3]),
 //     .mac_tx_valid (test_mac_tx_tvalid[3]),
-//     .mac_tx_sof   (test_mac_tx_tuser [3]),
-//     .mac_tx_eof   (test_mac_tx_tlast [3]),
+//     .mac_tx_sof   (test_mac_tx_sof [3]),
+//     .mac_tx_eof   (test_mac_tx_eof [3]),
 //     .mac_tx_rdy   (test_mac_tx_tready[3]),
 
 //     .mac_rx_data   (test_mac_rx_tdata [2]),
@@ -1112,8 +1165,8 @@ ila_1 ila_125M_rx (
 // test_phy test_rx_eth3 (
 //     .mac_tx_data  (test_mac_tx_tdata [2]),
 //     .mac_tx_valid (test_mac_tx_tvalid[2]),
-//     .mac_tx_sof   (test_mac_tx_tuser [2]),
-//     .mac_tx_eof   (test_mac_tx_tlast [2]),
+//     .mac_tx_sof   (test_mac_tx_sof [2]),
+//     .mac_tx_eof   (test_mac_tx_eof [2]),
 //     .mac_tx_rdy   (test_mac_tx_tready[2]),
 
 //     .mac_rx_data   (test_mac_rx_tdata [3]),
@@ -1220,8 +1273,8 @@ assign dbg_out[1] = clk20_div | sysclk25_div | led_blink | reg_ctrl[0];// &
 //     .probe0({
 //         test_mac_tx_tdata [0],
 //         test_mac_tx_tvalid[0],
-//         test_mac_tx_tuser [0],
-//         test_mac_tx_tlast [0],
+//         test_mac_tx_sof [0],
+//         test_mac_tx_eof [0],
 //         test_data,
 //         test_err,
 //         test_mac_rx_tdata[0] ,
