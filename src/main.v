@@ -1221,7 +1221,7 @@ fpga_test_01 #(
     .p_in_rst   (~mac_pll_locked)
 );
 
-assign dbg_led = clk125M;//led_blink & !gt_rst;// !test_gpio[0] & !aurora_gt_rst;// & test_err;
+assign dbg_led = led_blink & !gt_rst;// !test_gpio[0] & !aurora_gt_rst;// & test_err;
 
 assign dbg_out[0] = 1'b0;
 assign dbg_out[1] = clk20_div | sysclk25_div | led_blink | reg_ctrl[0];// &
