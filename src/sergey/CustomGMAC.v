@@ -52,6 +52,8 @@ module CustomGMAC
     output [4:0] dbg_fi_wDataDDRH,
     output [3:0] dbg_fi_wCondition,
     output       dbg_fi_LoadDDREnaD0,
+    output [31:0] dbg_crc,
+    output dbg_crc_rdy,
 
     output SOF_OUT,
     output EOF_OUT,
@@ -367,6 +369,9 @@ FrameL2_Out  FrameL2_Out_inst
     // .DataIn2(DataIn2),
 
     .ReqConfirm(wReqConfirm),
+
+    .dbg_crc(dbg_crc),
+    .dbg_crc_rdy(dbg_crc_rdy),
 
     .ClkOut  ( CLK_TX ),
     .ValOut  ( TX_CTL ),

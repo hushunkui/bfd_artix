@@ -715,7 +715,9 @@ end
 reg [7:0] ucnt = 0;
 always @ (posedge clk125M) begin
     if (start & mac_tx_ack[0]) begin
-        if (ucnt != 55) begin
+        if (ucnt == 100) begin
+            ucnt <= 0;
+        end else begin
             ucnt <= ucnt + 1;
         end
 
@@ -774,6 +776,7 @@ always @ (posedge clk125M) begin
             8'd51: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
             8'd52: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
             8'd53: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b1; end
+            8'd54: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b0; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
             default: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b0; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
         endcase
     end

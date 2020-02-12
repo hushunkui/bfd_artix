@@ -108,6 +108,7 @@ wire [ETHCOUNT-1:0]     test_mac_rx_tsof;
 wire [ETHCOUNT-1:0]     test_mac_rx_terr;
 
 wire [0:0] mac_tx_ack [ETHCOUNT-1:0];
+reg [ETHCOUNT-1:0] sr_mac_tx_ack = 0;
 
 wire [7:0]              dbg_rgmii_rx_data [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     dbg_rgmii_rx_den;
@@ -125,6 +126,8 @@ wire [4:0] dbg_fi_wDataDDRL [ETHCOUNT-1:0];
 wire [4:0] dbg_fi_wDataDDRH [ETHCOUNT-1:0];
 wire [3:0] dbg_fi_wCondition [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0] dbg_fi_LoadDDREnaD0;
+wire [31:0] dbg_crc [ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0] dbg_crc_rdy;
 
 wire fifo01_rst;
 wire fifo23_rst;
@@ -570,8 +573,12 @@ generate
             mac_rx_cnterr_aurclk[x] <= mac_rx_cnterr[x];
         end
 
-        assign test_mac_tx_eof [x] = test_mac_tx_tlast[x] & test_mac_tx_tvalid[x] & mac_tx_ack[x][0];
-        assign test_mac_tx_sof [x] = test_mac_tx_tuser[x][0] & test_mac_tx_tvalid[x] & mac_tx_ack[x][0];
+        assign test_mac_tx_eof [x] = test_mac_tx_tlast[x] & test_mac_tx_tvalid[x] & sr_mac_tx_ack[x];//mac_tx_ack[x][0];
+        assign test_mac_tx_sof [x] = test_mac_tx_tuser[x][0] & test_mac_tx_tvalid[x] & sr_mac_tx_ack[x];//mac_tx_ack[x][0];
+
+        always @(posedge clk125M) begin
+            sr_mac_tx_ack[x] <= mac_tx_ack[x][0];
+        end
 
         CustomGMAC_Wrap rgmii (
             .clk375(clk375M),
@@ -617,6 +624,8 @@ generate
             .dbg_fi_wDataDDRH(dbg_fi_wDataDDRH[x]),
             .dbg_fi_wCondition(dbg_fi_wCondition[x]),
             .dbg_fi_LoadDDREnaD0(dbg_fi_LoadDDREnaD0[x]),
+            .dbg_crc(dbg_crc[x]),
+            .dbg_crc_rdy(dbg_crc_rdy[x]),
 
             .Remote_MACOut(), //output   [47:0]
             .Remote_IP_Out(), //output   [31:0]
@@ -896,9 +905,11 @@ endgenerate
 
 ila_1 ila_125M_rx1 (
     .probe0({
+        dbg_crc[0],
+        dbg_crc_rdy[0],
         fifo01_rst,
         mac_rx_cnterr[1][9:0],
-        mac_tx_ack[0][0],  // input wire m_axis_tready
+        sr_mac_tx_ack[0], //mac_tx_ack[0][0],  // input wire m_axis_tready
         test_mac_tx_tdata [0],    // output wire [7 : 0] m_axis_tdata
         test_mac_tx_tvalid[0],  // output wire m_axis_tvalid
         test_mac_tx_sof [0],
@@ -917,9 +928,11 @@ ila_1 ila_125M_rx1 (
 
 ila_1 ila_125M_rx0 (
     .probe0({
+        dbg_crc[1],
+        dbg_crc_rdy[1],
         fifo01_rst,
         mac_rx_cnterr[0][9:0],
-        mac_tx_ack[1][0],  // input wire m_axis_tready
+        sr_mac_tx_ack[1], //mac_tx_ack[1][0],  // input wire m_axis_tready
         test_mac_tx_tdata [1],    // output wire [7 : 0] m_axis_tdata
         test_mac_tx_tvalid[1],  // output wire m_axis_tvalid
         test_mac_tx_sof [1],
@@ -947,7 +960,7 @@ eth_txfifo eth0_txfifo (
     .s_axis_tuser({rgmii_rx_sof_o[1]}),    // input wire [0 : 0] s_axis_tuser
     .s_axis_tlast(rgmii_rx_eof_o[1]),    // input wire s_axis_tlast
 
-    .m_axis_tready(mac_tx_ack[0][0]),  // input wire m_axis_tready
+    .m_axis_tready(sr_mac_tx_ack[0]), //(mac_tx_ack[0][0]),  // input wire m_axis_tready
     .m_axis_tdata(test_mac_tx_tdata [0]),    // output wire [7 : 0] m_axis_tdata
     .m_axis_tvalid(test_mac_tx_tvalid[0]),  // output wire m_axis_tvalid
     .m_axis_tuser(test_mac_tx_tuser [0]),    // output wire [0 : 0] m_axis_tuser
@@ -966,7 +979,7 @@ eth_txfifo eth1_txfifo (
     .s_axis_tuser({rgmii_rx_sof_o[0]}),    // input wire [0 : 0] s_axis_tuser
     .s_axis_tlast(rgmii_rx_eof_o[0]),    // input wire s_axis_tlast
 
-    .m_axis_tready(mac_tx_ack[1][0]),  // input wire m_axis_tready
+    .m_axis_tready(sr_mac_tx_ack[1]),//(mac_tx_ack[1][0]),  // input wire m_axis_tready
     .m_axis_tdata(test_mac_tx_tdata [1]),    // output wire [7 : 0] m_axis_tdata
     .m_axis_tvalid(test_mac_tx_tvalid[1]),  // output wire m_axis_tvalid
     .m_axis_tuser(test_mac_tx_tuser [1]),    // output wire [0 : 0] m_axis_tuser
@@ -985,7 +998,7 @@ eth_txfifo eth2_txfifo (
     .s_axis_tuser({rgmii_rx_sof_o[3]}),    // input wire [0 : 0] s_axis_tuser
     .s_axis_tlast(rgmii_rx_eof_o[3]),    // input wire s_axis_tlast
 
-    .m_axis_tready(mac_tx_ack[2][0]),  // input wire m_axis_tready
+    .m_axis_tready(sr_mac_tx_ack[2]),//mac_tx_ack[2][0]),  // input wire m_axis_tready
     .m_axis_tdata(test_mac_tx_tdata [2]),    // output wire [7 : 0] m_axis_tdata
     .m_axis_tvalid(test_mac_tx_tvalid[2]),  // output wire m_axis_tvalid
     .m_axis_tuser(test_mac_tx_tuser [2]),    // output wire [0 : 0] m_axis_tuser
@@ -1004,7 +1017,7 @@ eth_txfifo eth3_txfifo (
     .s_axis_tuser({rgmii_rx_sof_o[2]}),    // input wire [0 : 0] s_axis_tuser
     .s_axis_tlast(rgmii_rx_eof_o[2]),    // input wire s_axis_tlast
 
-    .m_axis_tready(mac_tx_ack[3][0]),  // input wire m_axis_tready
+    .m_axis_tready(sr_mac_tx_ack[3]), //(mac_tx_ack[3][0]),  // input wire m_axis_tready
     .m_axis_tdata(test_mac_tx_tdata [3]),    // output wire [7 : 0] m_axis_tdata
     .m_axis_tvalid(test_mac_tx_tvalid[3]),  // output wire m_axis_tvalid
     .m_axis_tuser(test_mac_tx_tuser [3]),    // output wire [0 : 0] m_axis_tuser

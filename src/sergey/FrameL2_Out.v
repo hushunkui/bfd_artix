@@ -30,6 +30,8 @@ module FrameL2_Out
     output[1:0]ReqConfirm,
 
     input MODE,
+    output [31:0] dbg_crc,
+    output dbg_crc_rdy,
 
     output ClkOut,
     output ValOut,
@@ -78,6 +80,7 @@ EthScheduler EthScheduler_Inst
     .EoFOut (wEoFIn),
     .DataOut(wDataIn)
 );
+
 
 reg Val_D = 0;
 reg SyncRegH =1'b0;
@@ -154,6 +157,9 @@ reg BusyStopD4=1'b0;
 
 reg LinkUpReg = 0;
 
+assign dbg_crc = {wCRCOut3, wCRCOut2, wCRCOut1, wCRCOut0};
+assign dbg_crc_rdy = wDataCRCReady;
+
 always @(posedge Clk)
 begin
     DataReg<=wDataIn;
@@ -168,7 +174,7 @@ begin
         CRC0<=wCRCOut0;
     end
 
-    if (wDataCRCEoF&&wDataCRCVal)
+    if (wDataCRCEoF && wDataCRCVal)
         BusyStopD0<=1'b1;
     else if (SyncRegL)
         BusyStopD0<=1'b0;
@@ -180,13 +186,13 @@ begin
 
     LinkUpReg<=LINK_UP;
 
-    if (wDataCRCSoF&&wDataCRCVal&&LinkUpReg) begin
+    if (wDataCRCSoF && wDataCRCVal && LinkUpReg) begin
         Busy<=1'b1;
-    end else if (BusyStopD4&&SyncRegL) begin
+    end else if (BusyStopD4 && SyncRegL) begin
         Busy<=1'b0;
     end
 
-    if (wDataCRCSoF&&wDataCRCVal) begin
+    if (wDataCRCSoF && wDataCRCVal) begin
         DataReg0<=wDataCRCOut;
         DataReg1<=8'hD5;
         DataReg2<=8'h55;
@@ -218,7 +224,7 @@ begin
     end
 
     if (MODE==1'b0) begin
-        if (wValIn&&!ValReg) begin
+        if (wValIn && !ValReg) begin
             SyncRegL<=1'b1;
             SyncRegH<=1'b1;
         end else begin

@@ -105,9 +105,25 @@ add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/DataIn1
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/ValIn1
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/SoFIn1
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/EoFIn1
-add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/SyncRegL
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/TX_EthCRC32_inst0/DataIn
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/TX_EthCRC32_inst0/DataValid
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/TX_EthCRC32_inst0/StartOfPacket
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/TX_EthCRC32_inst0/EndOfPacket
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/TX_EthCRC32_inst0/StartOfPacketD0
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/TX_EthCRC32_inst0/EndOfPacketD0
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/wDataCRCReady
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/wCRCOut0
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/wCRCOut1
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/wCRCOut2
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/wCRCOut3
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/TX_EthCRC32_inst0/clk
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/wDataCRCOut
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/wDataCRCVal
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/wDataCRCSoF
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/wDataCRCEoF
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/OutValidReg
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/DataReg8
+add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/SyncRegL
 add wave -noupdate {/mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/DDR_OUT_inst/datain_h[5]}
 add wave -noupdate {/mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/DDR_OUT_inst/datain_l[5]}
 add wave -noupdate {/mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/DDR_OUT_inst/datain_h[4]}
@@ -118,7 +134,7 @@ add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/FrameL2_Out_inst/DDR_OUT_in
 TreeUpdate [SetDefaultTree]
 WaveRestoreCursors {{Cursor 1} {0 ps} 0}
 quietly wave cursor active 0
-configure wave -namecolwidth 462
+configure wave -namecolwidth 450
 configure wave -valuecolwidth 100
 configure wave -justifyvalue left
 configure wave -signalnamewidth 0
@@ -132,4 +148,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {7223352 ps} {15440743 ps}
+WaveRestoreZoom {14999525 ps} {15172405 ps}
