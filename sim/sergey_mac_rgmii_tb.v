@@ -573,10 +573,10 @@ wire txc;
 wire tx_ctl;
 wire [3:0] txd;
 
-wire [7:0] mac_tx_tdata;
-wire       mac_tx_tvalid;
-wire       mac_tx_sof;
-wire       mac_tx_eof;
+reg [7:0] mac_tx_tdata = 0;
+reg       mac_tx_tvalid = 0;
+reg       mac_tx_sof = 0;
+reg       mac_tx_eof = 0;
 wire       mac_tx_rq;
 wire [0:0] mac_tx_ack;
 wire [0:0] mac_tx_tuser;
@@ -599,6 +599,7 @@ wire clk200M;
 wire clk125M;
 wire clk375M;
 wire clk125M_p90;
+
 
 initial begin
     // $dumpfile("icarus/dump.fst");
@@ -676,9 +677,107 @@ initial begin
 
     // $display("\007");
     // $finish;
+
+//    @(posedge clk125M);
+//     mac_tx_tdata <= ttt[0];
+//     mac_tx_tvalid <= 1'b1;
+//     mac_tx_sof <= 1'b0;
+//     mac_tx_eof <= 1'b0;
+
+//     @(posedge mac_tx_ack[0]);
+//     mac_tx_tdata <= ttt[0];
+//     mac_tx_tvalid <= 1'b1;
+//     mac_tx_sof <= 1'b1;
+//     mac_tx_eof <= 1'b0;
+
+//     for (k=1; k < 53; k++) begin
+//         @(posedge clk125M);
+//         mac_tx_tdata <= ttt[k];
+//         mac_tx_tvalid <= 1'b1;
+//         mac_tx_sof <= 1'b0;
+//         mac_tx_eof <= 1'b0;
+
+//     @(posedge clk125M);
+//     mac_tx_tdata <= ttt[53];
+//     mac_tx_tvalid <= 1'b1;
+//     mac_tx_sof <= 1'b0;
+//     mac_tx_eof <= 1'b1;
+
+//     @(posedge clk125M);
+//     mac_tx_tdata <= ttt[53];
+//     mac_tx_tvalid <= 1'b0;
+//     mac_tx_sof <= 1'b0;
+//     mac_tx_eof <= 1'b0;
+
 end
 
 
+reg [7:0] ucnt = 0;
+always @ (posedge clk125M) begin
+    if (start & mac_tx_ack[0]) begin
+        if (ucnt != 55) begin
+            ucnt <= ucnt + 1;
+        end
+
+        case (ucnt)
+            8'd0 : begin mac_tx_tdata <= 8'hC0; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b1; mac_tx_eof <= 1'b0; end
+            8'd1 : begin mac_tx_tdata <= 8'hA8; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd2 : begin mac_tx_tdata <= 8'h05; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd3 : begin mac_tx_tdata <= 8'h05; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd4 : begin mac_tx_tdata <= 8'h05; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd5 : begin mac_tx_tdata <= 8'h05; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd6 : begin mac_tx_tdata <= 8'hC0; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd7 : begin mac_tx_tdata <= 8'hA8; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd8 : begin mac_tx_tdata <= 8'h05; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd9 : begin mac_tx_tdata <= 8'h05; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd10: begin mac_tx_tdata <= 8'h05; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd11: begin mac_tx_tdata <= 8'h05; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd12: begin mac_tx_tdata <= 8'h08; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd13: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd14: begin mac_tx_tdata <= 8'h45; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd15: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd16: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd17: begin mac_tx_tdata <= 8'h28; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd18: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd19: begin mac_tx_tdata <= 8'h01; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd20: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd21: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd22: begin mac_tx_tdata <= 8'h80; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd23: begin mac_tx_tdata <= 8'h11; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd24: begin mac_tx_tdata <= 8'hAF; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd25: begin mac_tx_tdata <= 8'h65; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd26: begin mac_tx_tdata <= 8'hC0; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd27: begin mac_tx_tdata <= 8'hA8; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd28: begin mac_tx_tdata <= 8'h05; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd29: begin mac_tx_tdata <= 8'h07; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd30: begin mac_tx_tdata <= 8'hC0; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd31: begin mac_tx_tdata <= 8'hA8; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd32: begin mac_tx_tdata <= 8'h05; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd33: begin mac_tx_tdata <= 8'h07; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd34: begin mac_tx_tdata <= 8'h04; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd35: begin mac_tx_tdata <= 8'hD2; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd36: begin mac_tx_tdata <= 8'h04; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd37: begin mac_tx_tdata <= 8'hD2; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd38: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd39: begin mac_tx_tdata <= 8'h14; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd40: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd41: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd42: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd43: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd44: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd45: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd46: begin mac_tx_tdata <= 8'h01; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd47: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd48: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd49: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd50: begin mac_tx_tdata <= 8'h01; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd51: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd52: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+            8'd53: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b1; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b1; end
+            default: begin mac_tx_tdata <= 8'h00; mac_tx_tvalid <= 1'b0; mac_tx_sof <= 1'b0; mac_tx_eof <= 1'b0; end
+        endcase
+    end
+end
 
 clk25_wiz0 pll0(
     .clk_out1(clk200M),//(clk125M),
@@ -744,7 +843,7 @@ CustomGMAC_Wrap  mac(
     .ValIn0(mac_tx_tvalid),
     .SoFIn0(mac_tx_sof),
     .EoFIn0(mac_tx_eof),
-    .ReqIn0(mac_tx_tvalid),
+    .ReqIn0(start) ,//mac_tx_tvalid),
 
     .ReqConfirm(mac_tx_ack),
 
@@ -763,6 +862,8 @@ CustomGMAC_Wrap  mac(
     .DATA_OUT(mac_rx_data),
     .InputCRC_ErrorCounter()//output [31 :0]
 );
+
+
 
 // test_tx #(
 //     .TEST_DATA_WIDTH(8)
@@ -783,107 +884,107 @@ CustomGMAC_Wrap  mac(
 // );
 
 
-reg [7:0] rgmii_rx_data = 0;
-reg       rgmii_rx_den = 0;
-reg       rgmii_rx_sof = 0;
-reg       rgmii_rx_eof = 0;
+// reg [7:0] rgmii_rx_data = 0;
+// reg       rgmii_rx_den = 0;
+// reg       rgmii_rx_sof = 0;
+// reg       rgmii_rx_eof = 0;
 
-reg [7:0] sr0_rgmii_rx_data = 0;
-reg [7:0] sr1_rgmii_rx_data = 0;
-reg [7:0] sr2_rgmii_rx_data = 0;
-reg [7:0] sr3_rgmii_rx_data = 0;
-//reg [7:0] rgmii_rx_data_o = 0;
+// reg [7:0] sr0_rgmii_rx_data = 0;
+// reg [7:0] sr1_rgmii_rx_data = 0;
+// reg [7:0] sr2_rgmii_rx_data = 0;
+// reg [7:0] sr3_rgmii_rx_data = 0;
+// //reg [7:0] rgmii_rx_data_o = 0;
 
-reg sr0_rgmii_rx_den = 0;
-reg sr1_rgmii_rx_den = 0;
-reg sr2_rgmii_rx_den = 0;
-reg sr3_rgmii_rx_den = 0;
-reg sr4_rgmii_rx_den = 0;
-reg sr5_rgmii_rx_den = 0;
-reg sr6_rgmii_rx_den = 0;
-reg sr7_rgmii_rx_den = 0;
-reg sr8_rgmii_rx_den = 0;
-reg sr9_rgmii_rx_den = 0;
-reg sr10_rgmii_rx_den = 0;
-reg sr11_rgmii_rx_den = 0;
-//reg rgmii_rx_den_o = 0;
+// reg sr0_rgmii_rx_den = 0;
+// reg sr1_rgmii_rx_den = 0;
+// reg sr2_rgmii_rx_den = 0;
+// reg sr3_rgmii_rx_den = 0;
+// reg sr4_rgmii_rx_den = 0;
+// reg sr5_rgmii_rx_den = 0;
+// reg sr6_rgmii_rx_den = 0;
+// reg sr7_rgmii_rx_den = 0;
+// reg sr8_rgmii_rx_den = 0;
+// reg sr9_rgmii_rx_den = 0;
+// reg sr10_rgmii_rx_den = 0;
+// reg sr11_rgmii_rx_den = 0;
+// //reg rgmii_rx_den_o = 0;
 
-reg sr0_rgmii_rx_sof  = 0;
-reg sr1_rgmii_rx_sof  = 0;
-reg sr2_rgmii_rx_sof  = 0;
-reg sr3_rgmii_rx_sof  = 0;
-reg sr4_rgmii_rx_sof  = 0;
-reg sr5_rgmii_rx_sof  = 0;
-reg sr6_rgmii_rx_sof  = 0;
-reg sr7_rgmii_rx_sof  = 0;
-reg sr8_rgmii_rx_sof  = 0;
-reg sr9_rgmii_rx_sof  = 0;
-reg sr10_rgmii_rx_sof = 0;
-reg sr11_rgmii_rx_sof = 0;
+// reg sr0_rgmii_rx_sof  = 0;
+// reg sr1_rgmii_rx_sof  = 0;
+// reg sr2_rgmii_rx_sof  = 0;
+// reg sr3_rgmii_rx_sof  = 0;
+// reg sr4_rgmii_rx_sof  = 0;
+// reg sr5_rgmii_rx_sof  = 0;
+// reg sr6_rgmii_rx_sof  = 0;
+// reg sr7_rgmii_rx_sof  = 0;
+// reg sr8_rgmii_rx_sof  = 0;
+// reg sr9_rgmii_rx_sof  = 0;
+// reg sr10_rgmii_rx_sof = 0;
+// reg sr11_rgmii_rx_sof = 0;
 
-always @ (posedge clk125M) begin
-    rgmii_rx_data <= dbg_rgmii_rx_data;
-    rgmii_rx_den <= dbg_rgmii_rx_den;
-    rgmii_rx_sof <= dbg_rgmii_rx_sof;
-    rgmii_rx_eof <= dbg_rgmii_rx_eof;
+// always @ (posedge clk125M) begin
+//     rgmii_rx_data <= dbg_rgmii_rx_data;
+//     rgmii_rx_den <= dbg_rgmii_rx_den;
+//     rgmii_rx_sof <= dbg_rgmii_rx_sof;
+//     rgmii_rx_eof <= dbg_rgmii_rx_eof;
 
-    sr0_rgmii_rx_data <= rgmii_rx_data;
-    sr1_rgmii_rx_data <= sr0_rgmii_rx_data;
-    sr2_rgmii_rx_data <= sr1_rgmii_rx_data;
-    sr3_rgmii_rx_data <= sr2_rgmii_rx_data;
-    rgmii_rx_data_o <= sr3_rgmii_rx_data;
+//     sr0_rgmii_rx_data <= rgmii_rx_data;
+//     sr1_rgmii_rx_data <= sr0_rgmii_rx_data;
+//     sr2_rgmii_rx_data <= sr1_rgmii_rx_data;
+//     sr3_rgmii_rx_data <= sr2_rgmii_rx_data;
+//     rgmii_rx_data_o <= sr3_rgmii_rx_data;
 
-    sr0_rgmii_rx_den <= rgmii_rx_den;
-    sr1_rgmii_rx_den <= sr0_rgmii_rx_den;
-    sr2_rgmii_rx_den <= sr1_rgmii_rx_den;
-    sr3_rgmii_rx_den <= sr2_rgmii_rx_den;
-    sr4_rgmii_rx_den <= sr3_rgmii_rx_den;
-    sr5_rgmii_rx_den <= sr4_rgmii_rx_den;
-    sr6_rgmii_rx_den <= sr5_rgmii_rx_den;
-    sr7_rgmii_rx_den <= sr6_rgmii_rx_den;
-    sr8_rgmii_rx_den <= sr7_rgmii_rx_den;
-    sr9_rgmii_rx_den <= sr8_rgmii_rx_den;
-    sr10_rgmii_rx_den <= sr9_rgmii_rx_den;
-    sr11_rgmii_rx_den <= sr10_rgmii_rx_den;
-    rgmii_rx_den_o <= sr11_rgmii_rx_den & rgmii_rx_den;
+//     sr0_rgmii_rx_den <= rgmii_rx_den;
+//     sr1_rgmii_rx_den <= sr0_rgmii_rx_den;
+//     sr2_rgmii_rx_den <= sr1_rgmii_rx_den;
+//     sr3_rgmii_rx_den <= sr2_rgmii_rx_den;
+//     sr4_rgmii_rx_den <= sr3_rgmii_rx_den;
+//     sr5_rgmii_rx_den <= sr4_rgmii_rx_den;
+//     sr6_rgmii_rx_den <= sr5_rgmii_rx_den;
+//     sr7_rgmii_rx_den <= sr6_rgmii_rx_den;
+//     sr8_rgmii_rx_den <= sr7_rgmii_rx_den;
+//     sr9_rgmii_rx_den <= sr8_rgmii_rx_den;
+//     sr10_rgmii_rx_den <= sr9_rgmii_rx_den;
+//     sr11_rgmii_rx_den <= sr10_rgmii_rx_den;
+//     rgmii_rx_den_o <= sr11_rgmii_rx_den & rgmii_rx_den;
 
-    sr0_rgmii_rx_sof <= rgmii_rx_sof;
-    sr1_rgmii_rx_sof <= sr0_rgmii_rx_sof;
-    sr2_rgmii_rx_sof <= sr1_rgmii_rx_sof;
-    sr3_rgmii_rx_sof <= sr2_rgmii_rx_sof;
-    sr4_rgmii_rx_sof <= sr3_rgmii_rx_sof;
-    sr5_rgmii_rx_sof <= sr4_rgmii_rx_sof;
-    sr6_rgmii_rx_sof <= sr5_rgmii_rx_sof;
-    sr7_rgmii_rx_sof <= sr6_rgmii_rx_sof;
-    sr8_rgmii_rx_sof <= sr7_rgmii_rx_sof;
-    sr9_rgmii_rx_sof <= sr8_rgmii_rx_sof;
-    sr10_rgmii_rx_sof <= sr9_rgmii_rx_sof;
-    sr11_rgmii_rx_sof <= sr10_rgmii_rx_sof;
-    rgmii_rx_sof_o <= sr11_rgmii_rx_sof;
+//     sr0_rgmii_rx_sof <= rgmii_rx_sof;
+//     sr1_rgmii_rx_sof <= sr0_rgmii_rx_sof;
+//     sr2_rgmii_rx_sof <= sr1_rgmii_rx_sof;
+//     sr3_rgmii_rx_sof <= sr2_rgmii_rx_sof;
+//     sr4_rgmii_rx_sof <= sr3_rgmii_rx_sof;
+//     sr5_rgmii_rx_sof <= sr4_rgmii_rx_sof;
+//     sr6_rgmii_rx_sof <= sr5_rgmii_rx_sof;
+//     sr7_rgmii_rx_sof <= sr6_rgmii_rx_sof;
+//     sr8_rgmii_rx_sof <= sr7_rgmii_rx_sof;
+//     sr9_rgmii_rx_sof <= sr8_rgmii_rx_sof;
+//     sr10_rgmii_rx_sof <= sr9_rgmii_rx_sof;
+//     sr11_rgmii_rx_sof <= sr10_rgmii_rx_sof;
+//     rgmii_rx_sof_o <= sr11_rgmii_rx_sof;
 
-    rgmii_rx_eof_o <= rgmii_rx_eof;
-end
+//     rgmii_rx_eof_o <= rgmii_rx_eof;
+// end
 
-eth_txfifo eth0_txfifo (
-    .s_axis_tready(),  // output wire s_axis_tready
-    .s_axis_tdata(rgmii_rx_data_o),    // input wire [7 : 0] s_axis_tdata
-    .s_axis_tvalid(rgmii_rx_den_o),  // input wire s_axis_tvalid
-    .s_axis_tuser({rgmii_rx_sof_o}),    // input wire [0 : 0] s_axis_tuser
-    .s_axis_tlast(rgmii_rx_eof_o),    // input wire s_axis_tlast
+// eth_txfifo eth0_txfifo (
+//     .s_axis_tready(),  // output wire s_axis_tready
+//     .s_axis_tdata(rgmii_rx_data_o),    // input wire [7 : 0] s_axis_tdata
+//     .s_axis_tvalid(rgmii_rx_den_o),  // input wire s_axis_tvalid
+//     .s_axis_tuser({rgmii_rx_sof_o}),    // input wire [0 : 0] s_axis_tuser
+//     .s_axis_tlast(rgmii_rx_eof_o),    // input wire s_axis_tlast
 
-    .m_axis_tready(mac_tx_ack[0]),  // input wire m_axis_tready
-    .m_axis_tdata(mac_tx_tdata),    // output wire [7 : 0] m_axis_tdata
-    .m_axis_tvalid(mac_tx_tvalid),  // output wire m_axis_tvalid
-    .m_axis_tuser(mac_tx_tuser),    // output wire [0 : 0] m_axis_tuser
-    .m_axis_tlast(mac_tx_tlast),    // output wire m_axis_tlast
+//     .m_axis_tready(mac_tx_ack[0]),  // input wire m_axis_tready
+//     .m_axis_tdata(mac_tx_tdata),    // output wire [7 : 0] m_axis_tdata
+//     .m_axis_tvalid(mac_tx_tvalid),  // output wire m_axis_tvalid
+//     .m_axis_tuser(mac_tx_tuser),    // output wire [0 : 0] m_axis_tuser
+//     .m_axis_tlast(mac_tx_tlast),    // output wire m_axis_tlast
 
-    .wr_rst_busy(),      // output wire wr_rst_busy
-    .rd_rst_busy(),      // output wire rd_rst_busy
-    .s_aclk(clk125M),                // input wire s_aclk
-    .s_aresetn(LINK_UP)          // input wire s_aresetn
-);
+//     .wr_rst_busy(),      // output wire wr_rst_busy
+//     .rd_rst_busy(),      // output wire rd_rst_busy
+//     .s_aclk(clk125M),                // input wire s_aclk
+//     .s_aresetn(LINK_UP)          // input wire s_aresetn
+// );
 
-assign mac_tx_eof = mac_tx_tlast & mac_tx_tvalid & mac_tx_ack[0];
-assign mac_tx_sof = mac_tx_tuser[0] & mac_tx_tvalid & mac_tx_ack[0];
+// assign mac_tx_eof = mac_tx_tlast & mac_tx_tvalid & mac_tx_ack[0];
+// assign mac_tx_sof = mac_tx_tuser[0] & mac_tx_tvalid & mac_tx_ack[0];
 
 endmodule
