@@ -41,6 +41,10 @@ module CustomGMAC_Wrap
     output       dbg_fi_LoadDDREnaD0,
     output [31:0] dbg_crc,
     output dbg_crc_rdy,
+    output [7:0] dbg_wDataCRCOut,
+    output dbg_wDataCRCVal,
+    output dbg_wDataCRCSoF,
+    output dbg_wDataCRCEoF,
 
     output [47:0] Remote_MACOut,
     output [31:0] Remote_IP_Out,
@@ -104,6 +108,10 @@ CustomGMAC  CustomGMAC_Inst
     .dbg_fi_LoadDDREnaD0(dbg_fi_LoadDDREnaD0),
     .dbg_crc(dbg_crc),
     .dbg_crc_rdy(dbg_crc_rdy),
+    .dbg_wDataCRCOut(dbg_wDataCRCOut),
+    .dbg_wDataCRCVal(dbg_wDataCRCVal),
+    .dbg_wDataCRCSoF(dbg_wDataCRCSoF),
+    .dbg_wDataCRCEoF(dbg_wDataCRCEoF),
 
     .Remote_MACOut(Remote_MACOut),
     .Remote_IP_Out(Remote_IP_Out),

@@ -54,6 +54,10 @@ module CustomGMAC
     output       dbg_fi_LoadDDREnaD0,
     output [31:0] dbg_crc,
     output dbg_crc_rdy,
+    output [7:0] dbg_wDataCRCOut,
+    output dbg_wDataCRCVal,
+    output dbg_wDataCRCSoF,
+    output dbg_wDataCRCEoF,
 
     output SOF_OUT,
     output EOF_OUT,
@@ -313,7 +317,7 @@ wire [7:0] wArpData;
 
 //////////////////////////////////////////////
 
-wire [1:0] wReqConfirm;
+wire [3:0] wReqConfirm;
 
 ARP_L2  ARP_L2_inst
 (
@@ -347,7 +351,7 @@ FrameL2_Out  FrameL2_Out_inst
     .ValIn0 (wArpVal ),
     .SoFIn0 (wArpSoF ),
     .EoFIn0 (wArpEoF ),
-    .ReqIn0 (1'b0),//(wArpReq ),
+    .ReqIn0 (wArpReq ),
     .DataIn0(wArpData),
 
     .ValIn1 (ValIn0 ),
@@ -372,6 +376,10 @@ FrameL2_Out  FrameL2_Out_inst
 
     .dbg_crc(dbg_crc),
     .dbg_crc_rdy(dbg_crc_rdy),
+    .dbg_wDataCRCOut(dbg_wDataCRCOut),
+    .dbg_wDataCRCVal(dbg_wDataCRCVal),
+    .dbg_wDataCRCSoF(dbg_wDataCRCSoF),
+    .dbg_wDataCRCEoF(dbg_wDataCRCEoF),
 
     .ClkOut  ( CLK_TX ),
     .ValOut  ( TX_CTL ),

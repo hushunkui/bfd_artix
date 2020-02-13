@@ -16,6 +16,8 @@ module EthCRC32(
     output reg DataOutValid = 0,
     output reg [7 :0]DataOut = 0,
 
+    output  [31:0] dbg_crc_,
+
     output  [31:0] crc32,
     output  reg crc32_Ready = 0
 );
@@ -65,6 +67,8 @@ always @(posedge clk) begin
         crc32_ <= nextCRC32_D8(w_rrbyte, crc32_);
     end
 end
+
+assign dbg_crc_ = crc32_;
 
 //reverse bits of CRC32
 genvar i;

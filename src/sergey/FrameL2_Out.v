@@ -27,11 +27,15 @@ module FrameL2_Out
     // input ReqIn3,
     // input [7:0]DataIn3,
 
-    output[1:0]ReqConfirm,
+    output[3:0]ReqConfirm,
 
     input MODE,
     output [31:0] dbg_crc,
     output dbg_crc_rdy,
+    output [7:0] dbg_wDataCRCOut,
+    output dbg_wDataCRCVal,
+    output dbg_wDataCRCSoF,
+    output dbg_wDataCRCEoF,
 
     output ClkOut,
     output ValOut,
@@ -42,6 +46,15 @@ wire wValIn;
 wire wSoFIn;
 wire wEoFIn;
 wire [7:0]wDataIn;
+
+
+// assign wValIn  = ValIn1 ;
+// assign wSoFIn  = SoFIn1 ;
+// assign wEoFIn  = EoFIn1 ;
+// assign wDataIn = DataIn1;
+
+// assign ReqConfirm[0] = 0;
+// assign ReqConfirm[1] = ReqIn1;
 
 
 EthScheduler EthScheduler_Inst
@@ -61,17 +74,17 @@ EthScheduler EthScheduler_Inst
     .ReqIn1 (ReqIn1 ),
     .DataIn1(DataIn1),
 
-    // .ValIn2 (ValIn2),
-    // .SoFIn2 (SoFIn2),
-    // .EoFIn2 (EoFIn2),
-    // .ReqIn2 (ReqIn2),
-    // .DataIn2(DataIn2),
+    .ValIn2 (1'b0),//(ValIn2),
+    .SoFIn2 (1'b0),//(SoFIn2),
+    .EoFIn2 (1'b0),//(EoFIn2),
+    .ReqIn2 (1'b0),//(ReqIn2),
+    .DataIn2(8'd0),//(DataIn2),
 
-    // .ValIn3 (ValIn3),
-    // .SoFIn3 (SoFIn3),
-    // .EoFIn3 (EoFIn3),
-    // .ReqIn3 (ReqIn3),
-    // .DataIn3(DataIn3),
+    .ValIn3 (1'b0),//(ValIn3),
+    .SoFIn3 (1'b0),//(SoFIn3),
+    .EoFIn3 (1'b0),//(EoFIn3),
+    .ReqIn3 (1'b0),//(ReqIn3),
+    .DataIn3(8'd0),//(DataIn3),
 
     .ReqConfirm(ReqConfirm),
 
@@ -120,6 +133,8 @@ EthCRC32  TX_EthCRC32_inst0(
     . DataOutSoF(wDataCRCSoF),
     . DataOutEoF(wDataCRCEoF),
 
+    .dbg_crc_(dbg_crc),
+
     . crc32({wCRCOut3,wCRCOut2,wCRCOut1,wCRCOut0}),
     . crc32_Ready(wDataCRCReady)
 );
@@ -157,8 +172,13 @@ reg BusyStopD4=1'b0;
 
 reg LinkUpReg = 0;
 
-assign dbg_crc = {wCRCOut3, wCRCOut2, wCRCOut1, wCRCOut0};
+// assign dbg_crc = {wCRCOut3, wCRCOut2, wCRCOut1, wCRCOut0};
 assign dbg_crc_rdy = wDataCRCReady;
+
+assign dbg_wDataCRCOut = wDataCRCOut;
+assign dbg_wDataCRCVal = wDataCRCVal;
+assign dbg_wDataCRCSoF = wDataCRCSoF;
+assign dbg_wDataCRCEoF = wDataCRCEoF;
 
 always @(posedge Clk)
 begin

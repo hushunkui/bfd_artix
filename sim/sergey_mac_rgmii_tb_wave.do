@@ -82,14 +82,22 @@ add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/ValOut
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/SoFOut
 add wave -noupdate /mac_rgmii_tb/mac/CustomGMAC_Inst/ARP_L2_inst/EoFOut
 add wave -noupdate -divider TX
-add wave -noupdate /mac_rgmii_tb/dbg_rgmii_rx_data
-add wave -noupdate /mac_rgmii_tb/dbg_rgmii_rx_den
-add wave -noupdate /mac_rgmii_tb/dbg_rgmii_rx_eof
-add wave -noupdate /mac_rgmii_tb/dbg_rgmii_rx_sof
-add wave -noupdate /mac_rgmii_tb/rgmii_rx_data_o
-add wave -noupdate /mac_rgmii_tb/rgmii_rx_den_o
-add wave -noupdate /mac_rgmii_tb/rgmii_rx_sof_o
-add wave -noupdate /mac_rgmii_tb/rgmii_rx_eof_o
+add wave -noupdate /mac_rgmii_tb/eth0_txfifo/s_axis_tready
+add wave -noupdate /mac_rgmii_tb/eth0_txfifo/s_axis_tdata
+add wave -noupdate /mac_rgmii_tb/eth0_txfifo/s_axis_tvalid
+add wave -noupdate /mac_rgmii_tb/eth0_txfifo/s_axis_tuser
+add wave -noupdate /mac_rgmii_tb/eth0_txfifo/s_axis_tlast
+add wave -noupdate /mac_rgmii_tb/eth0_txfifo/m_axis_tready
+add wave -noupdate /mac_rgmii_tb/eth0_txfifo/m_axis_tdata
+add wave -noupdate /mac_rgmii_tb/eth0_txfifo/m_axis_tvalid
+add wave -noupdate /mac_rgmii_tb/eth0_txfifo/m_axis_tuser
+add wave -noupdate /mac_rgmii_tb/eth0_txfifo/m_axis_tlast
+add wave -noupdate /mac_rgmii_tb/mac_tx_ack
+add wave -noupdate /mac_rgmii_tb/mac_tx_rq
+add wave -noupdate /mac_rgmii_tb/mac_tx_d
+add wave -noupdate /mac_rgmii_tb/mac_tx_den
+add wave -noupdate /mac_rgmii_tb/mac_tx_sof
+add wave -noupdate /mac_rgmii_tb/mac_tx_eof
 add wave -noupdate /mac_rgmii_tb/mac/ReqConfirm
 add wave -noupdate /mac_rgmii_tb/mac/ReqIn0
 add wave -noupdate /mac_rgmii_tb/mac/DataIn0
@@ -148,4 +156,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits us
 update
-WaveRestoreZoom {14999525 ps} {15172405 ps}
+WaveRestoreZoom {8426469 ps} {8752281 ps}
