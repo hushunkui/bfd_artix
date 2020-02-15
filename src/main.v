@@ -540,87 +540,87 @@ generate
 
         assign aurora_axi_tx_tready_eth[x] = aurora_axi_tx_tready; //input
 
-        // mac_fifo fifo(
-        //     //USER IF
-        //     .tx_fifo_aclk       (aurora_user_clk), //input
-        //     .tx_fifo_resetn     (mac_fifo_resetn[x]), //input
-        //     .tx_axis_fifo_tdata (aurora_axi_rx_tdata_eth [x][(0*8) +: 8]),//input [7:0]
-        //     .tx_axis_fifo_tvalid(aurora_axi_rx_tvalid_eth[x]            ),//input
-        //     .tx_axis_fifo_tlast (aurora_axi_rx_tlast_eth [x]            ),//input
-        //     .tx_axis_fifo_tready(), //output
+        mac_fifo fifo(
+            //USER IF
+            .tx_fifo_aclk       (aurora_user_clk), //input
+            .tx_fifo_resetn     (mac_fifo_resetn[x]), //input
+            .tx_axis_fifo_tdata (aurora_axi_rx_tdata_eth [x][(0*8) +: 8]),//input [7:0]
+            .tx_axis_fifo_tvalid(aurora_axi_rx_tvalid_eth[x]            ),//input
+            .tx_axis_fifo_tlast (aurora_axi_rx_tlast_eth [x]            ),//input
+            .tx_axis_fifo_tready(), //output
 
-        //     .rx_fifo_aclk       (aurora_user_clk), //input
-        //     .rx_fifo_resetn     (mac_fifo_resetn[x]), //input
-        //     .rx_axis_fifo_tready(aurora_axi_tx_tready_eth[x]            ), //input
-        //     .rx_axis_fifo_tdata (aurora_axi_tx_tdata_eth [x][(0*8) +: 8]), //output [7:0]
-        //     .rx_axis_fifo_tvalid(aurora_axi_tx_tvalid_eth[x]            ), //output
-        //     .rx_axis_fifo_tlast (aurora_axi_tx_tlast_eth [x]            ), //output
+            .rx_fifo_aclk       (aurora_user_clk), //input
+            .rx_fifo_resetn     (mac_fifo_resetn[x]), //input
+            .rx_axis_fifo_tready(aurora_axi_tx_tready_eth[x]            ), //input
+            .rx_axis_fifo_tdata (aurora_axi_tx_tdata_eth [x][(0*8) +: 8]), //output [7:0]
+            .rx_axis_fifo_tvalid(aurora_axi_tx_tvalid_eth[x]            ), //output
+            .rx_axis_fifo_tlast (aurora_axi_tx_tlast_eth [x]            ), //output
 
-        //     //MAC IF
-        //     .tx_mac_aclk        (clk125M  ), //input
-        //     .tx_mac_resetn      (mac_fifo_resetn[x]), //input
-        //     .tx_axis_mac_tdata  (tx_fifo_tdata [x]), //output [7:0]
-        //     .tx_axis_mac_tvalid (tx_fifo_tvalid[x]), //output
-        //     .tx_axis_mac_tlast  (tx_fifo_tlast [x]), //output
-        //     .tx_axis_mac_tready (tx_fifo_tready[x]), //input
-        //     .tx_axis_mac_tuser  (),//(mac_tx_tuser ), //output
-        //     .tx_axis_mac_sof    (tx_fifo_tuser [x]),
-        //     .tx_fifo_overflow   (), //output
-        //     .tx_fifo_status     (), //output   [3:0]
-        //     .tx_collision       (1'b0), //input
-        //     .tx_retransmit      (1'b0), //input
+            //MAC IF
+            .tx_mac_aclk        (clk125M  ), //input
+            .tx_mac_resetn      (mac_fifo_resetn[x]), //input
+            .tx_axis_mac_tdata  (tx_fifo_tdata [x]), //output [7:0]
+            .tx_axis_mac_tvalid (tx_fifo_tvalid[x]), //output
+            .tx_axis_mac_tlast  (tx_fifo_tlast [x]), //output
+            .tx_axis_mac_tready (tx_fifo_tready[x]), //input
+            .tx_axis_mac_tuser  (),//(mac_tx_tuser ), //output
+            .tx_axis_mac_sof    (tx_fifo_tuser [x]),
+            .tx_fifo_overflow   (), //output
+            .tx_fifo_status     (), //output   [3:0]
+            .tx_collision       (1'b0), //input
+            .tx_retransmit      (1'b0), //input
 
-        //     .rx_mac_aclk        (clk125M),//input
-        //     .rx_mac_resetn      (mac_fifo_resetn[x]),//input
-        //     .rx_axis_mac_tdata  (mac_rx_tdata [x]),//input [7:0]
-        //     .rx_axis_mac_tvalid (mac_rx_tvalid[x]),//input
-        //     .rx_axis_mac_tlast  (mac_rx_tlast [x]),//input
-        //     .rx_axis_mac_tuser  (1'b0),//(mac_rx_bd[x]),//input
-        //     .rx_fifo_status     (rx_fifo_status[x]), //output   [3:0]
-        //     .rx_fifo_overflow   (rx_fifo_overflow[x])  //output
+            .rx_mac_aclk        (clk125M),//input
+            .rx_mac_resetn      (mac_fifo_resetn[x]),//input
+            .rx_axis_mac_tdata  (mac_rx_tdata [x]),//input [7:0]
+            .rx_axis_mac_tvalid (mac_rx_tvalid[x]),//input
+            .rx_axis_mac_tlast  (mac_rx_tlast [x]),//input
+            .rx_axis_mac_tuser  (1'b0),//(mac_rx_bd[x]),//input
+            .rx_fifo_status     (rx_fifo_status[x]), //output   [3:0]
+            .rx_fifo_overflow   (rx_fifo_overflow[x])  //output
+        );
+
+        // eth_fifo mac_rxfifo (
+        //     .s_axis_tready(),  // output wire s_axis_tready
+        //     .s_axis_tdata (mac_rx_tdata [x]),  // input wire [7 : 0] s_axis_tdata
+        //     .s_axis_tvalid(mac_rx_tvalid[x]),  // input wire s_axis_tvalid
+        //     .s_axis_tlast (mac_rx_tlast [x]),  // input wire s_axis_tlast
+        //     // .s_axis_tuser ({mac_rx_tuser[x]}), // input wire [0 : 0] s_axis_tuser
+        //     .s_aclk(clk125M),                // input wire s_aclk
+
+        //     .m_axis_tready(aurora_axi_tx_tready_eth[x]),            //input wire m_axis_tready
+        //     .m_axis_tdata (aurora_axi_tx_tdata_eth [x][(0*8) +: 8]),// output wire [7 : 0] m_axis_tdata
+        //     .m_axis_tvalid(aurora_axi_tx_tvalid_eth[x] ),           // output wire m_axis_tvalid
+        //     .m_axis_tlast (aurora_axi_tx_tlast_eth [x]),            // output wire m_axis_tlast
+        //     // .m_axis_tuser (), // output wire [0 : 0] m_axis_tuser
+        //     .m_aclk(aurora_user_clk),                // input wire m_aclk
+
+        //     .wr_rst_busy(),      // output wire wr_rst_busy
+        //     .rd_rst_busy(),      // output wire rd_rst_busy
+        //     // .s_aclk(clk125M),                // input wire s_aclk
+        //     .s_aresetn(mac_fifo_resetn[x])          // input wire s_aresetn
         // );
 
-        eth_fifo mac_rxfifo (
-            .s_axis_tready(),  // output wire s_axis_tready
-            .s_axis_tdata (mac_rx_tdata [x]),  // input wire [7 : 0] s_axis_tdata
-            .s_axis_tvalid(mac_rx_tvalid[x]),  // input wire s_axis_tvalid
-            .s_axis_tlast (mac_rx_tlast [x]),  // input wire s_axis_tlast
-            // .s_axis_tuser ({mac_rx_tuser[x]}), // input wire [0 : 0] s_axis_tuser
-            .s_aclk(clk125M),                // input wire s_aclk
+        // eth_fifo mac_txfifo (
+        //     .s_axis_tready(),  // output wire s_axis_tready
+        //     .s_axis_tdata (aurora_axi_rx_tdata_eth [x][(0*8) +: 8]),  // input wire [7 : 0] s_axis_tdata
+        //     .s_axis_tvalid(aurora_axi_rx_tvalid_eth[x]            ),  // input wire s_axis_tvalid
+        //     .s_axis_tlast (aurora_axi_rx_tlast_eth [x]            ),  // input wire s_axis_tlast
+        //     // .s_axis_tuser (1'b0), // input wire [0 : 0] s_axis_tuser
+        //     .s_aclk(aurora_user_clk),                // input wire s_aclk
 
-            .m_axis_tready(aurora_axi_tx_tready_eth[x]),            //input wire m_axis_tready
-            .m_axis_tdata (aurora_axi_tx_tdata_eth [x][(0*8) +: 8]),// output wire [7 : 0] m_axis_tdata
-            .m_axis_tvalid(aurora_axi_tx_tvalid_eth[x] ),           // output wire m_axis_tvalid
-            .m_axis_tlast (aurora_axi_tx_tlast_eth [x]),            // output wire m_axis_tlast
-            // .m_axis_tuser (), // output wire [0 : 0] m_axis_tuser
-            .m_aclk(aurora_user_clk),                // input wire m_aclk
+        //     .m_axis_tready(tx_fifo_tready[x]),//input wire m_axis_tready
+        //     .m_axis_tdata (tx_fifo_tdata [x]),// output wire [7 : 0] m_axis_tdata
+        //     .m_axis_tvalid(tx_fifo_tvalid[x]),// output wire m_axis_tvalid
+        //     .m_axis_tlast (tx_fifo_tlast [x]),// output wire m_axis_tlast
+        //     // .m_axis_tuser (), // output wire [0 : 0] m_axis_tuser
+        //     .m_aclk(clk125M),                // input wire m_aclk
 
-            .wr_rst_busy(),      // output wire wr_rst_busy
-            .rd_rst_busy(),      // output wire rd_rst_busy
-            // .s_aclk(clk125M),                // input wire s_aclk
-            .s_aresetn(mac_fifo_resetn[x])          // input wire s_aresetn
-        );
-
-        eth_fifo mac_txfifo (
-            .s_axis_tready(),  // output wire s_axis_tready
-            .s_axis_tdata (aurora_axi_rx_tdata_eth [x][(0*8) +: 8]),  // input wire [7 : 0] s_axis_tdata
-            .s_axis_tvalid(aurora_axi_rx_tvalid_eth[x]            ),  // input wire s_axis_tvalid
-            .s_axis_tlast (aurora_axi_rx_tlast_eth [x]            ),  // input wire s_axis_tlast
-            // .s_axis_tuser (1'b0), // input wire [0 : 0] s_axis_tuser
-            .s_aclk(aurora_user_clk),                // input wire s_aclk
-
-            .m_axis_tready(tx_fifo_tready[x]),//input wire m_axis_tready
-            .m_axis_tdata (tx_fifo_tdata [x]),// output wire [7 : 0] m_axis_tdata
-            .m_axis_tvalid(tx_fifo_tvalid[x]),// output wire m_axis_tvalid
-            .m_axis_tlast (tx_fifo_tlast [x]),// output wire m_axis_tlast
-            // .m_axis_tuser (), // output wire [0 : 0] m_axis_tuser
-            .m_aclk(clk125M),                // input wire m_aclk
-
-            .wr_rst_busy(),      // output wire wr_rst_busy
-            .rd_rst_busy(),      // output wire rd_rst_busy
-            // .s_aclk(clk125M),                // input wire s_aclk
-            .s_aresetn(mac_fifo_resetn[x]) // input wire s_aresetn
-        );
+        //     .wr_rst_busy(),      // output wire wr_rst_busy
+        //     .rd_rst_busy(),      // output wire rd_rst_busy
+        //     // .s_aclk(clk125M),                // input wire s_aclk
+        //     .s_aresetn(mac_fifo_resetn[x]) // input wire s_aresetn
+        // );
     end
 endgenerate
 
@@ -704,7 +704,7 @@ fpga_test_01 #(
     .p_in_rst   (~mac_pll_locked)
 );
 
-assign dbg_led = led_blink & !gt_rst;
+assign dbg_led = aurora_user_clk;//led_blink & !gt_rst;
 
 reg clk20_div = 1'b0;
 always @(posedge clk20_g) begin
