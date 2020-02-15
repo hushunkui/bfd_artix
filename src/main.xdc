@@ -44,11 +44,13 @@ set_property PACKAGE_PIN V7 [get_ports uart_tx]
 set_property IOSTANDARD LVCMOS25 [get_ports uart_rx]
 set_property IOSTANDARD LVCMOS25 [get_ports uart_tx]
 
+
 #ETHPHY MDIO
 set_property PACKAGE_PIN C11 [get_ports eth_phy_mdio]
 set_property PACKAGE_PIN B11 [get_ports eth_phy_mdc]
 set_property IOSTANDARD LVCMOS33 [get_ports eth_phy_mdio]
 set_property IOSTANDARD LVCMOS33 [get_ports eth_phy_mdc]
+
 
 #ETH0 (POARTA)
 set_property PACKAGE_PIN A10 [get_ports {rgmii_txd[0]}]
@@ -86,6 +88,7 @@ set_property SLEW FAST [get_ports {rgmii_txd[3]}]
 set_property SLEW FAST [get_ports {rgmii_tx_ctl[0]}]
 set_property SLEW FAST [get_ports {rgmii_txc[0]}]
 
+
 #ETH1 (POARTB)
 set_property PACKAGE_PIN C14 [get_ports {rgmii_txd[4]}]
 set_property PACKAGE_PIN B15 [get_ports {rgmii_txd[5]}]
@@ -122,42 +125,6 @@ set_property SLEW FAST [get_ports {rgmii_txd[7]}]
 set_property SLEW FAST [get_ports {rgmii_tx_ctl[1]}]
 set_property SLEW FAST [get_ports {rgmii_txc[1]}]
 
-##ETH1 (POARTB) test rx from PHY
-#set_property PACKAGE_PIN C14 [get_ports {rgmii_txd[0]}]
-#set_property PACKAGE_PIN B15 [get_ports {rgmii_txd[1]}]
-#set_property PACKAGE_PIN A17 [get_ports {rgmii_txd[2]}]
-#set_property PACKAGE_PIN B16 [get_ports {rgmii_txd[3]}]
-#set_property PACKAGE_PIN C16 [get_ports {rgmii_tx_ctl[0]}]
-#set_property PACKAGE_PIN B17 [get_ports {rgmii_txc[0]}]
-#set_property PACKAGE_PIN E17 [get_ports {rgmii_rxd[0]}]
-#set_property PACKAGE_PIN D18 [get_ports {rgmii_rxd[1]}]
-#set_property PACKAGE_PIN C17 [get_ports {rgmii_rxd[2]}]
-#set_property PACKAGE_PIN C18 [get_ports {rgmii_rxd[3]}]
-#set_property PACKAGE_PIN E13 [get_ports {rgmii_rx_ctl[0]}]
-#set_property PACKAGE_PIN D14 [get_ports {rgmii_rxc[0]}]
-#set_property PACKAGE_PIN D16 [get_ports {eth_phy_rst[0]}]
-#
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[1]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[2]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[3]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_tx_ctl[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txc[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[1]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[2]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[3]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rx_ctl[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxc[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {eth_phy_rst[0]}]
-#
-#set_property SLEW FAST [get_ports {rgmii_txd[0]}]
-#set_property SLEW FAST [get_ports {rgmii_txd[1]}]
-#set_property SLEW FAST [get_ports {rgmii_txd[2]}]
-#set_property SLEW FAST [get_ports {rgmii_txd[3]}]
-#set_property SLEW FAST [get_ports {rgmii_tx_ctl[0]}]
-#set_property SLEW FAST [get_ports {rgmii_txc[0]}]
-#set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {rgmii_0/phy_rxc_ibuf}]
 
 #ETH2 (POARTC)
 set_property PACKAGE_PIN E18 [get_ports {rgmii_txd[8]}]
@@ -194,43 +161,6 @@ set_property SLEW FAST [get_ports {rgmii_txd[10]}]
 set_property SLEW FAST [get_ports {rgmii_txd[11]}]
 set_property SLEW FAST [get_ports {rgmii_tx_ctl[2]}]
 set_property SLEW FAST [get_ports {rgmii_txc[2]}]
-
-##ETH2 (POARTC) test rx from PHY
-#set_property PACKAGE_PIN E18 [get_ports {rgmii_txd[0]}]
-#set_property PACKAGE_PIN F17 [get_ports {rgmii_txd[1]}]
-#set_property PACKAGE_PIN F18 [get_ports {rgmii_txd[2]}]
-#set_property PACKAGE_PIN G17 [get_ports {rgmii_txd[3]}]
-#set_property PACKAGE_PIN G15 [get_ports {rgmii_tx_ctl[0]}]
-#set_property PACKAGE_PIN F15 [get_ports {rgmii_txc[0]}]
-#set_property PACKAGE_PIN L18 [get_ports {rgmii_rxd[0]}]
-#set_property PACKAGE_PIN K17 [get_ports {rgmii_rxd[1]}]
-#set_property PACKAGE_PIN H18 [get_ports {rgmii_rxd[2]}]
-#set_property PACKAGE_PIN H17 [get_ports {rgmii_rxd[3]}]
-#set_property PACKAGE_PIN M17 [get_ports {rgmii_rx_ctl[0]}]
-#set_property PACKAGE_PIN D15 [get_ports {rgmii_rxc[0]}]
-#set_property PACKAGE_PIN E16 [get_ports {eth_phy_rst[0]}]
-#
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[1]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[2]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[3]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_tx_ctl[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txc[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[1]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[2]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[3]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rx_ctl[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxc[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {eth_phy_rst[0]}]
-#
-#set_property SLEW FAST [get_ports {rgmii_txd[0]}]
-#set_property SLEW FAST [get_ports {rgmii_txd[1]}]
-#set_property SLEW FAST [get_ports {rgmii_txd[2]}]
-#set_property SLEW FAST [get_ports {rgmii_txd[3]}]
-#set_property SLEW FAST [get_ports {rgmii_tx_ctl[0]}]
-#set_property SLEW FAST [get_ports {rgmii_txc[0]}]
-#set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {rgmii_0/phy_rxc_ibuf}]
 
 
 #ETH3 (POARTD)
@@ -269,43 +199,6 @@ set_property SLEW FAST [get_ports {rgmii_txd[15]}]
 set_property SLEW FAST [get_ports {rgmii_tx_ctl[3]}]
 set_property SLEW FAST [get_ports {rgmii_txc[3]}]
 
-##ETH3 (POARTD) test rx from PHY
-#set_property PACKAGE_PIN M16 [get_ports {rgmii_txd[0]}]
-#set_property PACKAGE_PIN R18 [get_ports {rgmii_txd[1]}]
-#set_property PACKAGE_PIN T18 [get_ports {rgmii_txd[2]}]
-#set_property PACKAGE_PIN N18 [get_ports {rgmii_txd[3]}]
-#set_property PACKAGE_PIN T17 [get_ports {rgmii_tx_ctl[0]}]
-#set_property PACKAGE_PIN P18 [get_ports {rgmii_txc[0]}]
-#set_property PACKAGE_PIN U16 [get_ports {rgmii_rxd[0]}]
-#set_property PACKAGE_PIN V16 [get_ports {rgmii_rxd[1]}]
-#set_property PACKAGE_PIN V17 [get_ports {rgmii_rxd[2]}]
-#set_property PACKAGE_PIN U17 [get_ports {rgmii_rxd[3]}]
-#set_property PACKAGE_PIN U15 [get_ports {rgmii_rx_ctl[0]}]
-#set_property PACKAGE_PIN U14 [get_ports {rgmii_rxc[0]}]
-#set_property PACKAGE_PIN V14 [get_ports {eth_phy_rst[0]}]
-#
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[1]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[2]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txd[3]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_tx_ctl[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_txc[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[1]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[2]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxd[3]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rx_ctl[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {rgmii_rxc[0]}]
-#set_property IOSTANDARD LVCMOS33 [get_ports {eth_phy_rst[0]}]
-#
-#set_property SLEW FAST [get_ports {rgmii_txd[0]}]
-#set_property SLEW FAST [get_ports {rgmii_txd[1]}]
-#set_property SLEW FAST [get_ports {rgmii_txd[2]}]
-#set_property SLEW FAST [get_ports {rgmii_txd[3]}]
-#set_property SLEW FAST [get_ports {rgmii_tx_ctl[0]}]
-#set_property SLEW FAST [get_ports {rgmii_txc[0]}]
-#set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {rgmii_0/phy_rxc_ibuf}]
-
 
 ##user lvds
 #set_property PACKAGE_PIN L4 [get_ports {usr_lvds_p[0]}]
@@ -338,7 +231,6 @@ set_property SLEW FAST [get_ports {rgmii_txc[3]}]
 #set_property IOSTANDARD LVDS_25 [get_ports {usr_lvds_p[12]}]
 #set_property IOSTANDARD LVDS_25 [get_ports {usr_lvds_p[13]}]
 
-
 #user lvds
 set_property PACKAGE_PIN L4 [get_ports {usr_lvds_p[0]}]
 set_property PACKAGE_PIN L3 [get_ports {usr_lvds_p[1]}]
@@ -361,12 +253,6 @@ set_property IOSTANDARD LVCMOS25 [get_ports {usr_lvds_p_o[0]}]
 set_property IOSTANDARD LVCMOS25 [get_ports {usr_lvds_p_o[1]}]
 set_property IOSTANDARD LVCMOS25 [get_ports {usr_lvds_p_o[2]}]
 set_property IOSTANDARD LVCMOS25 [get_ports {usr_lvds_p_o[3]}]
-
-
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[1].rgmii/phy_rxc_ibuf}]
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[2].rgmii/phy_rxc_ibuf}]
-set_property CLOCK_DEDICATED_ROUTE FALSE [get_nets {eth[3].rgmii/phy_rxc_ibuf}]
-
 
 # input      _______________________________                                  ________
 # clock    _|                               |________________________________|
@@ -412,17 +298,6 @@ set_input_delay -clock rgmii3_rx_clk -min [expr $trco_min + $trce_dly_min] [get_
 set_input_delay -clock rgmii3_rx_clk -max [expr $tfco_max + $trce_dly_max] [get_ports $rgmii3_rx_ports] -clock_fall -add_delay;
 set_input_delay -clock rgmii3_rx_clk -min [expr $tfco_min + $trce_dly_min] [get_ports $rgmii3_rx_ports] -clock_fall -add_delay;
 
-# Report Timing Template
-# report_timing -rise_from [get_ports $input_ports] -max_paths 20 -nworst 2 -delay_type min_max -name sys_sync_ddr_in_rise -file sys_sync_ddr_in_rise.txt;
-# report_timing -fall_from [get_ports $input_ports] -max_paths 20 -nworst 2 -delay_type min_max -name sys_sync_ddr_in_fall -file sys_sync_ddr_in_fall.txt;
-
-set_property IDELAY_VALUE 1 [get_cells {eth[0].rgmii/idelay_rxd[*].inst}]
-set_property IDELAY_VALUE 1 [get_cells {eth[1].rgmii/idelay_rxd[*].inst}]
-set_property IDELAY_VALUE 1 [get_cells {eth[2].rgmii/idelay_rxd[*].inst}]
-set_property IDELAY_VALUE 1 [get_cells {eth[3].rgmii/idelay_rxd[*].inst}]
-
-## Group IODELAY components
-#set_property IODELAY_GROUP iodelay_grp_eth [get_cells *idelay*]
 
 ###############################################################################
 #Configutarion params

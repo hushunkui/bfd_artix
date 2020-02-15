@@ -11,52 +11,52 @@ module FrameL4
 	input	[31:0]IPD ,
 	input	[31:0]RemoteIPIn ,
 	input	[47:0]RemoteMACIn ,
-	
+
 	output SoFOut,
 	output EoFOut,
 	output ValOut,
 	output ErrOut,
-	output reg FrameOut,
+	output reg FrameOut = 0,
 	output [7:0]DataOut,
-	output reg [47:0] RemoteMACOut,
-	output reg [31:0] RemoteIPOut,
-	output reg [15:0] RemotePortOut
+	output reg [47:0] RemoteMACOut = 0,
+	output reg [31:0] RemoteIPOut = 0,
+	output reg [15:0] RemotePortOut = 0
 
 
-	
+
 );
 
 
-reg [5:0 ]HeadCounter=1'b0; 
-reg [15:0]PackCounter=1'b0; 
-reg [15:0]FrameSize=1'b0; 
+reg [5:0 ]HeadCounter=1'b0;
+reg [15:0]PackCounter=1'b0;
+reg [15:0]FrameSize=1'b0;
 
-reg [7:0]DataReg; 
-reg ValReg;
-reg EoFReg;
-reg ErrReg;
+reg [7:0]DataReg = 0;
+reg ValReg = 0;
+reg EoFReg = 0;
+reg ErrReg = 0;
 
-reg [7:0]DataRegD0; 
-reg ValRegD0;
-reg EoFRegD0;
-reg ErrRegD0;
-reg SoFRegD0;
-reg PackStateD0;
+reg [7:0]DataRegD0 = 0;
+reg ValRegD0 = 0;
+reg EoFRegD0 = 0;
+reg ErrRegD0 = 0;
+reg SoFRegD0 = 0;
+reg PackStateD0 = 0;
 
-reg [7:0]DataRegD1; 
-reg ValRegD1;
-reg EoFRegD1;
-reg ErrRegD1;
-reg SoFRegD1;
-reg PackStateD1;
+reg [7:0]DataRegD1 = 0;
+reg ValRegD1 = 0;
+reg EoFRegD1 = 0;
+reg ErrRegD1 = 0;
+reg SoFRegD1 = 0;
+reg PackStateD1 = 0;
 
-reg HeaderState=1'b0; 
-reg PackState=1'b0; 
-reg WordCnt=1'b0; 
+reg HeaderState=1'b0;
+reg PackState=1'b0;
+reg WordCnt=1'b0;
 
-reg PortValid0;
-reg PortValid1;
-reg PortValid;
+reg PortValid0 = 0;
+reg PortValid1 = 0;
+reg PortValid = 0;
 
 
 
@@ -68,13 +68,13 @@ if (SoFIn&&ValIn) WordCnt<=1'b0;
 	else if (ValIn) WordCnt<=!WordCnt;
 
 
-if (SoFIn&&ValIn) HeadCounter<=(6'b001000); 
+if (SoFIn&&ValIn) HeadCounter<=(6'b001000);
 	else if (ValIn) HeadCounter<= HeadCounter-1'b1;
-	
+
 if (SoFIn&&ValIn) PackCounter<=1'b1;
 	else if (ValIn) PackCounter<= PackCounter+1'b1;
-	
-DataReg<=DataIn;	
+
+DataReg<=DataIn;
 ValReg <=ValIn;
 EoFReg <=EoFIn;
 ErrReg <=ErrIn;
@@ -82,63 +82,63 @@ ErrReg <=ErrIn;
 
 
 if (SoFIn&ValIn)	HeaderState<=1'b1;
-	else if ((HeadCounter==4'h1)&&ValIn) HeaderState<=1'b0;	
-	
-	
+	else if ((HeadCounter==4'h1)&&ValIn) HeaderState<=1'b0;
+
+
 if (HeaderState&&ValIn&&(HeadCounter==4'h1))	PackState<=1'b1;
-	else if (EoFReg&&ValReg) PackState<=1'b0;	
+	else if (EoFReg&&ValReg) PackState<=1'b0;
 
-/*	
+/*
 
 
 
-*/	
+*/
 
 end
 
 
 
-reg Sync;
-reg Sync0;
-reg Sync1;
-reg Sync2;
-reg Sync3;
-reg Sync4;
-reg Sync5;
-reg Sync6;
-reg Sync7; 
-reg Sync8;
-reg Sync9;
-reg Sync10;
-reg Sync11;
-reg Sync12;
-reg Sync13;
-reg Sync14;
-reg Sync15;
-reg Sync16;
-//reg Sync17;
+reg Sync = 0;
+reg Sync0 = 0;
+reg Sync1 = 0;
+reg Sync2 = 0;
+reg Sync3 = 0;
+reg Sync4 = 0;
+reg Sync5 = 0;
+reg Sync6 = 0;
+reg Sync7 = 0;
+reg Sync8 = 0;
+reg Sync9 = 0;
+reg Sync10 = 0;
+reg Sync11 = 0;
+reg Sync12 = 0;
+reg Sync13 = 0;
+reg Sync14 = 0;
+reg Sync15 = 0;
+reg Sync16 = 0;
+//reg Sync17 = 0;
 
 
 
-reg [7:0] DataReg0; 
-reg [7:0] DataReg1; 
-reg [7:0] DataReg2; 
+reg [7:0] DataReg0 = 0;
+reg [7:0] DataReg1 = 0;
+reg [7:0] DataReg2 = 0;
 
-//reg [7:0] DataReg4; 
-
-
-reg  CheckSumEna; 
+//reg [7:0] DataReg4 = 0;
 
 
-reg [23:0]CheckCounter=1'b0; 
-reg [15:0] CheckSum=1'b0; 
+reg  CheckSumEna = 0;
+
+
+reg [23:0]CheckCounter=1'b0;
+reg [15:0] CheckSum=1'b0;
 //reg CheckSumFlag=1'b0;
 
 
 always @(posedge Clk)
 begin
 if (SoFIn&&ValIn) CheckCounter<=PHeadIn;
-	else if (ValReg&&WordCnt) CheckCounter<=CheckCounter+{DataReg0,DataReg};	
+	else if (ValReg&&WordCnt) CheckCounter<=CheckCounter+{DataReg0,DataReg};
 CheckSum<=CheckCounter[15:0]+CheckCounter[23:16];
 
 // CheckSumFlag<=(CheckSum[15:0]==16'hFFFF);
@@ -188,21 +188,21 @@ PortValid<=PortValid0&&PortValid1;
 
 
 
-end 
+end
 
-reg SoFOutReg;
-reg EoFOutReg;
-reg ValOutReg;
-reg ErrOutReg;
-reg [7:0]DataOutReg;
-reg SoFPulse;
+reg SoFOutReg = 0;
+reg EoFOutReg = 0;
+reg ValOutReg = 0;
+reg ErrOutReg = 0;
+reg [7:0]DataOutReg = 0;
+reg SoFPulse = 0;
 
 always @(posedge Clk)
 begin
 if (ValIn) SoFPulse<= ((HeadCounter==1'b1)&&HeaderState);
 
 SoFRegD0 <=SoFPulse;
-DataRegD0<=DataReg;	
+DataRegD0<=DataReg;
 ValRegD0 <=ValReg&&PackState;
 EoFRegD0 <=EoFReg&&PackState;
 ErrRegD0 <=ErrReg||(PackCounter!=FrameSize);//||(!CheckSumFlag);
@@ -210,7 +210,7 @@ PackStateD0 <=PackState;
 
 
 SoFRegD1 <=SoFRegD0;
-DataRegD1<=DataRegD0;	
+DataRegD1<=DataRegD0;
 ValRegD1 <=ValRegD0;
 EoFRegD1 <=EoFRegD0;
 ErrRegD1 <=ErrRegD0;
@@ -224,7 +224,7 @@ DataOutReg<= DataRegD1;
 EoFOutReg <= EoFRegD1&&PortValid;
 ErrOutReg <= ErrRegD1||((CheckSum[15:0]!=16'hFFFF)&&CheckSumEna);
 FrameOut  <= PackStateD1&&PortValid;
-end 
+end
 
 assign DataOut= DataOutReg;
 assign ValOut = ValOutReg;

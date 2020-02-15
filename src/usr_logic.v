@@ -11,8 +11,22 @@ module usr_logic #(
     output reg [31:0] reg_ctrl = 0,
     input [31:0] status_aurora,
     input [31:0] status_eth,
+    input [31:0] cnterr_eth0,
+    input [31:0] cnterr_eth1,
+    input [31:0] cnterr_eth2,
+    input [31:0] cnterr_eth3,
+    output reg ethphy_mdio_clk_o = 0,
+    output reg ethphy_mdio_data_o = 0,
+    output reg ethphy_mdio_dir_o = 0,
+    input      ethphy_mdio_data_i,
+    output reg [3:0] ethphy_nrst_o = 0,
+    output reg [31:0] aurora_o_ctl_0 = 0,
+    output reg [31:0] aurora_o_ctl_1 = 0,
+    input  [31:0] aurora_i_ctl_0,
+    output reg [15:0] ethphy_test_pkt_size = 16'd512,
+    output reg [15:0] ethphy_test_pause_size = 16'd64,
 
-//AXI interface
+//AXI i3terface
     input  [31:0]  s_axi_awaddr ,
     input  [2:0]   s_axi_awprot ,
     output         s_axi_awready,
@@ -38,7 +52,7 @@ module usr_logic #(
     input s_axi_clk
 );
 
-localparam USER_ADR_WIDTH = 4;
+localparam USER_ADR_WIDTH = 8;
 localparam ADDR_LSB = 2;
 localparam ADDR_MSB = ADDR_LSB + USER_ADR_WIDTH;
 
@@ -54,6 +68,7 @@ wire [31:0] firmware_time;
 
 reg [31:0] reg_test0 = 32'h0;
 reg [31:0] reg_test1 = 32'h0;
+
 
 
 //----------------------------------------
@@ -101,11 +116,23 @@ always @(posedge s_axi_clk) begin
         reg_ctrl <= 0;
         reg_test0 <= 0;
         reg_test1 <= 0;
+        ethphy_test_pkt_size <= 16'd512;
+        ethphy_test_pause_size <= 16'd64;
     end else begin
         if (reg_wr) begin
             if (reg_addr == `UREG_CTRL)  begin reg_ctrl <= reg_wdata; end
             if (reg_addr == `UREG_TEST0) begin reg_test0 <= reg_wdata; end
             if (reg_addr == `UREG_TEST1) begin reg_test1 <= reg_wdata; end
+            if (reg_addr == `UREG_ETHPHY_MDIO_CLK_O) begin ethphy_mdio_clk_o <= reg_wdata[0]; end
+            if (reg_addr == `UREG_ETHPHY_MDIO_DATA_O) begin ethphy_mdio_data_o <= reg_wdata[0]; end
+            if (reg_addr == `UREG_ETHPHY_MDIO_DIR_O) begin ethphy_mdio_dir_o <= reg_wdata[0]; end
+            if (reg_addr == `UREG_ETHPHY_RST) begin ethphy_nrst_o <= reg_wdata[3:0]; end
+            if (reg_addr == `UREG_AURORA_O_CTL_0) begin aurora_o_ctl_0 <= reg_wdata; end
+            if (reg_addr == `UREG_AURORA_O_CTL_1) begin aurora_o_ctl_0 <= reg_wdata; end
+            if (reg_addr == `UREG_ETHPHY_TEST_PRM) begin
+                ethphy_test_pkt_size <= reg_wdata[15:0];
+                ethphy_test_pause_size <= reg_wdata[31:16];
+            end
         end
     end
 end
@@ -120,6 +147,13 @@ always @(posedge s_axi_clk) begin
         if (reg_addr == `UREG_TEST1)         begin reg_rdata <= reg_test1; end
         if (reg_addr == `UREG_STATUS_AURORA) begin reg_rdata <= status_aurora; end
         if (reg_addr == `UREG_STATUS_ETH)    begin reg_rdata <= status_eth; end
+        if (reg_addr == `UREG_CNTERR_ETH0)    begin reg_rdata <= cnterr_eth0; end
+        if (reg_addr == `UREG_CNTERR_ETH1)    begin reg_rdata <= cnterr_eth1; end
+        if (reg_addr == `UREG_CNTERR_ETH2)    begin reg_rdata <= cnterr_eth2; end
+        if (reg_addr == `UREG_CNTERR_ETH3)    begin reg_rdata <= cnterr_eth3; end
+        if (reg_addr == `UREG_ETHPHY_MDIO_DATA_I) begin reg_rdata <= {30'd0, ethphy_mdio_data_i}; end
+        if (reg_addr == `UREG_AURORA_I_CTL_0) begin reg_rdata <= aurora_i_ctl_0; end
+        if (reg_addr == `UREG_ETHPHY_TEST_PRM) begin reg_rdata <= {ethphy_test_pause_size, ethphy_test_pkt_size}; end
     end
 end
 

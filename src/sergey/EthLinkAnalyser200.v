@@ -1,9 +1,9 @@
 /* ������ �������� ������ ����� ������ Ethernrt. ���� ������� ������ ������������� clk125
 ��� ���������� ����� 1gbit ���������� Ethernet  ���������� ���� ������ RXC =125 ���, ����� ������� �� ���������
-25 ��� (100 MBit ) ��� 2.5 ��� (10 ����). ������� ��������� �������� ������� ������������� � ������������� ����� 
+25 ��� (100 MBit ) ��� 2.5 ��� (10 ����). ������� ��������� �������� ������� ������������� � ������������� �����
 ������� ����� � ������� ����������.
 */
-module EthLinkAnalyser200 
+module EthLinkAnalyser200
 (
 	input clk200,
 	input clkRXC,
@@ -25,7 +25,7 @@ begin
 State<=State+1'b1;
 if (State >4'b01010)Start<=1'b0; else Start<=1'b1;
 if (State==4'b01101)Compare<=1'b1; else Compare<=1'b0;
-if (State==4'b01110)ACLR <=1'b1; else ACLR <=1'b0; 
+if (State==4'b01110)ACLR <=1'b1; else ACLR <=1'b0;
 CompareD<=Compare;
 if (Compare)Result<=REG200-REGRXC;
 if (CompareD)
