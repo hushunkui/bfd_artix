@@ -98,10 +98,6 @@ wire [ETHCOUNT-1:0]     test_rx_tlast ;
 wire mac_gtx_clk;
 wire mac_gtx_clk90;
 
-
-// wire [31:0] firmware_date;
-// wire [31:0] firmware_time;
-
 wire [31:0]aurora_axi_rx_tdata;
 wire [3:0]aurora_axi_rx_tkeep;
 wire aurora_axi_rx_tlast;
@@ -199,20 +195,6 @@ clk25_wiz0 pll0(
     .reset(sysrst)
 );
 
-// IBUFDS_GTE2 #(
-//     .CLKCM_CFG("TRUE"),   // Refer to Transceiver User Guide
-//     .CLKRCV_TRST("TRUE"), // Refer to Transceiver User Guide
-//     .CLKSWING_CFG(2'b11)  // Refer to Transceiver User Guide
-// ) gtrefclk_buf (
-//     .O(gt_refclk), // 1-bit output: Refer to Transceiver User Guide
-//     .ODIV2(aurora_init_clk), // 1-bit output: Refer to Transceiver User Guide
-//     .CEB(1'b0),          // 1-bit input: Refer to Transceiver User Guide
-//     .I(gt_refclk_p),  // 1-bit input: Refer to Transceiver User Guide
-//     .IB(gt_refclk_n)  // 1-bit input: Refer to Transceiver User Guide
-// );
-// BUFG bufg_gtrefclk_div2 (
-//     .I (aurora_init_clk), .O(aurora_init_clkg)
-// );
 
 system system_i(
     .aurora_axi_rx_tdata(aurora_axi_rx_tdata), //output
@@ -305,89 +287,6 @@ usr_logic #(
     .s_axi_resetn (mac_pll_locked),
     .s_axi_clk (mac_gtx_clk)
 );
-
-
-// assign aurora_axi_tx_tdata  = aurora_axi_rx_tdata ;
-// assign aurora_axi_tx_tkeep  = aurora_axi_rx_tkeep ;
-// assign aurora_axi_tx_tvalid = aurora_axi_rx_tvalid;
-// assign aurora_axi_tx_tlast  = aurora_axi_rx_tlast ;
-
-// assign aurora_fifo_di[0] = aurora_axi_rx_tdata[0];
-// assign aurora_fifo_di[1] = aurora_axi_rx_tdata[1];
-// assign aurora_fifo_di[2] = aurora_axi_rx_tdata[2];
-// assign aurora_fifo_di[3] = aurora_axi_rx_tdata[3];
-// assign aurora_fifo_di[4] = aurora_axi_rx_tdata[4];
-// assign aurora_fifo_di[5] = aurora_axi_rx_tdata[5];
-// assign aurora_fifo_di[6] = aurora_axi_rx_tdata[6];
-// assign aurora_fifo_di[7] = aurora_axi_rx_tdata[7];
-// assign aurora_fifo_di[8] = aurora_axi_rx_tdata[8];
-// assign aurora_fifo_di[9] = aurora_axi_rx_tdata[9];
-// assign aurora_fifo_di[10] = aurora_axi_rx_tdata[10];
-// assign aurora_fifo_di[11] = aurora_axi_rx_tdata[11];
-// assign aurora_fifo_di[12] = aurora_axi_rx_tdata[12];
-// assign aurora_fifo_di[13] = aurora_axi_rx_tdata[13];
-// assign aurora_fifo_di[14] = aurora_axi_rx_tdata[14];
-// assign aurora_fifo_di[15] = aurora_axi_rx_tdata[15];
-// assign aurora_fifo_di[16] = aurora_axi_rx_tkeep[0];
-// assign aurora_fifo_di[17] = aurora_axi_rx_tkeep[1];
-// assign aurora_fifo_di[18] = aurora_axi_rx_tlast;
-// assign aurora_fifo_di[19] = aurora_axi_rx_tvalid;
-// assign aurora_fifo_di[31:20] = 0;
-// aurora_rx_fifo aurora_rx_fifo (
-//     .din   (aurora_fifo_di),                 // input wire [31 : 0] din
-//     .wr_en (aurora_axi_rx_tvalid),
-//     .wr_clk(aurora_usr_clk),
-
-//     .dout  (aurora_usr_data),                // output wire [15 : 0] dout
-//     .rd_en (~aurora_rx_fifo_empty),
-//     .rd_clk(mac_gtx_clk),
-
-//     .full(aurora_rx_fifo_full),
-//     .empty(aurora_rx_fifo_empty),
-//     .wr_rst_busy(),
-//     .rd_rst_busy(),
-
-//     .rst(aurora_sysrst)
-// );
-
-// aurora_tx_fifo aurora_tx_fifo (
-//     .din   (aurora_usr_data),                 // input wire [15 : 0] din
-//     .wr_en (~aurora_rx_fifo_empty),
-//     .wr_clk(mac_gtx_clk),
-
-//     .dout  (aurora_fifo_do),                // output wire [31 : 0] dout
-//     .rd_en (~aurora_tx_empty & aurora_axi_tx_tready),
-//     .rd_clk(aurora_usr_clk),
-
-//     .full(aurora_tx_full),
-//     .empty(aurora_tx_empty),
-//     .wr_rst_busy(),
-//     .rd_rst_busy(),
-
-//     .rst(aurora_sysrst)
-// );
-//     // .aurora_axi_tx_tready(aurora_axi_tx_tready),//output
-// assign aurora_axi_tx_tdata[0]  = aurora_fifo_do[0] ;
-// assign aurora_axi_tx_tdata[1]  = aurora_fifo_do[1] ;
-// assign aurora_axi_tx_tdata[2]  = aurora_fifo_do[2] ;
-// assign aurora_axi_tx_tdata[3]  = aurora_fifo_do[3] ;
-// assign aurora_axi_tx_tdata[4]  = aurora_fifo_do[4] ;
-// assign aurora_axi_tx_tdata[5]  = aurora_fifo_do[5] ;
-// assign aurora_axi_tx_tdata[6]  = aurora_fifo_do[6] ;
-// assign aurora_axi_tx_tdata[7]  = aurora_fifo_do[7] ;
-// assign aurora_axi_tx_tdata[8]  = aurora_fifo_do[8] ;
-// assign aurora_axi_tx_tdata[9]  = aurora_fifo_do[9] ;
-// assign aurora_axi_tx_tdata[10] = aurora_fifo_do[10];
-// assign aurora_axi_tx_tdata[11] = aurora_fifo_do[11];
-// assign aurora_axi_tx_tdata[12] = aurora_fifo_do[12];
-// assign aurora_axi_tx_tdata[13] = aurora_fifo_do[13];
-// assign aurora_axi_tx_tdata[14] = aurora_fifo_do[14];
-// assign aurora_axi_tx_tdata[15] = aurora_fifo_do[15];
-// assign aurora_axi_tx_tkeep[0] = aurora_fifo_do[16];
-// assign aurora_axi_tx_tkeep[1] = aurora_fifo_do[17];
-// assign aurora_axi_tx_tlast = aurora_fifo_do[18];
-// assign aurora_axi_rx_tvalid = aurora_fifo_do[19];
-
 
 assign mgt_pwr_en = 1'b1;
 
@@ -573,65 +472,6 @@ generate
     end
 endgenerate
 
-// ila_1 aurora_ila (
-//     .probe0({
-//         aurora_status_tx_lock,
-//         aurora_status_lane_up,
-//         aurora_status_channel_up,
-//         aurora_status_frame_err,
-//         aurora_status_hard_err,
-//         aurora_status_soft_err
-//     }),
-//     .clk(aurora_usr_clk)
-// );
-
-
-// wire [7:0] test_data;
-
-// //set channel for transfer test data
-// assign mac_tx_tdata [0] = test_tx_tdata [0]; //0;
-// assign mac_tx_tvalid[0] = test_tx_tvalid[0]; //1'b0;
-// assign mac_tx_tlast [0] = test_tx_tuser [0]; //1'b0;
-// assign mac_tx_tuser [0] = test_tx_tlast [0]; //1'b0;
-
-// assign mac_tx_tdata [1] = 0;
-// assign mac_tx_tvalid[1] = 1'b0;
-// assign mac_tx_tlast [1] = 1'b0;
-// assign mac_tx_tuser [1] = 1'b0;
-
-// assign mac_tx_tdata [2] = 0;
-// assign mac_tx_tvalid[2] = 1'b0;
-// assign mac_tx_tlast [2] = 1'b0;
-// assign mac_tx_tuser [2] = 1'b0;
-
-// assign mac_tx_tdata [3] = 0;
-// assign mac_tx_tvalid[3] = 1'b0;
-// assign mac_tx_tlast [3] = 1'b0;
-// assign mac_tx_tuser [3] = 1'b0;
-
-// test_phy test_phy (
-//     .mac_tx_data  (test_tx_tdata [0]),
-//     .mac_tx_valid (test_tx_tvalid[0]),
-//     .mac_tx_sof   (test_tx_tuser [0]),
-//     .mac_tx_eof   (test_tx_tlast [0]),
-
-//     .mac_rx_data   (test_rx_tdata [0]),
-//     .mac_rx_valid  (test_rx_tvalid[0]),
-//     .mac_rx_sof    (1'b0),
-//     .mac_rx_eof    (test_rx_tlast[0]),
-//     .mac_rx_fr_good(1'b1),
-//     .mac_rx_fr_err (1'b0),
-
-//     .start(reg_ctrl[0]),
-//     .err(test_err),
-//     .test_data(test_data),
-
-//     .clk(mac_gtx_clk),
-//     .rst(~mac_pll_locked)
-// );
-
-
-
 
 //----------------------------------
 //DEBUG
@@ -648,16 +488,6 @@ end
 
 assign dbg_out[0] = 1'b0;
 assign dbg_out[1] = clk20_div | sysclk25_div | led_blink | reg_ctrl[0];// &
-                    // |mac_rx_tvalid &
-                    // |mac_rx_tlast &
-                    // |mac_rx_tuser &
-                    // |mac_tx_tready &
-                    // |mac_tx_clk &
-                    // |mac_tx_reset
-                    // ;
-                    // |mac_rx_reset &
-                    // |mac_rx_tdata &
-// assign dbg_led = 1'b0;
 
 wire led_blink;
 fpga_test_01 #(
@@ -676,57 +506,7 @@ fpga_test_01 #(
     .p_in_rst   (~mac_pll_locked)
 );
 
-assign dbg_led = led_blink & !gt_rst;// !test_gpio[0] & !aurora_gt_rst;// & test_err;
-
-
-
-
-// reg [31:0] mac_rx_cnterr [ETHCOUNT-1:0];
-// genvar a;
-// generate
-//     for (a=3; a < ETHCOUNT; a=a+1)  begin : cnterr
-//         ila_0 mac_ila (
-//             .probe0({
-//                 test_err,
-//                 rx_fifo_status[a],
-//                 rx_fifo_overflow[a],
-//                 mac_status[a],
-//                 mac_rx_cnterr[a],
-//                 mac_rx_er[a],
-//                 mac_rx_bd[a],
-//                 mac_rx_ok[a],
-//                 mac_rx_tdata[a],
-//                 mac_rx_tvalid[a],
-//                 mac_rx_tuser[a],
-//                 mac_rx_tlast[a]
-//             }),
-//             .clk(mac_rx_clk[a])
-//         );
-
-//         always @(posedge mac_rx_clk[a]) begin
-//             if (!mac_fifo_resetn[a]) begin
-//                 mac_rx_cnterr[a] <= 0;
-//             end else if (mac_rx_bd[a] | mac_rx_er[a]) begin
-//                 mac_rx_cnterr[a] <= mac_rx_cnterr[a] + 1;
-//             end
-//         end
-//     end
-// endgenerate
-
-// ila_0 usr_ila (
-//     .probe0({
-//         test_tx_tdata [0],
-//         test_tx_tvalid[0],
-//         test_tx_tuser [0],
-//         test_tx_tlast [0],
-//         test_data,
-//         test_err,
-//         test_rx_tdata[0] ,
-//         test_rx_tvalid[0],
-//         test_rx_tlast[0]
-//     }),
-//     .clk(mac_gtx_clk)
-// );
+assign dbg_led = led_blink & !gt_rst;
 
 
 endmodule
