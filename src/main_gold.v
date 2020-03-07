@@ -5,14 +5,14 @@
 `timescale 1ns / 1ps
 
 module main_gold (
-    // input  usr_spi_clk ,
-    // input  usr_spi_cs  ,
-    // input  usr_spi_mosi,
-    // output usr_spi_miso,
+    input  usr_spi_clk ,
+    input  usr_spi_cs  ,
+    input  usr_spi_mosi,
+    output usr_spi_miso,
 
-    // output qspi_cs  ,
-    // output qspi_mosi,
-    // output qspi_miso,
+    output qspi_cs  ,
+    output qspi_mosi,
+    output qspi_miso,
 
     output mgt_pwr_en,
     output dbg_led,
