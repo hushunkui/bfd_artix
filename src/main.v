@@ -704,7 +704,7 @@ fpga_test_01 #(
     .p_in_rst   (~mac_pll_locked)
 );
 
-assign dbg_led = aurora_user_clk;//led_blink & !gt_rst;
+assign dbg_led = led_blink & !gt_rst;//aurora_user_clk;//
 
 reg clk20_div = 1'b0;
 always @(posedge clk20_g) begin
