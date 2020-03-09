@@ -68,6 +68,8 @@ proc main {argc argv} {
         puts "1 - get status"
         puts "2 - set ctrl"
         puts "3 - EthPHY"
+        puts "4 - TestReg-WR"
+        puts "5 - TestReg-RD"
         puts -nonewline "Enter key: "
         flush stdout
         set usr_key [gets stdin]
@@ -203,6 +205,15 @@ proc main {argc argv} {
                     set usr_key [gets stdin]
                 }
             }
+        } elseif {[string compare $usr_key "4"] == 0} {
+            puts -nonewline "Enter value(hex): "
+            set usr_key [gets stdin]
+            ::axi::axi_write [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_TEST0}]] $usr_key
+        } elseif {[string compare $usr_key "5"] == 0} {
+            set rd_reg_test0 [::axi::axi_read [format %08x [expr ${::hw_usr::BASE_ADDR} + ${::hw_usr::UREG_TEST0}]] ]
+            puts "rd_reg_test0: $rd_reg_test0"
+            puts -nonewline "press any key for continue: "
+            set usr_key [gets stdin]
         }
     }
 

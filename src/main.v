@@ -38,10 +38,13 @@ module main #(
     input  uart_rx,
     output uart_tx,
 
-//    inout spi_clk ,
-    inout spi_cs  ,
-    inout spi_mosi,
-    inout spi_miso,
+    output qspi_cs  ,
+    output qspi_mosi,
+    output qspi_miso,
+    // input  usr_spi_clk ,
+    // input  usr_spi_cs  ,
+    // input  usr_spi_mosi,
+    // output usr_spi_miso,
 
     output dbg_led,
     output [1:0] dbg_out,
@@ -58,6 +61,11 @@ wire [63:0] probe;
 // wire [ETHCOUNT-1:0] mac_rx_bd;
 // wire [ETHCOUNT-1:0] mac_rx_er;
 // wire [ETHCOUNT-1:0] mac_rx_fr_good_dbg;
+
+wire usr_spi_clk ;
+wire usr_spi_cs  ;
+wire usr_spi_mosi;
+wire usr_spi_miso;
 
 wire [ETHCOUNT-1:0]     mac_fifo_resetn;
 wire [3:0]              mac_link;
@@ -202,7 +210,7 @@ wire        M_AXI_0_rvalid ;
 wire [1:0]  M_AXI_0_rresp  ;
 wire        M_AXI_0_rready ;
 
-wire [0:0] test_gpio;
+wire [7:0] test_gpio;
 wire [31:0] reg_ctrl;
 wire test_err;
 
@@ -350,10 +358,30 @@ assign mgt_pwr_en = 1'b1;
 
 assign uart_tx = uart_rx;
 
-//assign  spi_clk  = 1'bz;
-assign  spi_cs   = 1'bz;
-assign  spi_mosi = 1'bz;
-assign  spi_miso = 1'bz;
+STARTUPE2 #(
+    .PROG_USR("FALSE"),  // Activate program event security feature. Requires encrypted bitstreams.
+    .SIM_CCLK_FREQ(0.0)  // Set the Configuration Clock Frequency(ns) for simulation.
+) STARTUPE2_inst (
+    .CFGCLK(),              // 1-bit output: Configuration main clock output
+    .CFGMCLK(),             // 1-bit output: Configuration internal oscillator clock output
+    .EOS(),                 // 1-bit output: Active high output signal indicating the End Of Startup.
+    .PREQ(),                // 1-bit output: PROGRAM request to fabric output
+    .CLK(1'b0),             // 1-bit input: User start-up clock input
+    .GSR(1'b0),             // 1-bit input: Global Set/Reset input (GSR cannot be used for the port name)
+    .GTS(1'b0),             // 1-bit input: Global 3-state input (GTS cannot be used for the port name)
+    .KEYCLEARB(1'b0),       // 1-bit input: Clear AES Decrypter Key input from Battery-Backed RAM (BBRAM)
+    .PACK(1'b0),            // 1-bit input: PROGRAM acknowledge input
+    .USRCCLKO(test_gpio[1]),//(usr_spi_clk), // 1-bit input: User CCLK input
+                            // For Zynq-7000 devices, this input must be tied to GND
+    .USRCCLKTS(1'b0),       // 1-bit input: User CCLK 3-state enable input
+                            // For Zynq-7000 devices, this input must be tied to VCC
+    .USRDONEO(1'b1),        // 1-bit input: User DONE pin output control
+    .USRDONETS(1'b1)        // 1-bit input: User DONE 3-state enable output
+);
+
+assign qspi_cs = test_gpio[0];//usr_spi_cs;
+assign qspi_mosi = test_gpio[2];//usr_spi_mosi;
+assign usr_spi_miso = qspi_miso;
 
 assign eth_phy_mdio = (ethphy_mdio_dir) ? ethphy_mdio_data : 1'bz;
 // assign eth_phy_mdio = 1'bz;
@@ -684,6 +712,7 @@ ila_0 tx_ila (
 );
 
 
+
 //----------------------------------
 //DEBUG
 //----------------------------------
@@ -716,7 +745,7 @@ always @(posedge sysclk25_g) begin
     sysclk25_div <= ~sysclk25_div;
 end
 
-assign dbg_out[0] = 1'b0;
+assign dbg_out[0] = usr_spi_miso;//1'b0;
 assign dbg_out[1] = clk20_div | sysclk25_div | led_blink | reg_ctrl[0];// &
 
 

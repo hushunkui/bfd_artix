@@ -7,7 +7,7 @@
 module usr_logic #(
     parameter SIM = 0
 ) (
-    output [0:0] test_gpio,
+    output [7:0] test_gpio,
     output reg [31:0] reg_ctrl = 0,
     input [31:0] status_aurora,
     input [31:0] status_eth,
@@ -168,7 +168,7 @@ firmware_rev m_firmware_rev (
 //user logic
 //----------------------------------------
 
-assign test_gpio[0] = reg_test0[0];
+assign test_gpio[7:0] = reg_test0[7:0];
 
 
 endmodule
