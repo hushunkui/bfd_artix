@@ -41,10 +41,10 @@ module main #(
     output qspi_cs  ,
     output qspi_mosi,
     output qspi_miso,
-    // input  usr_spi_clk ,
-    // input  usr_spi_cs  ,
-    // input  usr_spi_mosi,
-    // output usr_spi_miso,
+    input  usr_spi_clk ,
+    input  usr_spi_cs  ,
+    input  usr_spi_mosi,
+    output usr_spi_miso,
 
     output dbg_led,
     output [1:0] dbg_out,
@@ -62,10 +62,10 @@ wire [63:0] probe;
 // wire [ETHCOUNT-1:0] mac_rx_er;
 // wire [ETHCOUNT-1:0] mac_rx_fr_good_dbg;
 
-wire usr_spi_clk ;
-wire usr_spi_cs  ;
-wire usr_spi_mosi;
-wire usr_spi_miso;
+// wire usr_spi_clk ;
+// wire usr_spi_cs  ;
+// wire usr_spi_mosi;
+// wire usr_spi_miso;
 
 wire [ETHCOUNT-1:0]     mac_fifo_resetn;
 wire [3:0]              mac_link;
@@ -371,7 +371,7 @@ STARTUPE2 #(
     .GTS(1'b0),             // 1-bit input: Global 3-state input (GTS cannot be used for the port name)
     .KEYCLEARB(1'b0),       // 1-bit input: Clear AES Decrypter Key input from Battery-Backed RAM (BBRAM)
     .PACK(1'b0),            // 1-bit input: PROGRAM acknowledge input
-    .USRCCLKO(test_gpio[1]),//(usr_spi_clk), // 1-bit input: User CCLK input
+    .USRCCLKO(usr_spi_clk), //(test_gpio[1]),// 1-bit input: User CCLK input
                             // For Zynq-7000 devices, this input must be tied to GND
     .USRCCLKTS(1'b0),       // 1-bit input: User CCLK 3-state enable input
                             // For Zynq-7000 devices, this input must be tied to VCC
@@ -379,8 +379,8 @@ STARTUPE2 #(
     .USRDONETS(1'b1)        // 1-bit input: User DONE 3-state enable output
 );
 
-assign qspi_cs = test_gpio[0];//usr_spi_cs;
-assign qspi_mosi = test_gpio[2];//usr_spi_mosi;
+assign qspi_cs = usr_spi_cs;//test_gpio[0];//
+assign qspi_mosi = usr_spi_mosi;//test_gpio[2];//
 assign usr_spi_miso = qspi_miso;
 
 assign eth_phy_mdio = (ethphy_mdio_dir) ? ethphy_mdio_data : 1'bz;
