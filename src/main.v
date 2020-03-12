@@ -40,7 +40,7 @@ module main #(
 
     output qspi_cs  ,
     output qspi_mosi,
-    output qspi_miso,
+    input  qspi_miso,
     input  usr_spi_clk ,
     input  usr_spi_cs  ,
     input  usr_spi_mosi,
