@@ -14,6 +14,7 @@ set flash_index 0
 set fpga_index 0
 
 #Set file path
+#set bit_file ./firmware/bfd_artix_firmware_corrupted3.bit
 set bit_file ./firmware/bfd_artix_firmware.bit
 set bit_file_golden ./firmware/bfd_artix_firmware_gold.bit
 set mcs_file ./firmware/bfd_artix_firmware.mcs
