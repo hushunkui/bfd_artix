@@ -31,13 +31,12 @@
 #       better (For example, it should be able to be output only the
 #       write_cfgmem command to stdout)
 
-
 ## Globals ##
 set INSTRUCTIONS "
 
 Usage: [info script]
 
-This Tcl script calculates the multiboot address maps for using 
+This Tcl script calculates the multiboot address maps for using
 timer barrier images for Multi-boot 7 series designs.
 
 See XAPP1246 or XAPP1247 for more information
@@ -89,7 +88,7 @@ set BIT_SIZE_RANGE [list 0 $MIN_BIT_SIZE $MAX_BIT_SIZE]
 # hexpr --
 #
 # Arguments:
-# args: values to return formatted as hexidecimal 
+# args: values to return formatted as hexidecimal
 #       All values are passed along to expr
 #
 # Results:
@@ -104,7 +103,7 @@ proc hexpr args {
 # prompt: text to display to at prompt
 # values: list of values to display and select from
 # range: if this is true, treat values as a list of three integers:
-#       0 - default 
+#       0 - default
 #       1 - minumum value
 #       2 - maximum value
 #
@@ -124,7 +123,7 @@ proc PromptForOption {prompt values {range 0}} {
             return [lindex $values 0]
         } else {
             if {$range} {
-                scan $line "%d" freq 
+                scan $line "%d" freq
                 if {$freq > [lindex $values 1] && $freq < [lindex $values 2]} {
                     return $freq
                 }
@@ -155,7 +154,7 @@ proc InteractiveMode {{bits 0}} {
     global FLASH_WIDTH
     global FREQ_MHZ_RANGE
     global FLASH_DENSITIES
-    global BIT_SIZE_RANGE 
+    global BIT_SIZE_RANGE
 
     set options {}
     puts "$INSTRUCTIONS"
@@ -233,7 +232,7 @@ proc GetOptions {argc argv} {
     } elseif { $argc == 0 } {
         set options [InteractiveMode]
     } else {
-        puts "Unrecognized argument list: $argv" 
+        puts "Unrecognized argument list: $argv"
         puts $INSTRUCTIONS
         return -1
     }
@@ -242,7 +241,7 @@ proc GetOptions {argc argv} {
     return $options
 }
 
-    
+
 # NextBitstreamAddress --
 #
 # Calculate the address for the next bitstream. There is a minimum buffer
@@ -352,9 +351,9 @@ proc WbstarAddress {multiboot_address} {
 #
 # Arguments:
 # bitswap (optional) - Swap the bits in the byte
-# 
+#
 # Results:
-# return a single byte 
+# return a single byte
 proc CreateNext4Bytes {word {bitswap 0} {byteswap 0}} {
 
     set return_string ""
@@ -390,7 +389,7 @@ proc CreateNext4Bytes {word {bitswap 0} {byteswap 0}} {
     }
 
     # puts "DEBUG: Next string: $return_string"
-    return $return_string 
+    return $return_string
 }
 
 
@@ -402,7 +401,7 @@ proc CreateNext4Bytes {word {bitswap 0} {byteswap 0}} {
 # timer - either 1 or 2 for the timer to be built
 # bitswap (optional) - Swap the bits in each byte
 # byteswap (optional) - Swap the bytes (every other byte)
-# 
+#
 # Results:
 # timer1.bin and timer2.bin are created.
 #
@@ -412,7 +411,7 @@ proc CreateNext4Bytes {word {bitswap 0} {byteswap 0}} {
 # timer2.bin will be just over 256 bytes (includes 256 bytes of dummy words
 # before the sync word
 proc CreateTimers {timer {bitswap 0} {byteswap 0}} {
-
+    set output_path  ./firmware
 #    set timer1_size 1024
     #
     set dummy_word            "FFFFFFFF"
@@ -433,7 +432,7 @@ proc CreateTimers {timer {bitswap 0} {byteswap 0}} {
         set header_size_words 1
         set timer_count 1
     }
-    puts "Writing Timer: $timer_filename"
+    puts "Writing Timer: $output_path/$timer_filename"
 
     set timer_list ""
 
@@ -466,7 +465,7 @@ proc CreateTimers {timer {bitswap 0} {byteswap 0}} {
     lappend timer_list $dummy_word
 
 
-	set fp [open $timer_filename w]
+	set fp [open $output_path/$timer_filename w]
 	fconfigure $fp -translation binary
 
     foreach i $timer_list {
@@ -485,7 +484,7 @@ proc CreateTimers {timer {bitswap 0} {byteswap 0}} {
 # Arguments:
 # address: address in bytes
 # size   : size of flash device in bits
-# 
+#
 # Results:
 # Return the size difference in bytes (rounded up) between the address and
 # size of the flash. Negative means address is with the flash density
@@ -587,10 +586,10 @@ puts "Timer1 image address    : [hexpr $timer1_address]"
 puts "Multiboot image address : [hexpr $multiboot_address]"
 puts "Timer2 image address    : [hexpr $timer2_address]"
 
-# Write out the write_cfgmem command line 
+# Write out the write_cfgmem command line
 puts ""
 puts "write_cfgmem command:"
-puts -nonewline "write_cfgmem -format mcs -size [expr ($flash_size_mbit/8)]" 
+puts -nonewline "write_cfgmem -format mcs -size [expr ($flash_size_mbit/8)]"
 puts -nonewline " -interface $interface"
 puts -nonewline " -loadbit \""
 puts -nonewline "up [hexpr 0] <golden>"
