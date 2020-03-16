@@ -1,10 +1,6 @@
 #
 #author: Golovachenko Viktor
 #
-if { [catch { exec multiboot_address_table.bat >@ stdout } errmsg] } {
-    puts "$errorInfo\n"
-    return
-}
 
 #Set flash param
 set flash_name s25fl128sxxxxxx0-spi-x1_x2_x4
@@ -20,24 +16,42 @@ set flash_index 0
 set fpga_index 0
 
 #Set file path
-#set bit_file ./firmware/bfd_artix_firmware_corrupted3.bit
 set bit_file ./firmware/bfd_artix_firmware.bit
 set bit_file_golden ./firmware/bfd_artix_firmware_gold.bit
 set bit_file_timer1 ./firmware/timer1.bin
 set bit_file_timer2 ./firmware/timer2.bin
 set mcs_file ./firmware/bfd_artix_firmware.mcs
 
-#Set server path
-set server localhost:3121
-
-#Set unused pin termination - pull-none;pull-up;pull-down
-set unused_pins pull-none
-
 #check existing bit file for next working with it
 if {![file exist $bit_file]} {
     puts "error can't find [file normalize $bit_file]"
     return
 }
+if {![file exist $bit_file_golden]} {
+    puts "error can't find [file normalize $bit_file_golden]"
+    return
+}
+
+#delete timer1.bin, timer2.bin before work
+if {[file exist $bit_file_timer1]} {
+    puts "delete file [file normalize $bit_file_timer1]"
+    file delete -force $bit_file_timer1
+}
+if {[file exist $bit_file_timer2]} {
+    puts "delete file [file normalize $bit_file_timer2]"
+    file delete -force $bit_file_timer2
+}
+#run script for create timer1.bin and timer2.bin (for more info see xapp1247)
+if { [catch { exec multiboot_address_table.bat >@ stdout } errmsg] } {
+    puts "$errorInfo\n"
+    return
+}
+
+#Set server path
+set server localhost:3121
+
+#Set unused pin termination - pull-none;pull-up;pull-down
+set unused_pins pull-none
 
 #convert bit file to mcs file
 write_cfgmem -force -format mcs -size $flash_size -interface $flash_interface -verbose \
