@@ -42,7 +42,7 @@ module main #(
     output qspi_mosi,
     input  qspi_miso,
     input  usr_spi_clk ,
-    input  usr_spi_cs  ,
+    input [1:0] usr_spi_cs,
     input  usr_spi_mosi,
     output usr_spi_miso,
 
@@ -371,7 +371,7 @@ STARTUPE2 #(
     .GTS(1'b0),             // 1-bit input: Global 3-state input (GTS cannot be used for the port name)
     .KEYCLEARB(1'b0),       // 1-bit input: Clear AES Decrypter Key input from Battery-Backed RAM (BBRAM)
     .PACK(1'b0),            // 1-bit input: PROGRAM acknowledge input
-    .USRCCLKO(usr_spi_clk), //(test_gpio[1]),// 1-bit input: User CCLK input
+    .USRCCLKO(usr_spi_clk & !usr_spi_cs[0]), //(test_gpio[1]),// 1-bit input: User CCLK input
                             // For Zynq-7000 devices, this input must be tied to GND
     .USRCCLKTS(1'b0),       // 1-bit input: User CCLK 3-state enable input
                             // For Zynq-7000 devices, this input must be tied to VCC
@@ -379,9 +379,12 @@ STARTUPE2 #(
     .USRDONETS(1'b1)        // 1-bit input: User DONE 3-state enable output
 );
 
-assign qspi_cs = usr_spi_cs;//test_gpio[0];//
+wire usr2_miso;
+assign usr2_miso = 1'b1;
+
+assign qspi_cs = usr_spi_cs[0];
 assign qspi_mosi = usr_spi_mosi;//test_gpio[2];//
-assign usr_spi_miso = qspi_miso;
+assign usr_spi_miso = (qspi_miso | usr_spi_cs[0]) && (usr2_miso | usr_spi_cs[1]);
 
 assign eth_phy_mdio = (ethphy_mdio_dir) ? ethphy_mdio_data : 1'bz;
 // assign eth_phy_mdio = 1'bz;
@@ -746,7 +749,7 @@ always @(posedge sysclk25_g) begin
 end
 
 assign dbg_out[0] = usr_spi_miso;//1'b0;
-assign dbg_out[1] = clk20_div | sysclk25_div | led_blink | reg_ctrl[0];// &
+assign dbg_out[1] = clk20_div | sysclk25_div | led_blink | reg_ctrl[0] | usr_spi_cs[1];// &
 
 
 endmodule

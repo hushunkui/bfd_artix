@@ -24,13 +24,20 @@ set_property IOSTANDARD LVCMOS33 [get_ports qspi_mosi]
 set_property IOSTANDARD LVCMOS33 [get_ports qspi_miso]
 
 set_property PACKAGE_PIN K2 [get_ports usr_spi_clk ]
-set_property PACKAGE_PIN R1 [get_ports usr_spi_cs  ]
+set_property PACKAGE_PIN R1 [get_ports {usr_spi_cs[0]} ]
+set_property PACKAGE_PIN P4 [get_ports {usr_spi_cs[1]} ]
 set_property PACKAGE_PIN R2 [get_ports usr_spi_mosi]
 set_property PACKAGE_PIN K1 [get_ports usr_spi_miso]
 set_property IOSTANDARD LVCMOS25 [get_ports usr_spi_clk ]
-set_property IOSTANDARD LVCMOS25 [get_ports usr_spi_cs  ]
+set_property IOSTANDARD LVCMOS25 [get_ports {usr_spi_cs[0]} ]
+set_property IOSTANDARD LVCMOS25 [get_ports {usr_spi_cs[1]} ]
 set_property IOSTANDARD LVCMOS25 [get_ports usr_spi_mosi]
 set_property IOSTANDARD LVCMOS25 [get_ports usr_spi_miso]
+
+set_property PACKAGE_PIN H14 [get_ports {dbg_out[0]}]
+set_property PACKAGE_PIN D10 [get_ports {dbg_out[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {dbg_out[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {dbg_out[1]}]
 
 
 ###############################################################################

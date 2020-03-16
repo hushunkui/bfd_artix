@@ -83,6 +83,7 @@ if {![string equal [get_property PROGRAM.HW_CFGMEM_TYPE [current_hw_device]] \
 
 puts "flash programming..."
 program_hw_cfgmem -hw_cfgmem [get_property PROGRAM.HW_CFGMEM [current_hw_device ]]
+puts "Start fpga firmware..."
 boot_hw_device  [current_hw_device]
 
 close_hw_target
