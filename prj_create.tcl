@@ -98,7 +98,7 @@ if { ${design_name} eq "" } {
    set errMsg "Design <$design_name> already exists in your project, please set the variable <design_name> to another value."
    set nRet 1
 } elseif { [get_files -quiet ${design_name}.bd] ne "" } {
-   # USE CASES: 
+   # USE CASES:
    #    6) Current opened design, has components, but diff names, design_name exists in project.
    #    7) No opened design, design_name exists in project.
 
@@ -132,7 +132,7 @@ set bCheckIPsPassed 1
 ##################################################################
 set bCheckIPs 1
 if { $bCheckIPs == 1 } {
-   set list_check_ips "\ 
+   set list_check_ips "\
 xilinx.com:ip:aurora_8b10b:*\
 xilinx.com:ip:axi_protocol_converter:*\
 xilinx.com:ip:jtag_axi:*\
@@ -340,6 +340,7 @@ add_files -norecurse $script_folder/src/main.v
 add_files -norecurse $script_folder/src/axi4lite_ctrl.v
 add_files -norecurse $script_folder/src/usr_logic.v
 add_files -norecurse $script_folder/src/firmware_rev.v
+add_files -norecurse $script_folder/src/spi_slave.v
 add_files -norecurse $script_folder/src/mac_rgmii.v
 add_files -norecurse $script_folder/src/mac_crc.v
 add_files -norecurse $script_folder/src/vicg_common_pkg.vhd

@@ -7,6 +7,8 @@
 module usr_logic #(
     parameter SIM = 0
 ) (
+    input [31:0] firmware_date,
+    input [31:0] firmware_time,
     output [7:0] test_gpio,
     output reg [31:0] reg_ctrl = 0,
     input [31:0] status_aurora,
@@ -63,8 +65,6 @@ reg  [31:0] reg_rdata = 32'h0;
 wire        reg_wr;
 wire        reg_rd;
 
-wire [31:0] firmware_date;
-wire [31:0] firmware_time;
 
 reg [31:0] reg_test0 = 32'h0;
 reg [31:0] reg_test1 = 32'h0;
@@ -157,11 +157,6 @@ always @(posedge s_axi_clk) begin
     end
 end
 
-
-firmware_rev m_firmware_rev (
-   .firmware_date (firmware_date),
-   .firmware_time (firmware_time)
-);
 
 
 //----------------------------------------

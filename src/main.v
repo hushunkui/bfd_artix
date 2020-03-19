@@ -4,6 +4,8 @@
 //
 `timescale 1ns / 1ps
 
+`include "fpga_reg.v"
+
 module main #(
     parameter ETHCOUNT = 4, //max 4
     parameter SIM = 0
@@ -218,6 +220,12 @@ wire [1:0] eth_num;
 wire [3:0] eth_en;
 wire  module_en;
 
+wire [31:0] firmware_date;
+wire [31:0] firmware_time;
+firmware_rev m_firmware_rev (
+   .firmware_date (firmware_date),
+   .firmware_time (firmware_time)
+);
 
 
 wire clk20_i;
@@ -309,6 +317,8 @@ usr_logic #(
     .SIM (SIM)
 ) m_usr (
 //user part
+    .firmware_date (firmware_date),
+    .firmware_time (firmware_time),
     .test_gpio (test_gpio),
     .reg_ctrl (reg_ctrl),
     .status_aurora({30'd0, 1'b0, aurora_status_channel_up}),
@@ -358,6 +368,53 @@ assign mgt_pwr_en = 1'b1;
 
 assign uart_tx = uart_rx;
 
+wire [(`FPGA_REG_DWIDTH * `FPGA_REG_COUNT)-1:0] reg_rd_data;
+wire [7:0]  reg_wr_addr = 0;
+wire [15:0] reg_wr_data = 0;
+wire        reg_wr_en = 0;
+wire        reg_clk;
+reg [`FPGA_REG_DWIDTH-1:0] reg_test_array [0:`FPGA_REG_TEST_ARRAY_COUNT-1];
+
+assign reg_clk = clk125M;
+spi_slave #(
+    .RD_OFFSET(`FPGA_RD_OFFSET),
+    .REG_RD_DATA_WIDTH(`FPGA_REG_COUNT * `FPGA_REG_DWIDTH)
+) usrspi (
+    //SPI port
+    .spi_cs_i  (usr_spi_cs[1]),
+    .spi_clk_i (usr_spi_clk),
+    .spi_mosi_i(usr_spi_mosi),
+    .spi_miso_o(usr_miso),
+
+    //User IF
+    .reg_rd_data(reg_rd_data),
+    .reg_wr_addr(reg_wr_addr),
+    .reg_wr_data(reg_wr_data),
+    .reg_wr_en  (reg_wr_en),
+    .reg_clk    (reg_clk),
+    .rst(1'b0)
+);
+
+//Read User resisters
+assign reg_rd_data[`FPGA_RREG_FIRMWARE_DATE * `FPGA_REG_DWIDTH +: (`FPGA_REG_DWIDTH*2)] = firmware_date;
+assign reg_rd_data[`FPGA_RREG_FIRMWARE_TIME * `FPGA_REG_DWIDTH +: (`FPGA_REG_DWIDTH*2)] = firmware_time;
+assign reg_rd_data[`FPGA_RREG_FIRMWARE_TYPE * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = `FPGA_FIRMWARE_UPDATE;
+
+genvar a;
+generate
+    for (a = 0; a < `FPGA_REG_TEST_ARRAY_COUNT; a = a + 1) begin
+        assign reg_rd_data[(`FPGA_RREG_TEST_ARRAY + a) * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = reg_test_array[a];
+    end
+endgenerate
+
+integer i;
+//Write User resisters
+always @ (posedge reg_clk) begin
+    for (i = 0; i < `FPGA_REG_TEST_ARRAY_COUNT; i = i + 1) begin
+        if (reg_wr_en && (reg_wr_addr == (`FPGA_WREG_TEST_ARRAY + i))) reg_test_array[i] <= reg_wr_data;
+    end
+end
+
 STARTUPE2 #(
     .PROG_USR("FALSE"),  // Activate program event security feature. Requires encrypted bitstreams.
     .SIM_CCLK_FREQ(0.0)  // Set the Configuration Clock Frequency(ns) for simulation.
@@ -371,7 +428,7 @@ STARTUPE2 #(
     .GTS(1'b0),             // 1-bit input: Global 3-state input (GTS cannot be used for the port name)
     .KEYCLEARB(1'b0),       // 1-bit input: Clear AES Decrypter Key input from Battery-Backed RAM (BBRAM)
     .PACK(1'b0),            // 1-bit input: PROGRAM acknowledge input
-    .USRCCLKO(usr_spi_clk & !usr_spi_cs[0]), //(test_gpio[1]),// 1-bit input: User CCLK input
+    .USRCCLKO(usr_spi_clk & !usr_spi_cs[0]), // 1-bit input: User CCLK input
                             // For Zynq-7000 devices, this input must be tied to GND
     .USRCCLKTS(1'b0),       // 1-bit input: User CCLK 3-state enable input
                             // For Zynq-7000 devices, this input must be tied to VCC
@@ -379,12 +436,14 @@ STARTUPE2 #(
     .USRDONETS(1'b1)        // 1-bit input: User DONE 3-state enable output
 );
 
-wire usr2_miso;
-assign usr2_miso = 1'b1;
+wire usr_miso;
 
 assign qspi_cs = usr_spi_cs[0];
-assign qspi_mosi = usr_spi_mosi;//test_gpio[2];//
-assign usr_spi_miso = (qspi_miso | usr_spi_cs[0]) && (usr2_miso | usr_spi_cs[1]);
+assign qspi_mosi = usr_spi_mosi;
+assign usr_spi_miso = (qspi_miso | usr_spi_cs[0]) && (usr_miso | usr_spi_cs[1]);
+
+assign dbg_out[0] = usr_spi_miso;
+assign dbg_out[1] = usr_spi_cs[1];
 
 assign eth_phy_mdio = (ethphy_mdio_dir) ? ethphy_mdio_data : 1'bz;
 // assign eth_phy_mdio = 1'bz;
