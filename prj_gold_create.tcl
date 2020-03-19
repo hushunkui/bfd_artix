@@ -64,6 +64,9 @@ add_files -norecurse $script_folder/src/main_gold.v
 add_files -norecurse $script_folder/src/vicg_common_pkg.vhd
 add_files -norecurse $script_folder/src/time_gen.vhd
 add_files -norecurse $script_folder/src/fpga_test_01.vhd
+add_files -norecurse $script_folder/src/firmware_gold_rev.v
+add_files -norecurse $script_folder/src/spi_slave.v
+add_files -norecurse $script_folder/src/core_gen/clk_wiz_gold/clk_wiz_gold.xci
 set_property include_dirs $script_folder/src [current_fileset]
 
 #add_files -fileset sim_1 -norecurse $script_folder/sim/main_tb.v
@@ -71,10 +74,10 @@ set_property include_dirs $script_folder/src [current_fileset]
 #set_property -name {modelsim.simulate.custom_wave_do} -value $script_folder/sim/main_wave.do -objects [get_filesets sim_1]
 #set_property -name {modelsim.simulate.runtime} -value {5us} -objects [get_filesets sim_1]
 
-#set obj [get_runs synth_1]
-#set_property steps.synth_design.tcl.pre [file normalize "$script_folder/src/firmware_gold_rev.tcl"] $obj
-##-include_dirs is path at dir ./vv/<name>.runs/synth_1
-#set_property -name {steps.synth_design.args.more options} -value {-include_dirs ../../../src} -objects $obj
+set obj [get_runs synth_1]
+set_property steps.synth_design.tcl.pre [file normalize "$script_folder/src/firmware_gold_rev.tcl"] $obj
+#-include_dirs is path at dir ./vv/<name>.runs/synth_1
+set_property -name {steps.synth_design.args.more options} -value {-include_dirs ../../../src} -objects $obj
 
 set obj [get_runs impl_1]
 set_property steps.write_bitstream.tcl.post [file normalize "$script_folder/src/firmware_gold_copy.tcl"] $obj

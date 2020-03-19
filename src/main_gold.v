@@ -4,6 +4,8 @@
 //
 `timescale 1ns / 1ps
 
+`include "fpga_reg.v"
+
 module main_gold (
     output qspi_cs  ,
     output qspi_mosi,
@@ -64,14 +66,76 @@ STARTUPE2 #(
     .USRDONETS(1'b1)        // 1-bit input: User DONE 3-state enable output
 );
 
-wire usr2_miso;
-assign usr2_miso = 1'b1;
+wire usr_miso;
 
 assign qspi_cs = usr_spi_cs[0];
 assign qspi_mosi = usr_spi_mosi;
-assign usr_spi_miso = (qspi_miso | usr_spi_cs[0]) && (usr2_miso | usr_spi_cs[1]);
+assign usr_spi_miso = (qspi_miso | usr_spi_cs[0]) && (usr_miso | usr_spi_cs[1]);
 
 assign dbg_out[0] = usr_spi_miso;
 assign dbg_out[1] = usr_spi_cs[1];
+
+
+wire [(`FPGA_REG_DWIDTH * `FPGA_REG_COUNT)-1:0] reg_rd_data;
+wire [7:0]  reg_wr_addr = 0;
+wire [15:0] reg_wr_data = 0;
+wire        reg_wr_en = 0;
+wire        reg_clk;
+
+wire [31:0] firmware_date;
+wire [31:0] firmware_time;
+
+reg [`FPGA_REG_DWIDTH-1:0] reg_test_array [0:`FPGA_REG_TEST_ARRAY_COUNT-1];
+
+clk_wiz_gold pll0(
+    .clk_out1(reg_clk),//clk125M
+    .locked(),
+    .clk_in1(sysclk25_g),
+    .reset(1'b0)
+);
+
+firmware_gold_rev m_firmware_rev (
+   .firmware_date (firmware_date),
+   .firmware_time (firmware_time)
+);
+
+spi_slave #(
+    .RD_OFFSET(`FPGA_RD_OFFSET),
+    .REG_RD_DATA_WIDTH(`FPGA_REG_COUNT * `FPGA_REG_DWIDTH)
+) usrspi (
+    //SPI port
+    .spi_cs_i  (usr_spi_cs[1]),
+    .spi_clk_i (usr_spi_clk),
+    .spi_mosi_i(usr_spi_mosi),
+    .spi_miso_o(usr_miso),
+
+    //User IF
+    .reg_rd_data(reg_rd_data),
+    .reg_wr_addr(reg_wr_addr),
+    .reg_wr_data(reg_wr_data),
+    .reg_wr_en  (reg_wr_en),
+    .reg_clk    (reg_clk),
+    .rst(1'b0)
+);
+
+//Read User resisters
+assign reg_rd_data[`FPGA_RREG_FIRMWARE_DATE * `FPGA_REG_DWIDTH +: (`FPGA_REG_DWIDTH*2)] = firmware_date;
+assign reg_rd_data[`FPGA_RREG_FIRMWARE_TIME * `FPGA_REG_DWIDTH +: (`FPGA_REG_DWIDTH*2)] = firmware_time;
+assign reg_rd_data[`FPGA_RREG_FIRMWARE_TYPE * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = `FPGA_FIRMWARE_GOLDEN;
+
+genvar a;
+generate
+    for (a = 0; a < `FPGA_REG_TEST_ARRAY_COUNT; a = a + 1) begin
+        assign reg_rd_data[(`FPGA_RREG_TEST_ARRAY + a) * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = reg_test_array[a];
+    end
+endgenerate
+
+integer i;
+//Write User resisters
+always @ (posedge reg_clk) begin
+    for (i = 0; i < `FPGA_REG_TEST_ARRAY_COUNT; i = i + 1) begin
+        if (reg_wr_en && (reg_wr_addr == (`FPGA_WREG_TEST_ARRAY + i))) reg_test_array[i] <= reg_wr_data;
+    end
+end
 
 endmodule

@@ -37,7 +37,31 @@ proc generateFirmwareRevisionUpdate {} {
 }
 
 
+proc convert_fpga_reg_v_2_fpga_reg_h {} {
+
+    set rfile [open "../../../src/fpga_reg.v" r]
+    set wfile [open "../../../src/fpga_reg.h" w]
+
+    set rfile_data [read $rfile]
+
+    puts "$rfile_data"
+
+    set wfile_data [string map {"`define" "#define"} $rfile_data]
+    set wfile_data [string map {"32'h" "0x"} $wfile_data]
+
+    puts "$wfile_data"
+    puts $wfile $wfile_data
+
+    close $rfile
+    close $wfile
+}
+
+
 set_param general.maxThreads 4
 
 # Comment out this line to prevent the process from automatically executing when the file is sourced:
 generateFirmwareRevisionUpdate
+
+convert_fpga_reg_v_2_fpga_reg_h
+
+#convert_2_verilog
