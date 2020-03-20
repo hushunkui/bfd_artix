@@ -2,7 +2,7 @@
 //author: Golovachenko Viktor
 //
 `timescale 1ns / 1ps
-module mdio_tb();
+module spi_slave_tb();
 
 reg clk = 1;
 always #20 clk = ~clk;

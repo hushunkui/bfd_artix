@@ -9,11 +9,9 @@
 //------------------------------------------------------------------------
 `timescale 1ns / 1ps
 
-`include "fpga_regs.v"
+`include "fpga_reg.v"
 
-module spi_master #(
-    parameter BAYER_PATTERN = 0,
-)(
+module spi_master (
     output   spi_cs  ,
     output   spi_clk ,
     output   spi_mosi,
@@ -153,28 +151,46 @@ initial begin : sim_main
 
     #10000;
 
-    SPI_Read((`FPGA_RD_FIRMWARE_REV), 0);
-    #300;
-
     usr_data16b = 32'hAA;
-    SPI_Write(`FPGA_REG_TEST_ARRAY + 0, usr_data16b); $display("\usr_data16b = %04d", usr_data16b);
+    SPI_Write(`FPGA_WREG_TEST_ARRAY + 0, usr_data16b); $display("wr: usr_data16b = x%04x", usr_data16b);
     #300;
     usr_data16b = 32'hBB;
-    SPI_Write(`FPGA_REG_TEST_ARRAY + 1, usr_data16b); $display("\usr_data16b = %04d", usr_data16b);
+    SPI_Write(`FPGA_WREG_TEST_ARRAY + 1, usr_data16b); $display("wr: usr_data16b = x%04x", usr_data16b);
     #300;
     usr_data16b = 32'hCC;
-    SPI_Write(`FPGA_REG_TEST_ARRAY + 2, usr_data16b); $display("\usr_data16b = %04d", usr_data16b);
+    SPI_Write(`FPGA_WREG_TEST_ARRAY + 2, usr_data16b); $display("wr: usr_data16b = x%04x", usr_data16b);
     #300;
     usr_data16b = 32'hDD;
-    SPI_Write(`FPGA_REG_TEST_ARRAY + 3, usr_data16b); $display("\usr_data16b = %04d", usr_data16b);
+    SPI_Write(`FPGA_WREG_TEST_ARRAY + 3, usr_data16b); $display("wr: usr_data16b = x%04x", usr_data16b);
     #300;
 
     #500;
-    SPI_Read(`FPGA_REG_TEST_ARRAY + 0, 0);
-    SPI_Read(`FPGA_REG_TEST_ARRAY + 1, 0);
-    SPI_Read(`FPGA_REG_TEST_ARRAY + 2, 0);
-    SPI_Read(`FPGA_REG_TEST_ARRAY + 3, 0);
+    SPI_Read(`FPGA_RREG_TEST_ARRAY + 0, 0);
+    $display("rd: spi_rxdata = x%04x", spi_rxdata);
+    #300;
+    SPI_Read(`FPGA_RREG_TEST_ARRAY + 1, 0);
+    $display("rd: spi_rxdata = x%04x", spi_rxdata);
+    #300;
+    SPI_Read(`FPGA_RREG_TEST_ARRAY + 2, 0);
+    $display("rd: spi_rxdata = x%04x", spi_rxdata);
+    #300;
+    SPI_Read(`FPGA_RREG_TEST_ARRAY + 3, 0);
+    $display("rd: spi_rxdata = x%04x", spi_rxdata);
 
+
+    SPI_Read((`FPGA_RREG_FIRMWARE_DATE + 0), 0);
+    $display("rd: spi_rxdata = x%04x", spi_rxdata);
+    #300;
+    SPI_Read((`FPGA_RREG_FIRMWARE_DATE + 1), 0);
+    $display("rd: spi_rxdata = x%04x", spi_rxdata);
+    #300;
+
+    SPI_Read((`FPGA_RREG_FIRMWARE_TIME + 0), 0);
+    $display("rd: spi_rxdata = x%04x", spi_rxdata);
+    #300;
+    SPI_Read((`FPGA_RREG_FIRMWARE_TIME + 1), 0);
+    $display("rd: spi_rxdata = x%04x", spi_rxdata);
+    #300;
     // do begin
     //     SPI_Read(`FPGA_REG_TEST_ARRAY + 0, 0);
     // end while (spi_rxdata[`FPGA_RD_REG_MEMTEST_STATUS_CALIB_DONE_BIT] != 1'b1);

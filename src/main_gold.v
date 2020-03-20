@@ -77,9 +77,9 @@ assign dbg_out[1] = usr_spi_cs[1];
 
 
 wire [(`FPGA_REG_DWIDTH * `FPGA_REG_COUNT)-1:0] reg_rd_data;
-wire [7:0]  reg_wr_addr = 0;
-wire [15:0] reg_wr_data = 0;
-wire        reg_wr_en = 0;
+wire [7:0]  reg_wr_addr;
+wire [15:0] reg_wr_data;
+wire        reg_wr_en;
 wire        reg_clk;
 
 wire [31:0] firmware_date;
