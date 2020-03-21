@@ -106,9 +106,23 @@ proc convert_fpga_reg_v_2_fpga_reg_h {} {
 
     set wfile_data [string map {"`define" "#define"} $rfile_data]
     set wfile_data [string map {"32'h" "0x"} $wfile_data]
+    set wfile_data [string map {"16'h" "0x"} $wfile_data]
+    set wfile_data [string map {"8'h" "0x"} $wfile_data]
+    set wfile_data [string map {"32'd" ""} $wfile_data]
+    set wfile_data [string map {"16'd" ""} $wfile_data]
+    set wfile_data [string map {"8'd" ""} $wfile_data]
+    set wfile_data [string map {"1'b" ""} $wfile_data]
+    set wfile_data [string map {"`" ""} $wfile_data]
 
     puts "$wfile_data"
+    puts $wfile "#ifndef __FPGA_REG_H__"
+    puts $wfile "#define __FPGA_REG_H__"
+    puts $wfile ""
+    puts $wfile ""
     puts $wfile $wfile_data
+    puts $wfile ""
+    puts $wfile ""
+    puts $wfile "#endif // __FPGA_REG_H__"
 
     close $rfile
     close $wfile
