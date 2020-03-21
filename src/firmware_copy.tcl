@@ -6,12 +6,16 @@ set curDir [pwd]
 puts "current dir: $curDir"
 # result of compilation xilinx IDE
 set prj_firmware_name            main.bit
+set prj_firmware_name2           main.bit
 # set prj_dbg_name                 main.ltx
 # user name of fpga firmware
 set usr_firmware_name            bfd_artix_firmware.bit
+set usr_firmware_name2           bfd_artix_firmware.bit
 # user directory for fpga firmware
 set usr_firmware_dir            ../../../firmware
 # set usr_dbg_dir                 ../../../dbg
+
+write_bitstream -force -bin_file ./$prj_firmware_name
 
 if {![file exist $curDir/$prj_firmware_name]} {
     puts "error can't find $curDir/$prj_firmware_name"
@@ -23,6 +27,7 @@ if {![file exist $usr_firmware_dir]} {
 }
 puts "$curDir/$prj_firmware_name to [file normalize $usr_firmware_dir] and rename it to $usr_firmware_name"
 file copy -force $curDir/$prj_firmware_name $usr_firmware_dir/$usr_firmware_name
+file copy -force $curDir/$prj_firmware_name2 $usr_firmware_dir/$usr_firmware_name2
 
 # if {[file exist $usr_dbg_dir]} {
 #     puts "-----[file normalize $usr_dbg_dir]"
