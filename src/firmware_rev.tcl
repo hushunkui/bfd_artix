@@ -117,8 +117,6 @@ proc convert_fpga_reg_v_2_fpga_reg_h {} {
     puts "$wfile_data"
     puts $wfile "#ifndef __FPGA_REG_H__"
     puts $wfile "#define __FPGA_REG_H__"
-    puts $wfile ""
-    puts $wfile ""
     puts $wfile $wfile_data
     puts $wfile ""
     puts $wfile ""
