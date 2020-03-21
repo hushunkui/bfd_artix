@@ -5,39 +5,31 @@
 `define FPGA_FIRMWARE_GOLDEN  16'hCB
 
 //----------------------------------------
-//USER SPI
+//USER SPI interface
 //----------------------------------------
-`define FPGA_REG_COUNT        (128)
+`define FPGA_REG_COUNT        (64)
 `define FPGA_REG_DWIDTH       (16) //Data Width
 `define FPGA_REG_AWIDTH       (8)  //Address Width
 
 `define FPGA_WR_OFFSET        (0)
-`define FPGA_RD_OFFSET        (64)
-`define FPGA_REG_TEST_ARRAY_COUNT (8)
+`define FPGA_RD_OFFSET        (32)
+`define FPGA_REG_TEST_ARRAY_COUNT (4)
 
-
-//----------------------------------------
 // address map spi registers (WR)
-//----------------------------------------
-`define FPGA_WREG_TEST_ARRAY            (`FPGA_WR_OFFSET + 8) //array(8 x 16bit)
+`define FPGA_WREG_TEST_ARRAY            (`FPGA_WR_OFFSET + 8) //array(4 x 16bit)
 
 
-//----------------------------------------
 // address map spi registers (RD)
-//----------------------------------------
 `define FPGA_RREG_FIRMWARE_DATE         (`FPGA_RD_OFFSET + 0) //32bit
 `define FPGA_RREG_FIRMWARE_TIME         (`FPGA_RD_OFFSET + 2) //32bit
 
 `define FPGA_RREG_FIRMWARE_TYPE         (`FPGA_RD_OFFSET + 4) //16bit
 
-`define FPGA_RREG_TEST_ARRAY            (`FPGA_RD_OFFSET + 8) //array(8 x 16bit)
-
-
-
+`define FPGA_RREG_TEST_ARRAY            (`FPGA_RD_OFFSET + 8) //array(4 x 16bit)
 
 
 //----------------------------------------
-//USER JTAG MASTER
+//USER JTAG MASTER interface
 //----------------------------------------
 `define UREG_FIRMWARE_DATE    32'h00
 `define UREG_FIRMWARE_TIME    32'h04

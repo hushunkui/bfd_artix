@@ -102,7 +102,7 @@ firmware_gold_rev m_firmware_rev (
 spi_slave #(
     .RD_OFFSET(`FPGA_RD_OFFSET),
     .REG_RD_DATA_WIDTH(`FPGA_REG_COUNT * `FPGA_REG_DWIDTH)
-) usrspi (
+) usr_spi (
     //SPI port
     .spi_cs_i  (usr_spi_cs[1]),
     .spi_clk_i (usr_spi_clk),

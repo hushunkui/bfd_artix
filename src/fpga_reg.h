@@ -1,8 +1,36 @@
 //
 // author: Golovachenko Viktor
 //
+#define FPGA_FIRMWARE_UPDATE  16'h56
+#define FPGA_FIRMWARE_GOLDEN  16'hCB
 
-//user register map:
+//----------------------------------------
+//USER SPI interface
+//----------------------------------------
+#define FPGA_REG_COUNT        (64)
+#define FPGA_REG_DWIDTH       (16) //Data Width
+#define FPGA_REG_AWIDTH       (8)  //Address Width
+
+#define FPGA_WR_OFFSET        (0)
+#define FPGA_RD_OFFSET        (32)
+#define FPGA_REG_TEST_ARRAY_COUNT (4)
+
+// address map spi registers (WR)
+#define FPGA_WREG_TEST_ARRAY            (`FPGA_WR_OFFSET + 8) //array(4 x 16bit)
+
+
+// address map spi registers (RD)
+#define FPGA_RREG_FIRMWARE_DATE         (`FPGA_RD_OFFSET + 0) //32bit
+#define FPGA_RREG_FIRMWARE_TIME         (`FPGA_RD_OFFSET + 2) //32bit
+
+#define FPGA_RREG_FIRMWARE_TYPE         (`FPGA_RD_OFFSET + 4) //16bit
+
+#define FPGA_RREG_TEST_ARRAY            (`FPGA_RD_OFFSET + 8) //array(4 x 16bit)
+
+
+//----------------------------------------
+//USER JTAG MASTER interface
+//----------------------------------------
 #define UREG_FIRMWARE_DATE    0x00
 #define UREG_FIRMWARE_TIME    0x04
 #define UREG_CTRL             0x08

@@ -369,9 +369,9 @@ assign mgt_pwr_en = 1'b1;
 assign uart_tx = uart_rx;
 
 wire [(`FPGA_REG_DWIDTH * `FPGA_REG_COUNT)-1:0] reg_rd_data;
-wire [7:0]  reg_wr_addr = 0;
-wire [15:0] reg_wr_data = 0;
-wire        reg_wr_en = 0;
+wire [7:0]  reg_wr_addr;
+wire [15:0] reg_wr_data;
+wire        reg_wr_en;
 wire        reg_clk;
 reg [`FPGA_REG_DWIDTH-1:0] reg_test_array [0:`FPGA_REG_TEST_ARRAY_COUNT-1];
 
@@ -442,8 +442,6 @@ assign qspi_cs = usr_spi_cs[0];
 assign qspi_mosi = usr_spi_mosi;
 assign usr_spi_miso = (qspi_miso | usr_spi_cs[0]) && (usr_miso | usr_spi_cs[1]);
 
-assign dbg_out[0] = usr_spi_miso;
-assign dbg_out[1] = usr_spi_cs[1];
 
 assign eth_phy_mdio = (ethphy_mdio_dir) ? ethphy_mdio_data : 1'bz;
 // assign eth_phy_mdio = 1'bz;
