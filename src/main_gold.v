@@ -58,7 +58,7 @@ STARTUPE2 #(
     .GTS(1'b0),             // 1-bit input: Global 3-state input (GTS cannot be used for the port name)
     .KEYCLEARB(1'b0),       // 1-bit input: Clear AES Decrypter Key input from Battery-Backed RAM (BBRAM)
     .PACK(1'b0),            // 1-bit input: PROGRAM acknowledge input
-    .USRCCLKO(usr_spi_clk & !usr_spi_cs[0]), // 1-bit input: User CCLK input
+    .USRCCLKO(usr_spi_clk), // 1-bit input: User CCLK input
                             // For Zynq-7000 devices, this input must be tied to GND
     .USRCCLKTS(1'b0),       // 1-bit input: User CCLK 3-state enable input
                             // For Zynq-7000 devices, this input must be tied to VCC

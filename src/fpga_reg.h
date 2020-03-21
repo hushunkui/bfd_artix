@@ -1,8 +1,12 @@
+#ifndef __FPGA_REG_H__
+#define __FPGA_REG_H__
+
+
 //
 // author: Golovachenko Viktor
 //
-#define FPGA_FIRMWARE_UPDATE  16'h56
-#define FPGA_FIRMWARE_GOLDEN  16'hCB
+#define FPGA_FIRMWARE_UPDATE  0x56
+#define FPGA_FIRMWARE_GOLDEN  0xCB
 
 //----------------------------------------
 //USER SPI interface
@@ -16,16 +20,16 @@
 #define FPGA_REG_TEST_ARRAY_COUNT (4)
 
 // address map spi registers (WR)
-#define FPGA_WREG_TEST_ARRAY            (`FPGA_WR_OFFSET + 8) //array(4 x 16bit)
+#define FPGA_WREG_TEST_ARRAY            (FPGA_WR_OFFSET + 8) //array(4 x 16bit)
 
 
 // address map spi registers (RD)
-#define FPGA_RREG_FIRMWARE_DATE         (`FPGA_RD_OFFSET + 0) //32bit
-#define FPGA_RREG_FIRMWARE_TIME         (`FPGA_RD_OFFSET + 2) //32bit
+#define FPGA_RREG_FIRMWARE_DATE         (FPGA_RD_OFFSET + 0) //32bit
+#define FPGA_RREG_FIRMWARE_TIME         (FPGA_RD_OFFSET + 2) //32bit
 
-#define FPGA_RREG_FIRMWARE_TYPE         (`FPGA_RD_OFFSET + 4) //16bit
+#define FPGA_RREG_FIRMWARE_TYPE         (FPGA_RD_OFFSET + 4) //16bit
 
-#define FPGA_RREG_TEST_ARRAY            (`FPGA_RD_OFFSET + 8) //array(4 x 16bit)
+#define FPGA_RREG_TEST_ARRAY            (FPGA_RD_OFFSET + 8) //array(4 x 16bit)
 
 
 //----------------------------------------
@@ -57,3 +61,6 @@
 #define UREG_AURORA_I_CTL_0   0x48
 
 #define UREG_ETHPHY_TEST_PRM  0x4C
+
+
+#endif // __FPGA_REG_H__
