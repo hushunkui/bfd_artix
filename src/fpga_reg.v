@@ -24,6 +24,7 @@
 `define FPGA_RREG_FIRMWARE_TIME         (`FPGA_RD_OFFSET + 2) //32bit
 
 `define FPGA_RREG_FIRMWARE_TYPE         (`FPGA_RD_OFFSET + 4) //16bit
+`define FPGA_RREG_DEVICE_TEMP           (`FPGA_RD_OFFSET + 5) //16bit : device temperature
 
 `define FPGA_RREG_TEST_ARRAY            (`FPGA_RD_OFFSET + 8) //array(4 x 16bit)
 

@@ -376,6 +376,7 @@ add_files -norecurse $script_folder/src/core_gen/ila_0/ila_0.xci
 add_files -norecurse $script_folder/src/core_gen/ila_1/ila_1.xci
 add_files -norecurse $script_folder/src/core_gen/aurora_rx_fifo/aurora_rx_fifo.xci
 add_files -norecurse $script_folder/src/core_gen/aurora_tx_fifo/aurora_tx_fifo.xci
+add_files -norecurse $script_folder/src/mig_7series_v4_1_tempmon.v
 set_property include_dirs $script_folder/src [current_fileset]
 
 add_files -fileset sim_1 -norecurse $script_folder/sim/main_tb.v

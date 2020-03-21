@@ -397,10 +397,20 @@ spi_slave #(
     .rst(1'b0)
 );
 
+wire [11:0]  device_temp;
+mig_7series_v4_1_tempmon tempmon(
+  .clk(reg_clk),
+  .xadc_clk(reg_clk),
+  .rst(1'b0),
+  .device_temp_i(12'd0),
+  .device_temp(device_temp)
+);
+
 //Read User resisters
 assign reg_rd_data[`FPGA_RREG_FIRMWARE_DATE * `FPGA_REG_DWIDTH +: (`FPGA_REG_DWIDTH*2)] = firmware_date;
 assign reg_rd_data[`FPGA_RREG_FIRMWARE_TIME * `FPGA_REG_DWIDTH +: (`FPGA_REG_DWIDTH*2)] = firmware_time;
 assign reg_rd_data[`FPGA_RREG_FIRMWARE_TYPE * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = `FPGA_FIRMWARE_UPDATE;
+assign reg_rd_data[`FPGA_RREG_DEVICE_TEMP * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = {4'd0, device_temp};
 
 genvar a;
 generate
