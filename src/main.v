@@ -41,8 +41,10 @@ module main #(
     output uart_tx,
 
     output qspi_cs  ,
-    output qspi_mosi,
-    input  qspi_miso,
+    output qspi_io0,//mosi,
+    input  qspi_io1,//miso,
+    output qspi_io2,
+    output qspi_io3,
     input  usr_spi_clk ,
     input [1:0] usr_spi_cs,
     input  usr_spi_mosi,
@@ -449,9 +451,10 @@ STARTUPE2 #(
 );
 
 assign qspi_cs = usr_spi_cs[0];
-assign qspi_mosi = usr_spi_mosi;
-assign usr_spi_miso = (qspi_miso | usr_spi_cs[0]) && (usr_miso | usr_spi_cs[1]);
-
+assign qspi_io0 = usr_spi_mosi;
+assign usr_spi_miso = (qspi_io1 | usr_spi_cs[0]) && (usr_miso | usr_spi_cs[1]);
+assign qspi_io2 = 1'b1;
+assign qspi_io3 = 1'b1;
 
 assign eth_phy_mdio = (ethphy_mdio_dir) ? ethphy_mdio_data : 1'bz;
 // assign eth_phy_mdio = 1'bz;

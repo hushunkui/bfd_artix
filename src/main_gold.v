@@ -8,8 +8,10 @@
 
 module main_gold (
     output qspi_cs  ,
-    output qspi_mosi,
-    input  qspi_miso,
+    output qspi_io0,//mosi,
+    input  qspi_io1,//miso,
+    output qspi_io2,
+    output qspi_io3,
     input  usr_spi_clk ,
     input [1:0] usr_spi_cs,
     input  usr_spi_mosi,
@@ -69,8 +71,10 @@ STARTUPE2 #(
 wire usr_miso;
 
 assign qspi_cs = usr_spi_cs[0];
-assign qspi_mosi = usr_spi_mosi;
-assign usr_spi_miso = (qspi_miso | usr_spi_cs[0]) && (usr_miso | usr_spi_cs[1]);
+assign qspi_io0 = usr_spi_mosi;
+assign usr_spi_miso = (qspi_io1 | usr_spi_cs[0]) && (usr_miso | usr_spi_cs[1]);
+assign qspi_io2 = 1'b1;
+assign qspi_io3 = 1'b1;
 
 assign dbg_out[0] = usr_spi_miso;
 assign dbg_out[1] = usr_spi_cs[1];

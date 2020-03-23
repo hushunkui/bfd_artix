@@ -27,6 +27,12 @@ if {![file exist $usr_firmware_dir]} {
 }
 puts "$curDir/$prj_firmware_name to [file normalize $usr_firmware_dir] and rename it to $usr_firmware_name"
 file copy -force $curDir/$prj_firmware_name $usr_firmware_dir/$usr_firmware_name
+
+if {![file exist $curDir/$prj_firmware_name2]} {
+    puts "error can't find $curDir/$prj_firmware_name2"
+    return
+}
+puts "$curDir/$prj_firmware_name2 to [file normalize $usr_firmware_dir] and rename it to $usr_firmware_name2"
 file copy -force $curDir/$prj_firmware_name2 $usr_firmware_dir/$usr_firmware_name2
 
 # if {[file exist $usr_dbg_dir]} {
