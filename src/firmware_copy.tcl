@@ -6,11 +6,11 @@ set curDir [pwd]
 puts "current dir: $curDir"
 # result of compilation xilinx IDE
 set prj_firmware_name            main.bit
-set prj_firmware_name2           main.bit
+set prj_firmware_name2           main.bin
 # set prj_dbg_name                 main.ltx
 # user name of fpga firmware
 set usr_firmware_name            bfd_artix_firmware.bit
-set usr_firmware_name2           bfd_artix_firmware.bit
+set usr_firmware_name2           bfd_artix_firmware.bin
 # user directory for fpga firmware
 set usr_firmware_dir            ../../../firmware
 # set usr_dbg_dir                 ../../../dbg

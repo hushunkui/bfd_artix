@@ -323,3 +323,7 @@ set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
 set_property BITSTREAM.CONFIG.UNUSEDPIN Pulldown [current_design]
 set_property BITSTREAM.CONFIG.CONFIGFALLBACK ENABLE [current_design]
 set_property BITSTREAM.CONFIG.CONFIGRATE 12 [current_design]
+
+#there is no point in setting value for timer because timer value can be corrupted while user
+#repromamming qspi flash
+#set_property BITSTREAM.CONFIG.TIMER_CFG 0X00001FEB0 [current_design]
