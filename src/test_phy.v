@@ -9,6 +9,7 @@ module test_phy #(
     output mac_tx_valid,
     output mac_tx_sof,
     output mac_tx_eof,
+    input  mac_tx_rdy,
 
     input [TEST_DATA_WIDTH-1:0] mac_rx_data,
     input mac_rx_valid,
@@ -17,6 +18,8 @@ module test_phy #(
     input mac_rx_fr_good,
     input mac_rx_fr_err,
 
+    input [15:0] pkt_size,
+    input [15:0] pause_size,
     input start,
     output err,
     output [TEST_DATA_WIDTH-1:0] test_data,
@@ -32,10 +35,11 @@ test_tx #(
     .mac_tx_valid(mac_tx_valid),
     .mac_tx_sof  (mac_tx_sof  ),
     .mac_tx_eof  (mac_tx_eof  ),
+    .mac_tx_rdy  (mac_tx_rdy  ),
 
     .start(start),
-    .pkt_size(16'd512),
-    .pause_size(16'd64),
+    .pkt_size(pkt_size),
+    .pause_size(pause_size),
 
     .clk(clk),
     .rst(rst)

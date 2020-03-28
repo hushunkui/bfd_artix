@@ -87,6 +87,7 @@ reg  [ETHCOUNT-1:0]     mac_tx_tlast  = 0;
 reg  [ETHCOUNT-1:0]     mac_tx_tuser  = 0;
 wire [0:0]              mac_tx_ack [ETHCOUNT-1:0];
 reg [ETHCOUNT-1:0]      mac_tx_rq = 0;
+reg [3:0] mac_link_mjtag;
 
 reg [ETHCOUNT-1:0]      tx_fifo_tready = 0;
 wire [7:0]              tx_fifo_tdata [ETHCOUNT-1:0];
@@ -216,7 +217,9 @@ wire        M_AXI_0_rready ;
 
 wire [7:0] test_gpio;
 wire [31:0] reg_ctrl;
-wire test_err;
+wire [ETHCOUNT-1:0] test_err;
+wire [7:0] test_data [ETHCOUNT-1:0];
+
 
 wire [1:0] eth_num;
 wire [3:0] eth_en;
@@ -228,6 +231,13 @@ firmware_rev m_firmware_rev (
    .firmware_date (firmware_date),
    .firmware_time (firmware_time)
 );
+
+wire [7:0] vio_test_start;
+wire [43:0]  vio_in ;
+wire [7:0]   vio_out;
+
+wire [15:0] test_mac_pkt_size;
+wire [15:0] test_mac_pause_size;
 
 
 wire clk20_i;
@@ -274,7 +284,7 @@ system system_i(
     .aurora_status_frame_err(aurora_status_frame_err),
     .aurora_status_hard_err(aurora_status_hard_err),
     .aurora_status_soft_err(aurora_status_soft_err),
-    .aurora_status_pll_not_locked_out(aurora_status_pll_not_locked_out),
+    // .aurora_status_pll_not_locked_out(aurora_status_pll_not_locked_out),
     .aurora_status_tx_lock(aurora_status_tx_lock),
     .aurora_status_tx_resetdone_out(aurora_status_tx_resetdone_out),
     .aurora_status_rx_resetdone_out(aurora_status_rx_resetdone_out),
@@ -324,7 +334,21 @@ usr_logic #(
     .test_gpio (test_gpio),
     .reg_ctrl (reg_ctrl),
     .status_aurora({30'd0, 1'b0, aurora_status_channel_up}),
-    .status_eth({21'd0, 4'd0, mac_link[3:0], 3'd0}),
+    .status_eth({21'd0, 4'd0, mac_link_mjtag[3:0], 3'd0}),
+    .cnterr_eth0(mac_rx_cnterr_mjtag[0]),
+    .cnterr_eth1(mac_rx_cnterr_mjtag[1]),
+    .cnterr_eth2(mac_rx_cnterr_mjtag[2]),
+    .cnterr_eth3(mac_rx_cnterr_mjtag[3]),
+    .ethphy_mdio_clk_o(eth_phy_mdc),
+    .ethphy_mdio_data_o(ethphy_mdio_data),
+    .ethphy_mdio_dir_o(ethphy_mdio_dir),
+    .ethphy_mdio_data_i(eth_phy_mdio),
+    .ethphy_nrst_o(ethphy_rst),
+    .aurora_o_ctl_0(aurora_axi_tx_tdata),
+    .aurora_o_ctl_1({aurora_axi_tx_tlast, aurora_axi_tx_tvalid}),
+    .aurora_i_ctl_0((aurora_axi_rx_tlast & aurora_axi_rx_tvalid) ? aurora_axi_rx_tdata : 0),
+    .ethphy_test_pkt_size(test_mac_pkt_size),
+    .ethphy_test_pause_size(test_mac_pause_size),
     .cnterr_eth0(mac_rx_cnterr[0]),
     .cnterr_eth1(mac_rx_cnterr[1]),
     .cnterr_eth2(mac_rx_cnterr[2]),
@@ -460,6 +484,7 @@ assign eth_phy_mdio = (ethphy_mdio_dir) ? ethphy_mdio_data : 1'bz;
 // assign eth_phy_mdio = 1'bz;
 // assign eth_phy_mdc = 1'b0;
 
+
 // wire [13:0] usr_lvds;
 // genvar i;
 // generate
@@ -490,24 +515,10 @@ assign usr_lvds_p_o[2] = mac_link[2];
 assign usr_lvds_p_o[3] = mac_link[3];
 
 
-assign aurora_axi_tx_tdata  = (module_en && (eth_num == 2'd0)) ? aurora_axi_tx_tdata_eth[0][(0*8) +: 8] :
-                            (module_en && (eth_num == 2'd1)) ? aurora_axi_tx_tdata_eth[1][(0*8) +: 8] :
-                            (module_en && (eth_num == 2'd2)) ? aurora_axi_tx_tdata_eth[2][(0*8) +: 8] : aurora_axi_tx_tdata_eth[3][(0*8) +: 8];
-
-assign aurora_axi_tx_tvalid = (module_en && (eth_num == 2'd0)) ? aurora_axi_tx_tvalid_eth[0] :
-                            (module_en && (eth_num == 2'd1)) ? aurora_axi_tx_tvalid_eth[1] :
-                            (module_en && (eth_num == 2'd2)) ? aurora_axi_tx_tvalid_eth[2] :
-                            (module_en && (eth_num == 2'd3)) ? aurora_axi_tx_tvalid_eth[3] : 1'b0;
-
-assign aurora_axi_tx_tlast = (module_en && (eth_num == 2'd0)) ? aurora_axi_tx_tlast_eth[0] :
-                            (module_en && (eth_num == 2'd1)) ? aurora_axi_tx_tlast_eth[1] :
-                            (module_en && (eth_num == 2'd2)) ? aurora_axi_tx_tlast_eth[2] :
-                            (module_en && (eth_num == 2'd3)) ? aurora_axi_tx_tlast_eth[3] : 1'b0;
-
 genvar x;
 generate
     for (x=0; x < ETHCOUNT; x=x+1)  begin : eth
-        assign eth_phy_rst[x] = mac_pll_locked;
+        assign eth_phy_rst[x] = mac_pll_locked;// & ethphy_rst[x];
 
         CustomGMAC_Wrap rgmii (
             .clk375(clk375M),
@@ -633,13 +644,19 @@ generate
 
         assign mac_fifo_resetn[x] = mac_link[x] && aurora_status_channel_up && eth_en[x];
 
-        assign eth_en[x] = module_en && (eth_num == x);
+            test_mac_tx_d  [x] <= test_mac_tx_tdata[x];
+            test_mac_tx_den[x] <= test_mac_tx_rdy[x];
+            test_mac_tx_sof[x] <= test_mac_tx_tuser[x][0] & test_mac_tx_rdy[x];
+            test_mac_tx_eof[x] <= test_mac_tx_tlast[x] & test_mac_tx_rdy[x];
+        end
 
-        assign aurora_axi_rx_tdata_eth [x][(0*8) +: 8] = aurora_axi_rx_tdata[(0*8) +: 8];//input [7:0]
-        assign aurora_axi_rx_tvalid_eth[x]             = aurora_axi_rx_tvalid;//input
-        assign aurora_axi_rx_tlast_eth [x]             = aurora_axi_rx_tlast;//input
+        CustomGMAC_Wrap rgmii (
+            .clk375(clk375M),
+            .clk125(clk125M),
 
-        assign aurora_axi_tx_tready_eth[x] = aurora_axi_tx_tready; //input
+            .RXC   (rgmii_rxc   [x]         ), //input
+            .RX_CTL(rgmii_rx_ctl[x]         ), //input
+            .RXD   (rgmii_rxd   [(x*4) +: 4]), //input [3:0]
 
         mac_fifo fifo(
             //USER IF
@@ -783,6 +800,50 @@ ila_0 tx_ila (
     }),
     .clk(aurora_user_clk)
 );
+
+//     .mac_rx_data   (test_mac_rx_tdata [2]),
+//     .mac_rx_valid  (test_mac_rx_tvalid[2]),
+//     .mac_rx_sof    (test_mac_rx_tsof[2]),
+//     .mac_rx_eof    (test_mac_rx_tlast[2]),
+//     .mac_rx_fr_good(1'b1),
+//     .mac_rx_fr_err (1'b0),
+
+//     .start(test_mac_start[2]),
+//     .pkt_size(test_mac_pkt_size),
+//     .pause_size(test_mac_pause_size),
+//     .err(test_err[2]),
+//     .test_data(test_data[2]),
+
+//     .clk(aurora_usr_clk),
+//     .rst(~mac_pll_locked)
+// );
+
+// test_phy test_rx_eth3 (
+//     .mac_tx_data  (test_mac_tx_tdata [2]),
+//     .mac_tx_valid (test_mac_tx_tvalid[2]),
+//     .mac_tx_sof   (test_mac_tx_sof [2]),
+//     .mac_tx_eof   (test_mac_tx_eof [2]),
+//     .mac_tx_rdy   (test_mac_tx_tready[2]),
+
+//     .mac_rx_data   (test_mac_rx_tdata [3]),
+//     .mac_rx_valid  (test_mac_rx_tvalid[3]),
+//     .mac_rx_sof    (test_mac_rx_tsof[3]),
+//     .mac_rx_eof    (test_mac_rx_tlast[3]),
+//     .mac_rx_fr_good(1'b1),
+//     .mac_rx_fr_err (1'b0),
+
+//     .start(test_mac_start[3]),
+//     .pkt_size(test_mac_pkt_size),
+//     .pause_size(test_mac_pause_size),
+//     .err(test_err[3]),
+//     .test_data(test_data[3]),
+
+//     .clk(aurora_usr_clk),
+//     .rst(~mac_pll_locked)
+// );
+
+
+
 
 
 

@@ -25,13 +25,13 @@ module test_rx #(
         IDLE   ,
         RXSTART,
         RX     ,
-        ERR
+        WAIT_EOF
     } fsm_cs = IDLE;
 `else
     localparam IDLE    = 2'd0;
     localparam RXSTART = 2'd1;
     localparam RX      = 2'd2;
-    localparam ERR     = 2'd3;
+    localparam WAIT_EOF= 2'd3;
     reg [1:0] fsm_cs = IDLE;
 `endif
 
@@ -55,8 +55,9 @@ sata_scrambler #(
 assign test_data[TEST_DATA_WIDTH-1:0] = data[TEST_DATA_WIDTH-1:0];
 
 always @(posedge clk) begin
+    srcambler_sof <= 1'b0;
     case (fsm_cs)
-        IDLE: begin
+        IDLE: begin //Initialization scrambler. Do it once.
             if (start) begin
                 srcambler_sof <= 1'b1;
                 fsm_cs <= RXSTART;
@@ -64,36 +65,69 @@ always @(posedge clk) begin
         end
 
         RXSTART: begin
-            srcambler_sof <= 1'b0;
-            err_crc   = 1'b0;
-            err_fr_rx = 1'b0;
-            err_cmp   = 1'b0;
             if (start) begin
+                err_cmp <= 1'b0;
+                err_fr_rx <= 1'b0;
+                err_crc <= 1'b0;
                 fsm_cs <= RX;
+            end else begin
+                fsm_cs <= IDLE;
             end
         end
 
         RX: begin
             if (mac_rx_valid) begin
-                if ((test_data != mac_rx_data) || (mac_rx_eof) || (mac_rx_fr_err)) begin
-                    if (mac_rx_eof && mac_rx_fr_good) begin
+                if (test_data != mac_rx_data) begin
+                    err_cmp <= 1'b1;
+                    if (mac_rx_eof) begin
+                        if (start) begin
+                            fsm_cs <= RXSTART;
+                        end else begin
+                            fsm_cs <= IDLE;
+                        end
+                    end else begin
+                        fsm_cs <= WAIT_EOF;
+                    end
+
+                end else if (mac_rx_fr_err) begin
+                    err_fr_rx <= 1'b1;
+                    if (mac_rx_eof) begin
+                        if (start) begin
+                            fsm_cs <= RXSTART;
+                        end else begin
+                            fsm_cs <= IDLE;
+                        end
+                    end else begin
+                        fsm_cs <= WAIT_EOF;
+                    end
+
+                end else if (mac_rx_eof) begin
+                    if (!mac_rx_fr_good) begin
+                        err_crc <= 1'b1;
+                    end
+                    if (start) begin
                         fsm_cs <= RXSTART;
                     end else begin
-                        err_cmp <= 1'b1;
-                        fsm_cs <= ERR;
+                        fsm_cs <= IDLE;
                     end
                 end
-
-                err_crc <= (mac_rx_eof && !mac_rx_fr_good);
-                err_fr_rx <= mac_rx_fr_err;
             end
         end
 
-        ERR: begin
-            err <= err_cmp || err_fr_rx || err_crc;
+        WAIT_EOF: begin
+            if (mac_rx_valid & mac_rx_eof) begin
+                if (start) begin
+                    fsm_cs <= RXSTART;
+                end else begin
+                    fsm_cs <= IDLE;
+                end
+            end
         end
     endcase
 end
 
+always @(posedge clk) begin
+    err <= err_cmp | err_fr_rx | err_crc;
+end
 
 endmodule
