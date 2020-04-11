@@ -134,6 +134,7 @@ set bCheckIPs 1
 if { $bCheckIPs == 1 } {
    set list_check_ips "\
 xilinx.com:ip:aurora_8b10b:*\
+xilinx.com:ip:axis_data_fifo:*\
 xilinx.com:ip:axi_protocol_converter:*\
 xilinx.com:ip:jtag_axi:*\
 xilinx.com:ip:proc_sys_reset:*\
@@ -213,8 +214,12 @@ proc create_root_design { parentCell } {
    CONFIG.PROTOCOL {AXI4LITE} \
    ] $M_AXI_0
   set aurora_axi_rx [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:axis_rtl:1.0 aurora_axi_rx ]
+  set_property -dict [ list \
+   CONFIG.FREQ_HZ {125000000} \
+   ] $aurora_axi_rx
   set aurora_axi_tx [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:axis_rtl:1.0 aurora_axi_tx ]
   set_property -dict [ list \
+   CONFIG.FREQ_HZ {125000000} \
    CONFIG.HAS_TKEEP {1} \
    CONFIG.HAS_TLAST {1} \
    CONFIG.HAS_TREADY {1} \
@@ -237,7 +242,7 @@ proc create_root_design { parentCell } {
   # Create ports
   set aclk [ create_bd_port -dir I -type clk aclk ]
   set_property -dict [ list \
-   CONFIG.ASSOCIATED_BUSIF {M_AXI_0} \
+   CONFIG.ASSOCIATED_BUSIF {M_AXI_0:aurora_axi_rx:aurora_axi_tx} \
    CONFIG.ASSOCIATED_RESET {areset_n} \
    CONFIG.FREQ_HZ {125000000} \
  ] $aclk
@@ -257,7 +262,6 @@ proc create_root_design { parentCell } {
  ] $aurora_rst
   set aurora_usr_clk [ create_bd_port -dir O -type clk aurora_usr_clk ]
   set_property -dict [ list \
-   CONFIG.ASSOCIATED_BUSIF {aurora_axi_tx:aurora_axi_rx} \
    CONFIG.ASSOCIATED_RESET {aurora_sysrst} \
  ] $aurora_usr_clk
 
@@ -279,6 +283,20 @@ proc create_root_design { parentCell } {
    CONFIG.SupportLevel {1} \
  ] $aurora_8b10b_0
 
+  # Create instance: aurora_axi_rx_fifo, and set properties
+  set aurora_axi_rx_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo aurora_axi_rx_fifo ]
+  set_property -dict [ list \
+   CONFIG.FIFO_DEPTH {256} \
+   CONFIG.IS_ACLK_ASYNC {1} \
+ ] $aurora_axi_rx_fifo
+
+  # Create instance: aurora_axi_tx_fifo, and set properties
+  set aurora_axi_tx_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo aurora_axi_tx_fifo ]
+  set_property -dict [ list \
+   CONFIG.FIFO_DEPTH {256} \
+   CONFIG.IS_ACLK_ASYNC {1} \
+ ] $aurora_axi_tx_fifo
+
   # Create instance: axi_protocol_convert_0, and set properties
   set axi_protocol_convert_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_protocol_converter axi_protocol_convert_0 ]
   set_property -dict [ list \
@@ -291,24 +309,30 @@ proc create_root_design { parentCell } {
   # Create instance: proc_sys_reset_0, and set properties
   set proc_sys_reset_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset proc_sys_reset_0 ]
 
+  # Create instance: proc_sys_reset_1, and set properties
+  set proc_sys_reset_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset proc_sys_reset_1 ]
+
   # Create interface connections
   connect_bd_intf_net -intf_net CORE_CONTROL_0_1 [get_bd_intf_ports aurora_control] [get_bd_intf_pins aurora_8b10b_0/CORE_CONTROL]
   connect_bd_intf_net -intf_net GT_DIFF_REFCLK1_0_1 [get_bd_intf_ports aurora_gt_refclk] [get_bd_intf_pins aurora_8b10b_0/GT_DIFF_REFCLK1]
   connect_bd_intf_net -intf_net GT_SERIAL_RX_0_1 [get_bd_intf_ports aurora_gt_rx] [get_bd_intf_pins aurora_8b10b_0/GT_SERIAL_RX]
-  connect_bd_intf_net -intf_net USER_DATA_S_AXI_TX_0_1 [get_bd_intf_ports aurora_axi_tx] [get_bd_intf_pins aurora_8b10b_0/USER_DATA_S_AXI_TX]
   connect_bd_intf_net -intf_net aurora_8b10b_0_CORE_STATUS [get_bd_intf_ports aurora_status] [get_bd_intf_pins aurora_8b10b_0/CORE_STATUS]
   connect_bd_intf_net -intf_net aurora_8b10b_0_GT_SERIAL_TX [get_bd_intf_ports aurora_gt_tx] [get_bd_intf_pins aurora_8b10b_0/GT_SERIAL_TX]
-  connect_bd_intf_net -intf_net aurora_8b10b_0_USER_DATA_M_AXI_RX [get_bd_intf_ports aurora_axi_rx] [get_bd_intf_pins aurora_8b10b_0/USER_DATA_M_AXI_RX]
+  connect_bd_intf_net -intf_net aurora_8b10b_0_USER_DATA_M_AXI_RX [get_bd_intf_pins aurora_8b10b_0/USER_DATA_M_AXI_RX] [get_bd_intf_pins aurora_axi_rx_fifo/S_AXIS]
+  connect_bd_intf_net -intf_net aurora_axi_tx_1 [get_bd_intf_ports aurora_axi_tx] [get_bd_intf_pins aurora_axi_tx_fifo/S_AXIS]
+  connect_bd_intf_net -intf_net aurora_axi_tx_fifo_M_AXIS [get_bd_intf_pins aurora_8b10b_0/USER_DATA_S_AXI_TX] [get_bd_intf_pins aurora_axi_tx_fifo/M_AXIS]
   connect_bd_intf_net -intf_net axi_protocol_convert_0_M_AXI [get_bd_intf_ports M_AXI_0] [get_bd_intf_pins axi_protocol_convert_0/M_AXI]
+  connect_bd_intf_net -intf_net axis_data_fifo_0_M_AXIS [get_bd_intf_ports aurora_axi_rx] [get_bd_intf_pins aurora_axi_rx_fifo/M_AXIS]
   connect_bd_intf_net -intf_net jtag_axi_0_M_AXI [get_bd_intf_pins axi_protocol_convert_0/S_AXI] [get_bd_intf_pins jtag_axi_0/M_AXI]
 
   # Create port connections
-  connect_bd_net -net aclk_0_1 [get_bd_ports aclk] [get_bd_pins axi_protocol_convert_0/aclk] [get_bd_pins jtag_axi_0/aclk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk]
-  connect_bd_net -net aurora_8b10b_0_user_clk_out [get_bd_ports aurora_usr_clk] [get_bd_pins aurora_8b10b_0/user_clk_out]
-  connect_bd_net -net ext_reset_in_0_1 [get_bd_ports areset_n] [get_bd_pins proc_sys_reset_0/ext_reset_in]
+  connect_bd_net -net aclk_0_1 [get_bd_ports aclk] [get_bd_pins aurora_axi_rx_fifo/m_axis_aclk] [get_bd_pins aurora_axi_tx_fifo/s_axis_aclk] [get_bd_pins axi_protocol_convert_0/aclk] [get_bd_pins jtag_axi_0/aclk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk]
+  connect_bd_net -net aurora_8b10b_0_user_clk_out [get_bd_ports aurora_usr_clk] [get_bd_pins aurora_8b10b_0/user_clk_out] [get_bd_pins aurora_axi_rx_fifo/s_axis_aclk] [get_bd_pins aurora_axi_tx_fifo/m_axis_aclk] [get_bd_pins proc_sys_reset_1/slowest_sync_clk]
+  connect_bd_net -net ext_reset_in_0_1 [get_bd_ports areset_n] [get_bd_pins proc_sys_reset_0/ext_reset_in] [get_bd_pins proc_sys_reset_1/ext_reset_in]
   connect_bd_net -net gt_reset_0_1 [get_bd_ports aurora_gt_rst] [get_bd_pins aurora_8b10b_0/gt_reset]
   connect_bd_net -net init_clk_in_0_1 [get_bd_ports aurora_init_clk] [get_bd_pins aurora_8b10b_0/drpclk_in] [get_bd_pins aurora_8b10b_0/init_clk_in]
-  connect_bd_net -net proc_sys_reset_0_peripheral_aresetn [get_bd_pins axi_protocol_convert_0/aresetn] [get_bd_pins jtag_axi_0/aresetn] [get_bd_pins proc_sys_reset_0/peripheral_aresetn]
+  connect_bd_net -net proc_sys_reset_0_peripheral_aresetn [get_bd_pins aurora_axi_rx_fifo/m_axis_aresetn] [get_bd_pins aurora_axi_tx_fifo/s_axis_aresetn] [get_bd_pins axi_protocol_convert_0/aresetn] [get_bd_pins jtag_axi_0/aresetn] [get_bd_pins proc_sys_reset_0/peripheral_aresetn]
+  connect_bd_net -net proc_sys_reset_1_peripheral_aresetn [get_bd_pins aurora_axi_rx_fifo/s_axis_aresetn] [get_bd_pins aurora_axi_tx_fifo/m_axis_aresetn] [get_bd_pins proc_sys_reset_1/peripheral_aresetn]
   connect_bd_net -net reset_0_1 [get_bd_ports aurora_rst] [get_bd_pins aurora_8b10b_0/reset]
 
   # Create address segments
@@ -341,20 +365,14 @@ add_files -norecurse $script_folder/src/axi4lite_ctrl.v
 add_files -norecurse $script_folder/src/usr_logic.v
 add_files -norecurse $script_folder/src/firmware_rev.v
 add_files -norecurse $script_folder/src/spi_slave.v
-add_files -norecurse $script_folder/src/mac_rgmii.v
-add_files -norecurse $script_folder/src/mac_crc.v
+add_files -norecurse $script_folder/src/mig_7series_v4_1_tempmon.v
+add_files -norecurse $script_folder/src/aurora_axi_rx_mux.v
+add_files -norecurse $script_folder/src/aurora_axi_tx_mux.v
+add_files -norecurse $script_folder/src/mac_rxbuf.v
+add_files -norecurse $script_folder/src/mac_txbuf.v
 add_files -norecurse $script_folder/src/vicg_common_pkg.vhd
 add_files -norecurse $script_folder/src/time_gen.vhd
 add_files -norecurse $script_folder/src/fpga_test_01.vhd
-add_files -norecurse $script_folder/src/sata_scrambler.vhd
-add_files -norecurse $script_folder/src/test_rx.v
-add_files -norecurse $script_folder/src/test_tx.v
-add_files -norecurse $script_folder/src/test_phy.v
-add_files -norecurse $script_folder/src/mac_bram.v
-add_files -norecurse $script_folder/src/mac_fifo_sync_block.v
-add_files -norecurse $script_folder/src/mac_fifo_rx.v
-add_files -norecurse $script_folder/src/mac_fifo_tx.v
-add_files -norecurse $script_folder/src/mac_fifo.v
 add_files -norecurse $script_folder/src/sergey/ARP_L2.v
 add_files -norecurse $script_folder/src/sergey/CustomGMAC.v
 add_files -norecurse $script_folder/src/sergey/CustomGMAC_Wrap.v
@@ -369,14 +387,12 @@ add_files -norecurse $script_folder/src/sergey/Link_Status.v
 add_files -norecurse $script_folder/src/sergey/RGMIIOverClockModule.v
 add_files -norecurse $script_folder/src/sergey/RGMIIOverClock.v
 add_files -norecurse $script_folder/src/sergey/RGMII_ClockSpeed_Test.v
+add_files -norecurse $script_folder/src/core_gen/mac_rxbuf_axis_fifo/mac_rxbuf_axis_fifo.xci
+add_files -norecurse $script_folder/src/core_gen/mac_txbuf_axis_fifo/mac_txbuf_axis_fifo.xci
 add_files -norecurse $script_folder/src/core_gen/axis_data_fifo_0/axis_data_fifo_0.xci
-add_files -norecurse $script_folder/src/core_gen/axis_data_fifo_0/eth_fifo.xci
 add_files -norecurse $script_folder/src/core_gen/clk25_wiz0/clk25_wiz0.xci
 add_files -norecurse $script_folder/src/core_gen/ila_0/ila_0.xci
 add_files -norecurse $script_folder/src/core_gen/ila_1/ila_1.xci
-add_files -norecurse $script_folder/src/core_gen/aurora_rx_fifo/aurora_rx_fifo.xci
-add_files -norecurse $script_folder/src/core_gen/aurora_tx_fifo/aurora_tx_fifo.xci
-add_files -norecurse $script_folder/src/mig_7series_v4_1_tempmon.v
 set_property include_dirs $script_folder/src [current_fileset]
 
 add_files -fileset sim_1 -norecurse $script_folder/sim/main_tb.v
