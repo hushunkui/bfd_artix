@@ -672,12 +672,11 @@ ila_0 rx_ila (
 //----------------------------------
 //DEBUG
 //----------------------------------
-wire led_blink;
 fpga_test_01 #(
     .G_BLINK_T05(125),  // -- 1/2 ïåðèîäà ìèãàíèÿ ñâåòîäèîäà.(âðåìÿ â ms)
     .G_CLK_T05us(62) //(13) //-- êîë-âî ïåðèîäîâ ÷àñòîòû ïîðòà p_in_clk óêëàäûâàþùèåñÿ â 1/2 ïåðèîäà 1us
 ) test_led (
-    .p_out_test_led (led_blink),
+    .p_out_test_led (dbg_led),
     .p_out_test_done(),
 
     .p_out_1us  (),
@@ -689,15 +688,13 @@ fpga_test_01 #(
     .p_in_rst   (~mac_pll_locked)
 );
 
-assign dbg_led = led_blink & !gt_rst;
-
 // reg clk20_div = 1'b0;
 // always @(posedge clk20_g) begin
 //     clk20_div <= ~clk20_div;
 // end
 
 assign dbg_out[0] = usr_spi_miso;//1'b0;
-assign dbg_out[1] = led_blink | reg_ctrl[0] | usr_spi_cs[1];// clk20_div |
+assign dbg_out[1] = reg_ctrl[0] | usr_spi_cs[1];// clk20_div |
 
 
 endmodule

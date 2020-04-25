@@ -1,7 +1,7 @@
 // Build ID Verilog Module
 //
-// Date:             11042020
-// Time:             181555
+// Date:             25042020
+// Time:             120234
 
 module firmware_rev
 (
@@ -9,7 +9,7 @@ module firmware_rev
    output [31:0]  firmware_time
 );
 
-   assign firmware_date = 32'h11042020;
-   assign firmware_time = 32'h181555;
+   assign firmware_date = 32'h25042020;
+   assign firmware_time = 32'h120234;
 
 endmodule
