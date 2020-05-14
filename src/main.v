@@ -27,10 +27,10 @@ module main #(
     inout                     eth_phy_mdio,
     output reg                eth_phy_mdc = 1'b0,
 
-    input [0:0] gt_rx_rxn,
-    input [0:0] gt_rx_rxp,
-    output [0:0] gt_tx_txn,
-    output [0:0] gt_tx_txp,
+    input [0:1] gt_rx_rxn,
+    input [0:1] gt_rx_rxp,
+    output [0:1] gt_tx_txn,
+    output [0:1] gt_tx_txp,
     input gt_refclk_n,
     input gt_refclk_p,
     output mgt_pwr_en,
@@ -77,10 +77,16 @@ wire [ETHCOUNT-1:0]     mac_tx_tuser;
 wire [0:0]              mac_tx_ack [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     mac_tx_rq;
 
-// wire [7:0]              dbg_rgmii_rx_data [ETHCOUNT-1:0];
-// wire [ETHCOUNT-1:0]     dbg_rgmii_rx_den;
-// wire [ETHCOUNT-1:0]     dbg_rgmii_rx_sof;
-// wire [ETHCOUNT-1:0]     dbg_rgmii_rx_eof;
+wire [7:0]              dbg_rgmii_rx_data [ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0]     dbg_rgmii_rx_den;
+wire [ETHCOUNT-1:0]     dbg_rgmii_rx_sof;
+wire [ETHCOUNT-1:0]     dbg_rgmii_rx_eof;
+
+wire [ETHCOUNT-1:0] mac_axis_rx_tready_eth;
+wire [31:0]         mac_axis_rx_tdata_eth[ETHCOUNT-1:0];
+wire [3:0]          mac_axis_rx_tkeep_eth[ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0] mac_axis_rx_tvalid_eth;
+wire [ETHCOUNT-1:0] mac_axis_rx_tlast_eth ;
 
 reg ethphy_mdio_data;
 reg ethphy_mdio_dir;
@@ -485,33 +491,6 @@ generate
     for (x=0; x < ETHCOUNT; x=x+1)  begin : eth
         assign eth_phy_rst[x] = mac_pll_locked;
 
-        assign aurora_axi_rx_tdata_eth [x] = aurora_axi_rx_tdata_tmp [(x*32) +: 32];
-        assign aurora_axi_rx_tkeep_eth [x] = aurora_axi_rx_tkeep_tmp [(x*4) +: 4];
-        assign aurora_axi_rx_tvalid_eth[x] = aurora_axi_rx_tvalid_tmp[x];
-        assign aurora_axi_rx_tlast_eth [x] = aurora_axi_rx_tlast_tmp [x];
-
-        mac_txbuf # (
-            .SIM(SIM)
-        ) txbuf (
-            .synch(module_eth_tx_sync),
-
-            .axis_tready(),
-            .axis_tdata (aurora_axi_rx_tdata_eth [x]), //input [31:0]
-            .axis_tkeep (aurora_axi_rx_tkeep_eth [x]), //input [3:0]
-            .axis_tvalid(aurora_axi_rx_tvalid_eth[x]), //input
-            .axis_tlast (aurora_axi_rx_tlast_eth [x]), //input
-
-            .mac_tx_data (mac_tx_tdata [x]), //output [7:0]
-            .mac_tx_valid(mac_tx_tvalid[x]), //output
-            .mac_tx_sof  (mac_tx_tuser [x]), //output
-            .mac_tx_eof  (mac_tx_tlast [x]), //output
-            .mac_tx_rq   (mac_tx_rq    [x]),
-            .mac_tx_ack  (mac_tx_ack   [x][0]),
-
-            .rstn(1'b1),
-            .clk(clk125M)
-        );
-
         CustomGMAC_Wrap rgmii (
             .clk375(clk375M),
             .clk125(clk125M),
@@ -535,10 +514,10 @@ generate
 
             .ReqConfirm(mac_tx_ack[x]),//output
 
-            .dbg_rgmii_rx_data(),//(dbg_rgmii_rx_data[x]),
-            .dbg_rgmii_rx_den (),//(dbg_rgmii_rx_den [x]),
-            .dbg_rgmii_rx_sof (),//(dbg_rgmii_rx_sof [x]),
-            .dbg_rgmii_rx_eof (),//(dbg_rgmii_rx_eof [x]),
+            .dbg_rgmii_rx_data(dbg_rgmii_rx_data[x]),
+            .dbg_rgmii_rx_den (dbg_rgmii_rx_den [x]),
+            .dbg_rgmii_rx_sof (dbg_rgmii_rx_sof [x]),
+            .dbg_rgmii_rx_eof (dbg_rgmii_rx_eof [x]),
             .dbg_fi(),//(dbg_fi[x]),
             .dbg_fi_dcnt(),//(dbg_fi_dcnt[x]),
             .dbg_fi_wr_data_count(),//(dbg_fi_wr_data_count[x]),
@@ -568,24 +547,13 @@ generate
             .InputCRC_ErrorCounter(mac_rx_cnterr[x]) //output  [31 :0]
         );
 
-        mac_rxbuf # (
-            .SIM(SIM)
-        ) rxbuf (
-            .axis_tready(aurora_axi_tx_tready_eth[x]), //input
-            .axis_tdata (aurora_axi_tx_tdata_eth [x]), //output [31:0]
-            .axis_tkeep (aurora_axi_tx_tkeep_eth [x]), //output [3:0]
-            .axis_tvalid(aurora_axi_tx_tvalid_eth[x]), //output
-            .axis_tlast (aurora_axi_tx_tlast_eth [x]), //output
+    end
+endgenerate
 
-            .mac_rx_data (mac_rx_tdata [x]), //input [7:0]
-            .mac_rx_valid(mac_rx_tvalid[x]), //input
-            .mac_rx_sof  (mac_rx_tuser [x]), //input
-            .mac_rx_eof  (mac_rx_tlast [x]), //input
-            .mac_rx_err  (mac_rx_err   [x]), //input
-
-            .rstn(1'b1),
-            .clk(clk125M)
-        );
+        assign aurora_axi_rx_tdata_eth [x] = aurora_axi_rx_tdata_tmp [(x*32) +: 32];
+        assign aurora_axi_rx_tkeep_eth [x] = aurora_axi_rx_tkeep_tmp [(x*4) +: 4];
+        assign aurora_axi_rx_tvalid_eth[x] = aurora_axi_rx_tvalid_tmp[x];
+        assign aurora_axi_rx_tlast_eth [x] = aurora_axi_rx_tlast_tmp [x];
 
         assign aurora_axi_tx_tdata_tmp [(x*32) +: 32] = aurora_axi_tx_tdata_eth [x];
         assign aurora_axi_tx_tkeep_tmp [(x*4) +: 4] = aurora_axi_tx_tkeep_eth [x];
@@ -594,8 +562,170 @@ generate
 
         assign aurora_axi_tx_tready_eth[x] = aurora_axi_tx_tready_tmp [x];
 
-    end
-endgenerate
+mac_txbuf # (
+    .SIM(SIM)
+) mac0_txbuf (
+    .synch(module_eth_tx_sync),
+
+    .axis_tready(mac_axis_rx_tready_eth[1]),
+    .axis_tdata (mac_axis_rx_tdata_eth [1]), //input [31:0]
+    .axis_tkeep (mac_axis_rx_tkeep_eth [1]), //input [3:0]
+    .axis_tvalid(mac_axis_rx_tvalid_eth[1]), //input
+    .axis_tlast (mac_axis_rx_tlast_eth [1]), //input
+
+    .mac_tx_data (mac_tx_tdata [0]), //output [7:0]
+    .mac_tx_valid(mac_tx_tvalid[0]), //output
+    .mac_tx_sof  (mac_tx_tuser [0]), //output
+    .mac_tx_eof  (mac_tx_tlast [0]), //output
+    .mac_tx_rq   (mac_tx_rq    [0]),
+    .mac_tx_ack  (mac_tx_ack   [0][0]),
+
+    .rstn(1'b1),
+    .clk(clk125M)
+);
+
+mac_rxbuf # (
+    .SIM(SIM)
+) mac0_rxbuf (
+    .axis_tready(mac_axis_rx_tready_eth[0]), //input
+    .axis_tdata (mac_axis_rx_tdata_eth [0]), //output [31:0]
+    .axis_tkeep (mac_axis_rx_tkeep_eth [0]), //output [3:0]
+    .axis_tvalid(mac_axis_rx_tvalid_eth[0]), //output
+    .axis_tlast (mac_axis_rx_tlast_eth [0]), //output
+
+    .mac_rx_data (mac_rx_tdata [0]), //input [7:0]
+    .mac_rx_valid(mac_rx_tvalid[0]), //input
+    .mac_rx_sof  (mac_rx_tuser [0]), //input
+    .mac_rx_eof  (mac_rx_tlast [0]), //input
+    .mac_rx_err  (mac_rx_err   [0]), //input
+
+    .rstn(1'b1),
+    .clk(clk125M)
+);
+
+mac_txbuf # (
+    .SIM(SIM)
+) mac1_txbuf (
+    .synch(module_eth_tx_sync),
+
+    .axis_tready(mac_axis_rx_tready_eth[0]),
+    .axis_tdata (mac_axis_rx_tdata_eth [0]), //input [31:0]
+    .axis_tkeep (mac_axis_rx_tkeep_eth [0]), //input [3:0]
+    .axis_tvalid(mac_axis_rx_tvalid_eth[0]), //input
+    .axis_tlast (mac_axis_rx_tlast_eth [0]), //input
+
+    .mac_tx_data (mac_tx_tdata [1]), //output [7:0]
+    .mac_tx_valid(mac_tx_tvalid[1]), //output
+    .mac_tx_sof  (mac_tx_tuser [1]), //output
+    .mac_tx_eof  (mac_tx_tlast [1]), //output
+    .mac_tx_rq   (mac_tx_rq    [1]),
+    .mac_tx_ack  (mac_tx_ack   [1][0]),
+
+    .rstn(1'b1),
+    .clk(clk125M)
+);
+
+mac_rxbuf # (
+    .SIM(SIM)
+) mac1_rxbuf (
+    .axis_tready(mac1_axis_rx_tready_eth[1]), //input
+    .axis_tdata (mac1_axis_rx_tdata_eth [1]), //output [31:0]
+    .axis_tkeep (mac1_axis_rx_tkeep_eth [1]), //output [3:0]
+    .axis_tvalid(mac1_axis_rx_tvalid_eth[1]), //output
+    .axis_tlast (mac1_axis_rx_tlast_eth [1]), //output
+
+    .mac_rx_data (mac_rx_tdata [1]), //input [7:0]
+    .mac_rx_valid(mac_rx_tvalid[1]), //input
+    .mac_rx_sof  (mac_rx_tuser [1]), //input
+    .mac_rx_eof  (mac_rx_tlast [1]), //input
+    .mac_rx_err  (mac_rx_err   [1]), //input
+
+    .rstn(1'b1),
+    .clk(clk125M)
+);
+
+
+mac_txbuf # (
+    .SIM(SIM)
+) mac2_txbuf (
+    .synch(module_eth_tx_sync),
+
+    .a3is_tready(mac_axis_rx_tready_eth[3]),
+    .axis_tdata (mac_axis_rx_tdata_eth [3]), //input [31:0]
+    .axis_tkeep (mac_axis_rx_tkeep_eth [3]), //input [3:0]
+    .axis_tvalid(mac_axis_rx_tvalid_eth[3]), //input
+    .axis_tlast (mac_axis_rx_tlast_eth [3]), //input
+
+    .mac_tx_data (mac_tx_tdata [2]), //output [7:0]
+    .mac_tx_valid(mac_tx_tvalid[2]), //output
+    .mac_tx_sof  (mac_tx_tuser [2]), //output
+    .mac_tx_eof  (mac_tx_tlast [2]), //output
+    .mac_tx_rq   (mac_tx_rq    [2]),
+    .mac_tx_ack  (mac_tx_ack   [2][0]),
+
+    .rstn(1'b1),
+    .clk(clk125M)
+);
+
+mac_rxbuf # (
+    .SIM(SIM)
+) mac2_rxbuf (
+    .axis_tready(mac_axis_rx_tready_eth[2]), //input
+    .axis_tdata (mac_axis_rx_tdata_eth [2]), //output [31:0]
+    .axis_tkeep (mac_axis_rx_tkeep_eth [2]), //output [3:0]
+    .axis_tvalid(mac_axis_rx_tvalid_eth[2]), //output
+    .axis_tlast (mac_axis_rx_tlast_eth [2]), //output
+
+    .mac_rx_data (mac_rx_tdata [2]), //input [7:0]
+    .mac_rx_valid(mac_rx_tvalid[2]), //input
+    .mac_rx_sof  (mac_rx_tuser [2]), //input
+    .mac_rx_eof  (mac_rx_tlast [2]), //input
+    .mac_rx_err  (mac_rx_err   [2]), //input
+
+    .rstn(1'b1),
+    .clk(clk125M)
+);
+
+mac_txbuf # (
+    .SIM(SIM)
+) mac3_txbuf (
+    .synch(module_eth_tx_sync),
+
+    .axis_tready(mac_axis_rx_tready_eth[2]),
+    .axis_tdata (mac_axis_rx_tdata_eth [2]), //input [31:0]
+    .axis_tkeep (mac_axis_rx_tkeep_eth [2]), //input [3:0]
+    .axis_tvalid(mac_axis_rx_tvalid_eth[2]), //input
+    .axis_tlast (mac_axis_rx_tlast_eth [2]), //input
+
+    .mac_tx_data (mac_tx_tdata [3]), //output [7:0]
+    .mac_tx_valid(mac_tx_tvalid[3]), //output
+    .mac_tx_sof  (mac_tx_tuser [3]), //output
+    .mac_tx_eof  (mac_tx_tlast [3]), //output
+    .mac_tx_rq   (mac_tx_rq    [3]),
+    .mac_tx_ack  (mac_tx_ack   [3][0]),
+
+    .rstn(1'b1),
+    .clk(clk125M)
+);
+
+mac_rxbuf # (
+    .SIM(SIM)
+) mac3_rxbuf (
+    .axis_tready(mac1_axis_rx_tready_eth[3]), //input
+    .axis_tdata (mac1_axis_rx_tdata_eth [3]), //output [31:0]
+    .axis_tkeep (mac1_axis_rx_tkeep_eth [3]), //output [3:0]
+    .axis_tvalid(mac1_axis_rx_tvalid_eth[3]), //output
+    .axis_tlast (mac1_axis_rx_tlast_eth [3]), //output
+
+    .mac_rx_data (mac_rx_tdata [3]), //input [7:0]
+    .mac_rx_valid(mac_rx_tvalid[3]), //input
+    .mac_rx_sof  (mac_rx_tuser [3]), //input
+    .mac_rx_eof  (mac_rx_tlast [3]), //input
+    .mac_rx_err  (mac_rx_err   [3]), //input
+
+    .rstn(1'b1),
+    .clk(clk125M)
+);
 
 ila_0 rx_ila (
     .probe0({

@@ -53,7 +53,7 @@ always @(posedge clk) begin
         tkeep <= 4'b1111;
     end
 
-    tvalid <= (&bcnt) | mac_rx_eof;
+    tvalid <= ((&bcnt) & mac_rx_valid) | mac_rx_eof;
     tlast <= mac_rx_eof;
 end
 
