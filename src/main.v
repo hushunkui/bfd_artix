@@ -123,6 +123,17 @@ wire aurora_status_tx_lock;
 wire aurora_status_tx_resetdone_out;
 wire aurora_user_clk;
 
+wire aurora1_control_pwd;
+wire aurora1_status_channel_up;
+wire aurora1_status_frame_err;
+wire aurora1_status_hard_err;
+wire [0:0]aurora1_status_lane_up;
+wire aurora1_status_pll_not_locked_out;
+wire aurora1_status_rx_resetdone_out;
+wire aurora1_status_soft_err;
+wire aurora1_status_tx_lock;
+wire aurora1_status_tx_resetdone_out;
+
 wire [31:0] aurora_axi_rx_tdata_eth [ETHCOUNT-1:0];
 wire [3:0] aurora_axi_rx_tkeep_eth [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0] aurora_axi_rx_tlast_eth;
@@ -222,15 +233,15 @@ mig_7series_v4_1_tempmon tempmon(
 );
 
 system system_i(
-    .aurora_axi_rx_tdata(aurora_axi_rx_tdata), //output
-    .aurora_axi_rx_tkeep(aurora_axi_rx_tkeep), //output
-    .aurora_axi_rx_tvalid(aurora_axi_rx_tvalid),//output
-    .aurora_axi_rx_tlast(aurora_axi_rx_tlast), //output
-    .aurora_axi_tx_tready(aurora_axi_tx_tready),//output
-    .aurora_axi_tx_tdata(aurora_axi_tx_tdata), //input
-    .aurora_axi_tx_tkeep(aurora_axi_tx_tkeep), //input
-    .aurora_axi_tx_tvalid(aurora_axi_tx_tvalid), //input
-    .aurora_axi_tx_tlast(aurora_axi_tx_tlast), //input
+    // .aurora_axi_rx_tdata(aurora_axi_rx_tdata), //output
+    // .aurora_axi_rx_tkeep(aurora_axi_rx_tkeep), //output
+    // .aurora_axi_rx_tvalid(aurora_axi_rx_tvalid),//output
+    // .aurora_axi_rx_tlast(aurora_axi_rx_tlast), //output
+    // .aurora_axi_tx_tready(aurora_axi_tx_tready),//output
+    // .aurora_axi_tx_tdata(aurora_axi_tx_tdata), //input
+    // .aurora_axi_tx_tkeep(aurora_axi_tx_tkeep), //input
+    // .aurora_axi_tx_tvalid(aurora_axi_tx_tvalid), //input
+    // .aurora_axi_tx_tlast(aurora_axi_tx_tlast), //input
     .aurora_control_power_down(aurora_control_pwd),
     .aurora_status_lane_up(aurora_status_lane_up),
     .aurora_status_channel_up(aurora_status_channel_up),
@@ -241,10 +252,25 @@ system system_i(
     .aurora_status_tx_lock(aurora_status_tx_lock),
     .aurora_status_tx_resetdone_out(aurora_status_tx_resetdone_out),
     .aurora_status_rx_resetdone_out(aurora_status_rx_resetdone_out),
-    .aurora_gt_rx_rxn(gt_rx_rxn),
-    .aurora_gt_rx_rxp(gt_rx_rxp),
-    .aurora_gt_tx_txn(gt_tx_txn),
-    .aurora_gt_tx_txp(gt_tx_txp),
+    .aurora_gt_rx_rxn(gt_rx_rxn[0:0]),
+    .aurora_gt_rx_rxp(gt_rx_rxp[0:0]),
+    .aurora_gt_tx_txn(gt_tx_txn[0:0]),
+    .aurora_gt_tx_txp(gt_tx_txp[0:0]),
+
+    .aurora1_control_power_down(aurora_control_pwd),
+    .aurora1_status_lane_up(aurora1_status_lane_up),
+    .aurora1_status_channel_up(aurora1_status_channel_up),
+    .aurora1_status_frame_err(aurora1_status_frame_err),
+    .aurora1_status_hard_err(aurora1_status_hard_err),
+    .aurora1_status_soft_err(aurora1_status_soft_err),
+    // .aurora1_status_pll_not_locked_out(aurora1_status_pll_not_locked_out),
+    .aurora1_status_tx_lock(aurora1_status_tx_lock),
+    .aurora1_status_tx_resetdone_out(aurora1_status_tx_resetdone_out),
+    .aurora1_status_rx_resetdone_out(aurora1_status_rx_resetdone_out),
+    .aurora1_gt_rx_rxn(gt_rx_rxn[1:1]),
+    .aurora1_gt_rx_rxp(gt_rx_rxp[1:1]),
+    .aurora1_gt_tx_txn(gt_tx_txn[1:1]),
+    .aurora1_gt_tx_txp(gt_tx_txp[1:1]),
 
     .aurora_gt_refclk_clk_n(gt_refclk_n),//(mgt_refclk_n),//
     .aurora_gt_refclk_clk_p(gt_refclk_p),//(mgt_refclk_p),//
@@ -286,7 +312,7 @@ usr_logic #(
     .firmware_time (firmware_time),
     .test_gpio (test_gpio),
     .reg_ctrl (reg_ctrl),
-    .status_aurora({30'd0, 1'b0, aurora_status_channel_up}),
+    .status_aurora({30'd0, aurora1_status_channel_up, aurora_status_channel_up}),
     .status_eth({21'd0, 4'd0, mac_link[3:0], 3'd0}),
     .cnterr_eth0(mac_rx_cnterr[0]),
     .cnterr_eth1(mac_rx_cnterr[1]),
@@ -365,7 +391,7 @@ assign reg_rd_data[`FPGA_RREG_ETHPHY_MDIO_CLK_O * `FPGA_REG_DWIDTH +: `FPGA_REG_
 assign reg_rd_data[`FPGA_RREG_ETHPHY_MDIO_DATA_O * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = {15'd0, ethphy_mdio_data};
 assign reg_rd_data[`FPGA_RREG_ETHPHY_MDIO_DIR_O * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = {15'd0, ethphy_mdio_dir};
 assign reg_rd_data[`FPGA_RREG_ETHPHY_MDIO_DATA_I * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = {15'd0, eth_phy_mdio};
-assign reg_rd_data[`FPGA_RREG_AURORA_STATUS * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = {15'd0, aurora_status_channel_up};
+assign reg_rd_data[`FPGA_RREG_AURORA_STATUS * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = {14'd0, aurora1_status_channel_up, aurora_status_channel_up};
 
 genvar a;
 generate
@@ -429,62 +455,6 @@ assign usr_lvds_p_o[1] = mac_link[1];
 assign usr_lvds_p_o[2] = mac_link[2];
 assign usr_lvds_p_o[3] = mac_link[3];
 
-
-
-wire [ETHCOUNT-1:0]      aurora_axi_rx_tready_tmp;
-wire [(ETHCOUNT*32)-1:0] aurora_axi_rx_tdata_tmp ;
-wire [(ETHCOUNT*4-1):0]  aurora_axi_rx_tkeep_tmp ;
-wire [ETHCOUNT-1:0]      aurora_axi_rx_tvalid_tmp;
-wire [ETHCOUNT-1:0]      aurora_axi_rx_tlast_tmp ;
-aurora_axi_tx_mux #(
-    .ETHCOUNT(ETHCOUNT),
-    .SIM(SIM)
-) aurora_tx_mux (
-    .axis_m_sel(3'd0),
-
-    .axis_s_tready(), //output //aurora_axi_rx_tready
-    .axis_s_tdata (aurora_axi_rx_tdata ), //input [31:0]
-    .axis_s_tkeep (aurora_axi_rx_tkeep ), //input [3:0]
-    .axis_s_tvalid(aurora_axi_rx_tvalid), //input
-    .axis_s_tlast (aurora_axi_rx_tlast ), //input
-
-    .axis_m_tready(aurora_axi_rx_tready_tmp ), //input [ETHCOUNT-1:0]
-    .axis_m_tdata (aurora_axi_rx_tdata_tmp  ), //output [(ETHCOUNT*32)-1:0]
-    .axis_m_tkeep (aurora_axi_rx_tkeep_tmp  ), //output [(ETHCOUNT*4-1):0]
-    .axis_m_tvalid(aurora_axi_rx_tvalid_tmp ), //output [ETHCOUNT-1:0]
-    .axis_m_tlast (aurora_axi_rx_tlast_tmp  ), //output [ETHCOUNT-1:0]
-
-    .rstn(1'b1),
-    .clk(clk125M)
-);
-
-
-wire [ETHCOUNT-1:0]      aurora_axi_tx_tready_tmp;
-wire [(ETHCOUNT*32)-1:0] aurora_axi_tx_tdata_tmp ;
-wire [(ETHCOUNT*4-1):0]  aurora_axi_tx_tkeep_tmp ;
-wire [ETHCOUNT-1:0]      aurora_axi_tx_tvalid_tmp;
-wire [ETHCOUNT-1:0]      aurora_axi_tx_tlast_tmp ;
-aurora_axi_rx_mux #(
-    .ETHCOUNT(ETHCOUNT),
-    .SIM(SIM)
-) (
-    .axis_s_sel(3'd0),
-
-    .axis_s_tready(aurora_axi_tx_tready_tmp), //output [ETHCOUNT-1:0]
-    .axis_s_tdata (aurora_axi_tx_tdata_tmp ), //input  [(ETHCOUNT*32)-1:0]
-    .axis_s_tkeep (aurora_axi_tx_tkeep_tmp ), //input  [(ETHCOUNT*4-1):0]
-    .axis_s_tvalid(aurora_axi_tx_tvalid_tmp), //input  [ETHCOUNT-1:0]
-    .axis_s_tlast (aurora_axi_tx_tlast_tmp ), //input  [ETHCOUNT-1:0]
-
-    .axis_m_tready(aurora_axi_tx_tready), //input
-    .axis_m_tdata (aurora_axi_tx_tdata ), //output[31:0]
-    .axis_m_tkeep (aurora_axi_tx_tkeep ), //output[3:0]
-    .axis_m_tvalid(aurora_axi_tx_tvalid), //output
-    .axis_m_tlast (aurora_axi_tx_tlast ), //output
-
-    .rstn(1'b1),
-    .clk(clk125M)
-);
 
 genvar x;
 generate
@@ -550,17 +520,6 @@ generate
     end
 endgenerate
 
-        assign aurora_axi_rx_tdata_eth [x] = aurora_axi_rx_tdata_tmp [(x*32) +: 32];
-        assign aurora_axi_rx_tkeep_eth [x] = aurora_axi_rx_tkeep_tmp [(x*4) +: 4];
-        assign aurora_axi_rx_tvalid_eth[x] = aurora_axi_rx_tvalid_tmp[x];
-        assign aurora_axi_rx_tlast_eth [x] = aurora_axi_rx_tlast_tmp [x];
-
-        assign aurora_axi_tx_tdata_tmp [(x*32) +: 32] = aurora_axi_tx_tdata_eth [x];
-        assign aurora_axi_tx_tkeep_tmp [(x*4) +: 4] = aurora_axi_tx_tkeep_eth [x];
-        assign aurora_axi_tx_tvalid_tmp[x] = aurora_axi_tx_tvalid_eth[x];
-        assign aurora_axi_tx_tlast_tmp [x] = aurora_axi_tx_tlast_eth [x];
-
-        assign aurora_axi_tx_tready_eth[x] = aurora_axi_tx_tready_tmp [x];
 
 mac_txbuf # (
     .SIM(SIM)
@@ -603,6 +562,7 @@ mac_rxbuf # (
     .clk(clk125M)
 );
 
+
 mac_txbuf # (
     .SIM(SIM)
 ) mac1_txbuf (
@@ -628,11 +588,11 @@ mac_txbuf # (
 mac_rxbuf # (
     .SIM(SIM)
 ) mac1_rxbuf (
-    .axis_tready(mac1_axis_rx_tready_eth[1]), //input
-    .axis_tdata (mac1_axis_rx_tdata_eth [1]), //output [31:0]
-    .axis_tkeep (mac1_axis_rx_tkeep_eth [1]), //output [3:0]
-    .axis_tvalid(mac1_axis_rx_tvalid_eth[1]), //output
-    .axis_tlast (mac1_axis_rx_tlast_eth [1]), //output
+    .axis_tready(mac_axis_rx_tready_eth[1]), //input
+    .axis_tdata (mac_axis_rx_tdata_eth [1]), //output [31:0]
+    .axis_tkeep (mac_axis_rx_tkeep_eth [1]), //output [3:0]
+    .axis_tvalid(mac_axis_rx_tvalid_eth[1]), //output
+    .axis_tlast (mac_axis_rx_tlast_eth [1]), //output
 
     .mac_rx_data (mac_rx_tdata [1]), //input [7:0]
     .mac_rx_valid(mac_rx_tvalid[1]), //input
@@ -650,7 +610,7 @@ mac_txbuf # (
 ) mac2_txbuf (
     .synch(module_eth_tx_sync),
 
-    .a3is_tready(mac_axis_rx_tready_eth[3]),
+    .axis_tready(mac_axis_rx_tready_eth[3]),
     .axis_tdata (mac_axis_rx_tdata_eth [3]), //input [31:0]
     .axis_tkeep (mac_axis_rx_tkeep_eth [3]), //input [3:0]
     .axis_tvalid(mac_axis_rx_tvalid_eth[3]), //input
@@ -686,6 +646,7 @@ mac_rxbuf # (
     .clk(clk125M)
 );
 
+
 mac_txbuf # (
     .SIM(SIM)
 ) mac3_txbuf (
@@ -711,11 +672,11 @@ mac_txbuf # (
 mac_rxbuf # (
     .SIM(SIM)
 ) mac3_rxbuf (
-    .axis_tready(mac1_axis_rx_tready_eth[3]), //input
-    .axis_tdata (mac1_axis_rx_tdata_eth [3]), //output [31:0]
-    .axis_tkeep (mac1_axis_rx_tkeep_eth [3]), //output [3:0]
-    .axis_tvalid(mac1_axis_rx_tvalid_eth[3]), //output
-    .axis_tlast (mac1_axis_rx_tlast_eth [3]), //output
+    .axis_tready(mac_axis_rx_tready_eth[3]), //input
+    .axis_tdata (mac_axis_rx_tdata_eth [3]), //output [31:0]
+    .axis_tkeep (mac_axis_rx_tkeep_eth [3]), //output [3:0]
+    .axis_tvalid(mac_axis_rx_tvalid_eth[3]), //output
+    .axis_tlast (mac_axis_rx_tlast_eth [3]), //output
 
     .mac_rx_data (mac_rx_tdata [3]), //input [7:0]
     .mac_rx_valid(mac_rx_tvalid[3]), //input
@@ -729,17 +690,31 @@ mac_rxbuf # (
 
 ila_0 rx_ila (
     .probe0({
-        mac_tx_rq[0],
-        mac_tx_ack[0][0],
-        mac_tx_tdata[0],
-        mac_tx_tvalid[0],
-        mac_tx_tuser[0],
-        mac_tx_tlast[0],
+        mac_tx_tdata [1], //output [7:0]
+        mac_tx_tvalid[1], //output
+        mac_tx_tuser [1], //output
+        mac_tx_tlast [1], //output
+        mac_tx_rq    [1],
+        mac_tx_ack   [1][0],
 
-        mac_rx_tdata [0],
-        mac_rx_tvalid[0],
-        mac_rx_tuser[0],
-        mac_rx_tlast[0]
+        mac_rx_tdata [1], //input [7:0]
+        mac_rx_tvalid[1], //input
+        mac_rx_tuser [1], //input
+        mac_rx_tlast [1], //input
+        mac_rx_err   [1], //input
+
+        mac_tx_tdata [0], //output [7:0]
+        mac_tx_tvalid[0], //output
+        mac_tx_tuser [0], //output
+        mac_tx_tlast [0], //output
+        mac_tx_rq    [0],
+        mac_tx_ack   [0][0],
+
+        mac_rx_tdata [0], //input [7:0]
+        mac_rx_tvalid[0], //input
+        mac_rx_tuser [0], //input
+        mac_rx_tlast [0], //input
+        mac_rx_err   [0]  //input
 
     }),
     .clk(clk125M)
