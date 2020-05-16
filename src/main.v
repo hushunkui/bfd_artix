@@ -85,6 +85,8 @@ wire [7:0]              dbg1_rgmii_rx_data [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     dbg1_rgmii_rx_den;
 wire [ETHCOUNT-1:0]     dbg1_rgmii_rx_sof;
 wire [ETHCOUNT-1:0]     dbg1_rgmii_rx_eof;
+wire [7:0]              dbg_tx_data [ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0]     dbg_tx_den;
 
 wire [ETHCOUNT-1:0] mac_axis_rx_tready_eth;
 wire [31:0]         mac_axis_rx_tdata_eth[ETHCOUNT-1:0];
@@ -509,6 +511,8 @@ generate
             .dbg_wDataCRCVal(),//(dbg_wDataCRCVal[x]),
             .dbg_wDataCRCSoF(),//(dbg_wDataCRCSoF[x]),
             .dbg_wDataCRCEoF(),//(dbg_wDataCRCEoF[x]),
+            .dbg_tx_data(dbg_tx_data[x]),
+            .dbg_tx_den (dbg_tx_den [x]),
 
             .Remote_MACOut(), //output   [47:0]
             .Remote_IP_Out(), //output   [31:0]
@@ -545,7 +549,7 @@ mac_txbuf # (
     .mac_tx_rq   (mac_tx_rq    [0]),
     .mac_tx_ack  (mac_tx_ack   [0][0]),
 
-    .rstn(fifo_rstn),
+    .rstn(mac_link[0]),//(fifo_rstn),
     .clk(clk125M)
 );
 
@@ -560,7 +564,7 @@ mac_rx_cut_macframe_no_crc mac0_rxbuf_cut (
     .mac_rx_sof_o  (dbg1_rgmii_rx_sof [0]),
     .mac_rx_eof_o  (dbg1_rgmii_rx_eof [0]),
 
-    .rstn(1'b1),
+    .rstn(mac_link[0]),//(1'b1),
     .clk(clk125M)
 );
 
@@ -580,7 +584,7 @@ mac_rxbuf # (
     .mac_rx_err  (1'b0                 ), //(mac_rx_err   [0]), //input
     .mac_rx_clk  (1'b0),
 
-    .rstn(fifo_rstn),
+    .rstn(mac_link[0]),//(fifo_rstn),
     .clk(clk125M)
 );
 
@@ -603,7 +607,7 @@ mac_txbuf # (
     .mac_tx_rq   (mac_tx_rq    [1]),
     .mac_tx_ack  (mac_tx_ack   [1][0]),
 
-    .rstn(fifo_rstn),
+    .rstn(mac_link[1]),//(fifo_rstn),
     .clk(clk125M)
 );
 
@@ -619,7 +623,7 @@ mac_rx_cut_macframe_no_crc mac1_rxbuf_cut (
     .mac_rx_sof_o  (dbg1_rgmii_rx_sof [1]),
     .mac_rx_eof_o  (dbg1_rgmii_rx_eof [1]),
 
-    .rstn(1'b1),
+    .rstn(mac_link[1]),//(1'b1),
     .clk(clk125M)
 );
 
@@ -639,7 +643,7 @@ mac_rxbuf # (
     .mac_rx_err  (1'b0                 ), //(mac_rx_err   [1]), //input
     .mac_rx_clk  (1'b0),
 
-    .rstn(fifo_rstn),
+    .rstn(mac_link[1]),//(fifo_rstn),
     .clk(clk125M)
 );
 
@@ -677,7 +681,7 @@ mac_rx_cut_macframe_no_crc mac2_rxbuf_cut (
     .mac_rx_sof_o  (dbg1_rgmii_rx_sof [2]),
     .mac_rx_eof_o  (dbg1_rgmii_rx_eof [2]),
 
-    .rstn(1'b1),
+    .rstn(mac_link[2]),//(1'b1),
     .clk(clk125M)
 );
 
@@ -735,7 +739,7 @@ mac_rx_cut_macframe_no_crc mac3_rxbuf_cut (
     .mac_rx_sof_o  (dbg1_rgmii_rx_sof [3]),
     .mac_rx_eof_o  (dbg1_rgmii_rx_eof [3]),
 
-    .rstn(1'b1),
+    .rstn(mac_link[3]),//(1'b1),
     .clk(clk125M)
 );
 
@@ -769,6 +773,8 @@ ila_0 rx_ila (
         mac_tx_tlast [1], //output
         mac_tx_rq    [1],
         mac_tx_ack   [1][0],
+        dbg_tx_data  [1],
+        dbg_tx_den   [1],
 
         dbg1_rgmii_rx_data[1], //input [7:0]
         dbg1_rgmii_rx_den [1], //input
@@ -786,6 +792,8 @@ ila_0 rx_ila (
         mac_tx_tlast [0], //output
         mac_tx_rq    [0],
         mac_tx_ack   [0][0],
+        dbg_tx_data  [0],
+        dbg_tx_den   [0],
 
         dbg1_rgmii_rx_data[0], //input [7:0]
         dbg1_rgmii_rx_den [0], //input

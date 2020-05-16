@@ -77,7 +77,6 @@ always @(posedge clk) begin
 
         S_TXRQ : begin
             if (mac_tx_ack) begin
-                mac_tx_rq <= 1'b0;
                 mac_tx_data <= s_tdata[0  +: 8];
                 mac_tx_valid <= 1'b1;
                 mac_tx_sof <= 1'b1;
@@ -156,6 +155,7 @@ always @(posedge clk) begin
 
         S_TX_END : begin
             mac_tx_valid <= 1'b0;
+            mac_tx_rq <= 1'b0;
             tready <= 1'b1;
             fsm_cs <= S_IDLE;
         end

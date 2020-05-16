@@ -36,6 +36,8 @@ module FrameL2_Out
     output dbg_wDataCRCVal,
     output dbg_wDataCRCSoF,
     output dbg_wDataCRCEoF,
+    output [7:0] dbg_tx_data,
+    output       dbg_tx_den,
 
     output ClkOut,
     output ValOut,
@@ -274,6 +276,10 @@ DDR_OUT	DDR_OUT_inst (
     .outclock ( Clk ),
     .dataout  ( {ClkOut,ValOut,DataOut} )
 );
+
+
+assign dbg_tx_data = DataReg8;
+assign dbg_tx_den = OutValid[7];
 
 endmodule
 

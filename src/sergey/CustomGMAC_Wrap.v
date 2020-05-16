@@ -45,6 +45,8 @@ module CustomGMAC_Wrap
     output dbg_wDataCRCVal,
     output dbg_wDataCRCSoF,
     output dbg_wDataCRCEoF,
+    output [7:0] dbg_tx_data,
+    output       dbg_tx_den,
 
     output [47:0] Remote_MACOut,
     output [31:0] Remote_IP_Out,
@@ -111,6 +113,8 @@ CustomGMAC  CustomGMAC_Inst
     .dbg_wDataCRCVal(dbg_wDataCRCVal),
     .dbg_wDataCRCSoF(dbg_wDataCRCSoF),
     .dbg_wDataCRCEoF(dbg_wDataCRCEoF),
+    .dbg_tx_data(dbg_tx_data),
+    .dbg_tx_den (dbg_tx_den ),
 
     .Remote_MACOut(Remote_MACOut),
     .Remote_IP_Out(Remote_IP_Out),
