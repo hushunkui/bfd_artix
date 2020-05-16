@@ -27,26 +27,52 @@ reg [31:0] tdata = 0;
 reg [3:0]  tkeep = 0;
 reg tvalid = 1'b0;
 reg tlast   = 1'b0;
+reg sof_detect = 1'b0;
 
 always @(posedge clk) begin
     if (mac_rx_valid) begin
-        bcnt <= bcnt + 1;
-        case (bcnt)
-            2'd0 : tdata[0  +: 8] <= mac_rx_data;
-            2'd1 : tdata[8  +: 8] <= mac_rx_data;
-            2'd2 : tdata[16 +: 8] <= mac_rx_data;
-            2'd3 : tdata[24 +: 8] <= mac_rx_data;
-        endcase
-
-        if (mac_rx_eof) begin
+        if (!sof_detect) begin
+            if (mac_rx_sof & !mac_rx_eof) begin
+                sof_detect <= 1'b1;
+            end
+            bcnt <= bcnt + 1;
             case (bcnt)
-                2'd0 : tkeep <= 4'b0001;
-                2'd1 : tkeep <= 4'b0011;
-                2'd2 : tkeep <= 4'b0111;
-                2'd3 : tkeep <= 4'b1111;
+                2'd0 : tdata[0  +: 8] <= mac_rx_data;
+                2'd1 : tdata[8  +: 8] <= mac_rx_data;
+                2'd2 : tdata[16 +: 8] <= mac_rx_data;
+                2'd3 : tdata[24 +: 8] <= mac_rx_data;
             endcase
+
+            if (mac_rx_eof) begin
+                case (bcnt)
+                    2'd0 : tkeep <= 4'b0001;
+                    2'd1 : tkeep <= 4'b0011;
+                    2'd2 : tkeep <= 4'b0111;
+                    2'd3 : tkeep <= 4'b1111;
+                endcase
+            end else begin
+                tkeep <= 4'b1111;
+            end
         end else begin
-            tkeep <= 4'b1111;
+            bcnt <= bcnt + 1;
+            case (bcnt)
+                2'd0 : tdata[0  +: 8] <= mac_rx_data;
+                2'd1 : tdata[8  +: 8] <= mac_rx_data;
+                2'd2 : tdata[16 +: 8] <= mac_rx_data;
+                2'd3 : tdata[24 +: 8] <= mac_rx_data;
+            endcase
+
+            if (mac_rx_eof) begin
+                sof_detect <= 1'b0;
+                case (bcnt)
+                    2'd0 : tkeep <= 4'b0001;
+                    2'd1 : tkeep <= 4'b0011;
+                    2'd2 : tkeep <= 4'b0111;
+                    2'd3 : tkeep <= 4'b1111;
+                endcase
+            end else begin
+                tkeep <= 4'b1111;
+            end
         end
     end else begin
         bcnt <= 2'd0;
