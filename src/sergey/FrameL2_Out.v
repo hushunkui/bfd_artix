@@ -65,7 +65,7 @@ EthScheduler EthScheduler_Inst
     .ValIn0 (ValIn0 ),
     .SoFIn0 (SoFIn0 ),
     .EoFIn0 (EoFIn0 ),
-    .ReqIn0 (1'b0),//(ReqIn0 ),
+    .ReqIn0 (ReqIn0 ),
     .DataIn0(DataIn0),
 
     .ValIn1 (ValIn1 ),
