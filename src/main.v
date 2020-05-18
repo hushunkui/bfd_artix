@@ -195,7 +195,7 @@ assign sysrst = 1'b0;
 assign mgt_pwr_en = 1'b1;
 assign uart_tx = uart_rx;
 
-
+wire fifo_rstn;
 
 
 wire clk20_i;
@@ -453,8 +453,10 @@ assign eth_phy_mdio = (ethphy_mdio_dir) ? ethphy_mdio_data : 1'bz;
 assign gt_rst = usr_lvds_p[0];
 assign aurora_rst = usr_lvds_p[1];
 assign aurora_control_pwd = usr_lvds_p[2];
-assign eth_num = usr_lvds_p[4:3];
-assign module_eth_tx_sync = usr_lvds_p[5]; //module_eth_tx_sync = usr_lvds_p[5];
+assign eth_num[0] = usr_lvds_p[3];
+assign eth_num[1] = usr_lvds_p[4];
+assign fifo_rstn = usr_lvds_p[5];
+assign module_eth_tx_sync = 1'b0;//usr_lvds_p[5]; //module_eth_tx_sync = usr_lvds_p[5];
 
 assign usr_lvds_p_o[0] = mac_link[0];
 assign usr_lvds_p_o[1] = mac_link[1];
@@ -528,8 +530,6 @@ generate
     end
 endgenerate
 
-wire fifo_rstn;
-assign fifo_rstn = mac_link[0] & mac_link[1];
 
 mac_txbuf # (
     .SIM(SIM)
@@ -549,7 +549,7 @@ mac_txbuf # (
     .mac_tx_rq   (mac_tx_rq    [0]),
     .mac_tx_ack  (mac_tx_ack   [0][0]),
 
-    .rstn(mac_link[0]),//(fifo_rstn),
+    .rstn(fifo_rstn),//(mac_link[0]),//
     .clk(clk125M)
 );
 
@@ -564,7 +564,7 @@ mac_rx_cut_macframe_no_crc mac0_rxbuf_cut (
     .mac_rx_sof_o  (dbg1_rgmii_rx_sof [0]),
     .mac_rx_eof_o  (dbg1_rgmii_rx_eof [0]),
 
-    .rstn(mac_link[0]),//(1'b1),
+    .rstn(fifo_rstn),//(mac_link[0]),//(1'b1),
     .clk(clk125M)
 );
 
@@ -584,7 +584,7 @@ mac_rxbuf # (
     .mac_rx_err  (1'b0                 ), //(mac_rx_err   [0]), //input
     .mac_rx_clk  (1'b0),
 
-    .rstn(mac_link[0]),//(fifo_rstn),
+    .rstn(fifo_rstn),//(mac_link[0]),//(fifo_rstn),
     .clk(clk125M)
 );
 
@@ -607,7 +607,7 @@ mac_txbuf # (
     .mac_tx_rq   (mac_tx_rq    [1]),
     .mac_tx_ack  (mac_tx_ack   [1][0]),
 
-    .rstn(mac_link[1]),//(fifo_rstn),
+    .rstn(fifo_rstn),//(mac_link[1]),//(fifo_rstn),
     .clk(clk125M)
 );
 
@@ -623,7 +623,7 @@ mac_rx_cut_macframe_no_crc mac1_rxbuf_cut (
     .mac_rx_sof_o  (dbg1_rgmii_rx_sof [1]),
     .mac_rx_eof_o  (dbg1_rgmii_rx_eof [1]),
 
-    .rstn(mac_link[1]),//(1'b1),
+    .rstn(fifo_rstn),//(mac_link[1]),//(1'b1),
     .clk(clk125M)
 );
 
@@ -643,7 +643,7 @@ mac_rxbuf # (
     .mac_rx_err  (1'b0                 ), //(mac_rx_err   [1]), //input
     .mac_rx_clk  (1'b0),
 
-    .rstn(mac_link[1]),//(fifo_rstn),
+    .rstn(fifo_rstn),//(mac_link[1]),//(fifo_rstn),
     .clk(clk125M)
 );
 
@@ -666,7 +666,7 @@ mac_txbuf # (
     .mac_tx_rq   (mac_tx_rq    [2]),
     .mac_tx_ack  (mac_tx_ack   [2][0]),
 
-    .rstn(mac_link[2]),
+    .rstn(fifo_rstn),//(mac_link[2]),
     .clk(clk125M)
 );
 
@@ -681,7 +681,7 @@ mac_rx_cut_macframe_no_crc mac2_rxbuf_cut (
     .mac_rx_sof_o  (dbg1_rgmii_rx_sof [2]),
     .mac_rx_eof_o  (dbg1_rgmii_rx_eof [2]),
 
-    .rstn(mac_link[2]),//(1'b1),
+    .rstn(fifo_rstn),//(mac_link[2]),//(1'b1),
     .clk(clk125M)
 );
 
@@ -701,7 +701,7 @@ mac_rxbuf # (
     .mac_rx_err  (1'b0                 ), //(mac_rx_err   [2]), //input
     .mac_rx_clk  (1'b0),
 
-    .rstn(mac_link[2]),
+    .rstn(fifo_rstn),//(mac_link[2]),
     .clk(clk125M)
 );
 
@@ -724,7 +724,7 @@ mac_txbuf # (
     .mac_tx_rq   (mac_tx_rq    [3]),
     .mac_tx_ack  (mac_tx_ack   [3][0]),
 
-    .rstn(mac_link[3]),
+    .rstn(fifo_rstn),//(mac_link[3]),
     .clk(clk125M)
 );
 
@@ -739,7 +739,7 @@ mac_rx_cut_macframe_no_crc mac3_rxbuf_cut (
     .mac_rx_sof_o  (dbg1_rgmii_rx_sof [3]),
     .mac_rx_eof_o  (dbg1_rgmii_rx_eof [3]),
 
-    .rstn(mac_link[3]),//(1'b1),
+    .rstn(fifo_rstn),//(mac_link[3]),//(1'b1),
     .clk(clk125M)
 );
 
@@ -759,13 +759,14 @@ mac_rxbuf # (
     .mac_rx_err  (1'b0                 ), //(mac_rx_err   [3]), //input
     .mac_rx_clk  (1'b0),
 
-    .rstn(mac_link[3]),
+    .rstn(fifo_rstn),//(mac_link[3]),
     .clk(clk125M)
 );
 
 ila_0 rx_ila (
     .probe0({
         mac_link,
+        fifo_rstn,
 
         mac_tx_tdata [1], //output [7:0]
         mac_tx_tvalid[1], //output

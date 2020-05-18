@@ -13,8 +13,6 @@ set usr_firmware_name            bfd_artix_firmware.bit
 set usr_firmware_dir            ../../../firmware
 # set usr_dbg_dir                 ../../../dbg
 
-write_bitstream -force -bin_file ./$prj_firmware_name
-
 if {![file exist $curDir/$prj_firmware_name]} {
     puts "error can't find $curDir/$prj_firmware_name"
     return
