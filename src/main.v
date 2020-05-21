@@ -27,10 +27,10 @@ module main #(
     inout                     eth_phy_mdio,
     output reg                eth_phy_mdc = 1'b0,
 
-    input [0:1] gt_rx_rxn,
-    input [0:1] gt_rx_rxp,
-    output [0:1] gt_tx_txn,
-    output [0:1] gt_tx_txp,
+    input [0:0] gt_rx_rxn,
+    input [0:0] gt_rx_rxp,
+    output [0:0] gt_tx_txn,
+    output [0:0] gt_tx_txp,
     input gt_refclk_n,
     input gt_refclk_p,
     output mgt_pwr_en,
@@ -77,22 +77,10 @@ wire [ETHCOUNT-1:0]     mac_tx_tuser;
 wire [0:0]              mac_tx_ack [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0]     mac_tx_rq;
 
-wire [7:0]              dbg_rgmii_rx_data [ETHCOUNT-1:0];
-wire [ETHCOUNT-1:0]     dbg_rgmii_rx_den;
-wire [ETHCOUNT-1:0]     dbg_rgmii_rx_sof;
-wire [ETHCOUNT-1:0]     dbg_rgmii_rx_eof;
-wire [7:0]              dbg1_rgmii_rx_data [ETHCOUNT-1:0];
-wire [ETHCOUNT-1:0]     dbg1_rgmii_rx_den;
-wire [ETHCOUNT-1:0]     dbg1_rgmii_rx_sof;
-wire [ETHCOUNT-1:0]     dbg1_rgmii_rx_eof;
-wire [7:0]              dbg_tx_data [ETHCOUNT-1:0];
-wire [ETHCOUNT-1:0]     dbg_tx_den;
-
-wire [ETHCOUNT-1:0] mac_axis_rx_tready_eth;
-wire [31:0]         mac_axis_rx_tdata_eth[ETHCOUNT-1:0];
-wire [3:0]          mac_axis_rx_tkeep_eth[ETHCOUNT-1:0];
-wire [ETHCOUNT-1:0] mac_axis_rx_tvalid_eth;
-wire [ETHCOUNT-1:0] mac_axis_rx_tlast_eth ;
+// wire [7:0]              dbg_rgmii_rx_data [ETHCOUNT-1:0];
+// wire [ETHCOUNT-1:0]     dbg_rgmii_rx_den;
+// wire [ETHCOUNT-1:0]     dbg_rgmii_rx_sof;
+// wire [ETHCOUNT-1:0]     dbg_rgmii_rx_eof;
 
 reg ethphy_mdio_data;
 reg ethphy_mdio_dir;
@@ -106,6 +94,7 @@ wire clk375M;
 wire clk200M;
 wire mac_pll_locked;
 
+wire aurora_axi_rx_tready;
 wire [31:0]aurora_axi_rx_tdata;
 wire [3:0]aurora_axi_rx_tkeep;
 wire aurora_axi_rx_tlast;
@@ -128,17 +117,6 @@ wire aurora_status_soft_err;
 wire aurora_status_tx_lock;
 wire aurora_status_tx_resetdone_out;
 wire aurora_user_clk;
-
-wire aurora1_control_pwd;
-wire aurora1_status_channel_up;
-wire aurora1_status_frame_err;
-wire aurora1_status_hard_err;
-wire [0:0]aurora1_status_lane_up;
-wire aurora1_status_pll_not_locked_out;
-wire aurora1_status_rx_resetdone_out;
-wire aurora1_status_soft_err;
-wire aurora1_status_tx_lock;
-wire aurora1_status_tx_resetdone_out;
 
 wire [31:0] aurora_axi_rx_tdata_eth [ETHCOUNT-1:0];
 wire [3:0] aurora_axi_rx_tkeep_eth [ETHCOUNT-1:0];
@@ -195,7 +173,6 @@ assign sysrst = 1'b0;
 assign mgt_pwr_en = 1'b1;
 assign uart_tx = uart_rx;
 
-wire fifo_rstn;
 
 
 wire clk20_i;
@@ -239,15 +216,16 @@ mig_7series_v4_1_tempmon tempmon(
 );
 
 system system_i(
-    // .aurora_axi_rx_tdata(aurora_axi_rx_tdata), //output
-    // .aurora_axi_rx_tkeep(aurora_axi_rx_tkeep), //output
-    // .aurora_axi_rx_tvalid(aurora_axi_rx_tvalid),//output
-    // .aurora_axi_rx_tlast(aurora_axi_rx_tlast), //output
-    // .aurora_axi_tx_tready(aurora_axi_tx_tready),//output
-    // .aurora_axi_tx_tdata(aurora_axi_tx_tdata), //input
-    // .aurora_axi_tx_tkeep(aurora_axi_tx_tkeep), //input
-    // .aurora_axi_tx_tvalid(aurora_axi_tx_tvalid), //input
-    // .aurora_axi_tx_tlast(aurora_axi_tx_tlast), //input
+    .aurora_axi_rx_tready(aurora_axi_rx_tready),
+    .aurora_axi_rx_tdata(aurora_axi_rx_tdata), //output
+    .aurora_axi_rx_tkeep(aurora_axi_rx_tkeep), //output
+    .aurora_axi_rx_tvalid(aurora_axi_rx_tvalid),//output
+    .aurora_axi_rx_tlast(aurora_axi_rx_tlast), //output
+    .aurora_axi_tx_tready(aurora_axi_tx_tready),//output
+    .aurora_axi_tx_tdata(aurora_axi_tx_tdata), //input
+    .aurora_axi_tx_tkeep(aurora_axi_tx_tkeep), //input
+    .aurora_axi_tx_tvalid(aurora_axi_tx_tvalid), //input
+    .aurora_axi_tx_tlast(aurora_axi_tx_tlast), //input
     .aurora_control_power_down(aurora_control_pwd),
     .aurora_status_lane_up(aurora_status_lane_up),
     .aurora_status_channel_up(aurora_status_channel_up),
@@ -258,25 +236,10 @@ system system_i(
     .aurora_status_tx_lock(aurora_status_tx_lock),
     .aurora_status_tx_resetdone_out(aurora_status_tx_resetdone_out),
     .aurora_status_rx_resetdone_out(aurora_status_rx_resetdone_out),
-    .aurora_gt_rx_rxn(gt_rx_rxn[0:0]),
-    .aurora_gt_rx_rxp(gt_rx_rxp[0:0]),
-    .aurora_gt_tx_txn(gt_tx_txn[0:0]),
-    .aurora_gt_tx_txp(gt_tx_txp[0:0]),
-
-    .aurora1_control_power_down(aurora_control_pwd),
-    .aurora1_status_lane_up(aurora1_status_lane_up),
-    .aurora1_status_channel_up(aurora1_status_channel_up),
-    .aurora1_status_frame_err(aurora1_status_frame_err),
-    .aurora1_status_hard_err(aurora1_status_hard_err),
-    .aurora1_status_soft_err(aurora1_status_soft_err),
-    // .aurora1_status_pll_not_locked_out(aurora1_status_pll_not_locked_out),
-    .aurora1_status_tx_lock(aurora1_status_tx_lock),
-    .aurora1_status_tx_resetdone_out(aurora1_status_tx_resetdone_out),
-    .aurora1_status_rx_resetdone_out(aurora1_status_rx_resetdone_out),
-    .aurora1_gt_rx_rxn(gt_rx_rxn[1:1]),
-    .aurora1_gt_rx_rxp(gt_rx_rxp[1:1]),
-    .aurora1_gt_tx_txn(gt_tx_txn[1:1]),
-    .aurora1_gt_tx_txp(gt_tx_txp[1:1]),
+    .aurora_gt_rx_rxn(gt_rx_rxn),
+    .aurora_gt_rx_rxp(gt_rx_rxp),
+    .aurora_gt_tx_txn(gt_tx_txn),
+    .aurora_gt_tx_txp(gt_tx_txp),
 
     .aurora_gt_refclk_clk_n(gt_refclk_n),//(mgt_refclk_n),//
     .aurora_gt_refclk_clk_p(gt_refclk_p),//(mgt_refclk_p),//
@@ -318,7 +281,7 @@ usr_logic #(
     .firmware_time (firmware_time),
     .test_gpio (test_gpio),
     .reg_ctrl (reg_ctrl),
-    .status_aurora({30'd0, aurora1_status_channel_up, aurora_status_channel_up}),
+    .status_aurora({30'd0, 1'b0, aurora_status_channel_up}),
     .status_eth({21'd0, 4'd0, mac_link[3:0], 3'd0}),
     .cnterr_eth0(mac_rx_cnterr[0]),
     .cnterr_eth1(mac_rx_cnterr[1]),
@@ -397,7 +360,7 @@ assign reg_rd_data[`FPGA_RREG_ETHPHY_MDIO_CLK_O * `FPGA_REG_DWIDTH +: `FPGA_REG_
 assign reg_rd_data[`FPGA_RREG_ETHPHY_MDIO_DATA_O * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = {15'd0, ethphy_mdio_data};
 assign reg_rd_data[`FPGA_RREG_ETHPHY_MDIO_DIR_O * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = {15'd0, ethphy_mdio_dir};
 assign reg_rd_data[`FPGA_RREG_ETHPHY_MDIO_DATA_I * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = {15'd0, eth_phy_mdio};
-assign reg_rd_data[`FPGA_RREG_AURORA_STATUS * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = {14'd0, aurora1_status_channel_up, aurora_status_channel_up};
+assign reg_rd_data[`FPGA_RREG_AURORA_STATUS * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = {15'd0, aurora_status_channel_up};
 
 genvar a;
 generate
@@ -453,10 +416,8 @@ assign eth_phy_mdio = (ethphy_mdio_dir) ? ethphy_mdio_data : 1'bz;
 assign gt_rst = usr_lvds_p[0];
 assign aurora_rst = usr_lvds_p[1];
 assign aurora_control_pwd = usr_lvds_p[2];
-assign eth_num[0] = usr_lvds_p[3];
-assign eth_num[1] = usr_lvds_p[4];
-assign fifo_rstn = usr_lvds_p[5];
-assign module_eth_tx_sync = 1'b0;//usr_lvds_p[5]; //module_eth_tx_sync = usr_lvds_p[5];
+assign eth_num = usr_lvds_p[4:3];
+assign module_eth_tx_sync = usr_lvds_p[5]; //module_eth_tx_sync = usr_lvds_p[5];
 
 assign usr_lvds_p_o[0] = mac_link[0];
 assign usr_lvds_p_o[1] = mac_link[1];
@@ -464,10 +425,93 @@ assign usr_lvds_p_o[2] = mac_link[2];
 assign usr_lvds_p_o[3] = mac_link[3];
 
 
+
+wire [ETHCOUNT-1:0]      aurora_axi_rx_tready_tmp;
+wire [(ETHCOUNT*32)-1:0] aurora_axi_rx_tdata_tmp ;
+wire [(ETHCOUNT*4-1):0]  aurora_axi_rx_tkeep_tmp ;
+wire [ETHCOUNT-1:0]      aurora_axi_rx_tvalid_tmp;
+wire [ETHCOUNT-1:0]      aurora_axi_rx_tlast_tmp ;
+aurora_axi_tx_mux #(
+    .ETHCOUNT(ETHCOUNT),
+    .SIM(SIM)
+) aurora_tx_mux (
+    .axis_m_sel(3'd0),
+
+    .axis_s_tready(aurora_axi_rx_tready), //output
+    .axis_s_tdata (aurora_axi_rx_tdata ), //input [31:0]
+    .axis_s_tkeep (aurora_axi_rx_tkeep ), //input [3:0]
+    .axis_s_tvalid(aurora_axi_rx_tvalid), //input
+    .axis_s_tlast (aurora_axi_rx_tlast ), //input
+
+    .axis_m_tready(aurora_axi_rx_tready_tmp ), //input [ETHCOUNT-1:0]
+    .axis_m_tdata (aurora_axi_rx_tdata_tmp  ), //output [(ETHCOUNT*32)-1:0]
+    .axis_m_tkeep (aurora_axi_rx_tkeep_tmp  ), //output [(ETHCOUNT*4-1):0]
+    .axis_m_tvalid(aurora_axi_rx_tvalid_tmp ), //output [ETHCOUNT-1:0]
+    .axis_m_tlast (aurora_axi_rx_tlast_tmp  ), //output [ETHCOUNT-1:0]
+
+    .rstn(1'b1),
+    .clk(clk125M)
+);
+
+
+wire [ETHCOUNT-1:0]      aurora_axi_tx_tready_tmp;
+wire [(ETHCOUNT*32)-1:0] aurora_axi_tx_tdata_tmp ;
+wire [(ETHCOUNT*4-1):0]  aurora_axi_tx_tkeep_tmp ;
+wire [ETHCOUNT-1:0]      aurora_axi_tx_tvalid_tmp;
+wire [ETHCOUNT-1:0]      aurora_axi_tx_tlast_tmp ;
+aurora_axi_rx_mux #(
+    .ETHCOUNT(ETHCOUNT),
+    .SIM(SIM)
+) (
+    .axis_s_sel(3'd0),
+
+    .axis_s_tready(aurora_axi_tx_tready_tmp), //output [ETHCOUNT-1:0]
+    .axis_s_tdata (aurora_axi_tx_tdata_tmp ), //input  [(ETHCOUNT*32)-1:0]
+    .axis_s_tkeep (aurora_axi_tx_tkeep_tmp ), //input  [(ETHCOUNT*4-1):0]
+    .axis_s_tvalid(aurora_axi_tx_tvalid_tmp), //input  [ETHCOUNT-1:0]
+    .axis_s_tlast (aurora_axi_tx_tlast_tmp ), //input  [ETHCOUNT-1:0]
+
+    .axis_m_tready(aurora_axi_tx_tready), //input
+    .axis_m_tdata (aurora_axi_tx_tdata ), //output[31:0]
+    .axis_m_tkeep (aurora_axi_tx_tkeep ), //output[3:0]
+    .axis_m_tvalid(aurora_axi_tx_tvalid), //output
+    .axis_m_tlast (aurora_axi_tx_tlast ), //output
+
+    .rstn(1'b1),
+    .clk(clk125M)
+);
+
 genvar x;
 generate
     for (x=0; x < ETHCOUNT; x=x+1)  begin : eth
         assign eth_phy_rst[x] = mac_pll_locked;
+
+        assign aurora_axi_rx_tdata_eth [x] = aurora_axi_rx_tdata_tmp [(x*32) +: 32];
+        assign aurora_axi_rx_tkeep_eth [x] = aurora_axi_rx_tkeep_tmp [(x*4) +: 4];
+        assign aurora_axi_rx_tvalid_eth[x] = aurora_axi_rx_tvalid_tmp[x];
+        assign aurora_axi_rx_tlast_eth [x] = aurora_axi_rx_tlast_tmp [x];
+
+        mac_txbuf # (
+            .SIM(SIM)
+        ) txbuf (
+            .synch(module_eth_tx_sync),
+
+            .axis_tready(),
+            .axis_tdata (aurora_axi_rx_tdata_eth [x]), //input [31:0]
+            .axis_tkeep (aurora_axi_rx_tkeep_eth [x]), //input [3:0]
+            .axis_tvalid(aurora_axi_rx_tvalid_eth[x]), //input
+            .axis_tlast (aurora_axi_rx_tlast_eth [x]), //input
+
+            .mac_tx_data (mac_tx_tdata [x]), //output [7:0]
+            .mac_tx_valid(mac_tx_tvalid[x]), //output
+            .mac_tx_sof  (mac_tx_tuser [x]), //output
+            .mac_tx_eof  (mac_tx_tlast [x]), //output
+            .mac_tx_rq   (mac_tx_rq    [x]),
+            .mac_tx_ack  (mac_tx_ack   [x][0]),
+
+            .rstn(1'b1),
+            .clk(clk125M)
+        );
 
         CustomGMAC_Wrap rgmii (
             .clk375(clk375M),
@@ -492,10 +536,10 @@ generate
 
             .ReqConfirm(mac_tx_ack[x]),//output
 
-            .dbg_rgmii_rx_data(dbg_rgmii_rx_data[x]),
-            .dbg_rgmii_rx_den (dbg_rgmii_rx_den [x]),
-            .dbg_rgmii_rx_sof (dbg_rgmii_rx_sof [x]),
-            .dbg_rgmii_rx_eof (dbg_rgmii_rx_eof [x]),
+            .dbg_rgmii_rx_data(),//(dbg_rgmii_rx_data[x]),
+            .dbg_rgmii_rx_den (),//(dbg_rgmii_rx_den [x]),
+            .dbg_rgmii_rx_sof (),//(dbg_rgmii_rx_sof [x]),
+            .dbg_rgmii_rx_eof (),//(dbg_rgmii_rx_eof [x]),
             .dbg_fi(),//(dbg_fi[x]),
             .dbg_fi_dcnt(),//(dbg_fi_dcnt[x]),
             .dbg_fi_wr_data_count(),//(dbg_fi_wr_data_count[x]),
@@ -513,8 +557,6 @@ generate
             .dbg_wDataCRCVal(),//(dbg_wDataCRCVal[x]),
             .dbg_wDataCRCSoF(),//(dbg_wDataCRCSoF[x]),
             .dbg_wDataCRCEoF(),//(dbg_wDataCRCEoF[x]),
-            .dbg_tx_data(dbg_tx_data[x]),
-            .dbg_tx_den (dbg_tx_den [x]),
 
             .Remote_MACOut(), //output   [47:0]
             .Remote_IP_Out(), //output   [31:0]
@@ -527,284 +569,48 @@ generate
             .InputCRC_ErrorCounter(mac_rx_cnterr[x]) //output  [31 :0]
         );
 
+        mac_rxbuf # (
+            .SIM(SIM)
+        ) rxbuf (
+            .axis_tready(aurora_axi_tx_tready_eth[x]), //input
+            .axis_tdata (aurora_axi_tx_tdata_eth [x]), //output [31:0]
+            .axis_tkeep (aurora_axi_tx_tkeep_eth [x]), //output [3:0]
+            .axis_tvalid(aurora_axi_tx_tvalid_eth[x]), //output
+            .axis_tlast (aurora_axi_tx_tlast_eth [x]), //output
+
+            .mac_rx_data (mac_rx_tdata [x]), //input [7:0]
+            .mac_rx_valid(mac_rx_tvalid[x]), //input
+            .mac_rx_sof  (mac_rx_tuser [x]), //input
+            .mac_rx_eof  (mac_rx_tlast [x]), //input
+            .mac_rx_err  (mac_rx_err   [x]), //input
+
+            .rstn(1'b1),
+            .clk(clk125M)
+        );
+
+        assign aurora_axi_tx_tdata_tmp [(x*32) +: 32] = aurora_axi_tx_tdata_eth [x];
+        assign aurora_axi_tx_tkeep_tmp [(x*4) +: 4] = aurora_axi_tx_tkeep_eth [x];
+        assign aurora_axi_tx_tvalid_tmp[x] = aurora_axi_tx_tvalid_eth[x];
+        assign aurora_axi_tx_tlast_tmp [x] = aurora_axi_tx_tlast_eth [x];
+
+        assign aurora_axi_tx_tready_eth[x] = aurora_axi_tx_tready_tmp [x];
+
     end
 endgenerate
 
-
-mac_txbuf # (
-    .SIM(SIM)
-) mac0_txbuf (
-    .synch(module_eth_tx_sync),
-
-    .axis_tready(mac_axis_rx_tready_eth[1]),
-    .axis_tdata (mac_axis_rx_tdata_eth [1]), //input [31:0]
-    .axis_tkeep (mac_axis_rx_tkeep_eth [1]), //input [3:0]
-    .axis_tvalid(mac_axis_rx_tvalid_eth[1]), //input
-    .axis_tlast (mac_axis_rx_tlast_eth [1]), //input
-
-    .mac_tx_data (mac_tx_tdata [0]), //output [7:0]
-    .mac_tx_valid(mac_tx_tvalid[0]), //output
-    .mac_tx_sof  (mac_tx_tuser [0]), //output
-    .mac_tx_eof  (mac_tx_tlast [0]), //output
-    .mac_tx_rq   (mac_tx_rq    [0]),
-    .mac_tx_ack  (mac_tx_ack   [0][0]),
-
-    .rstn(fifo_rstn),//(mac_link[0]),//
-    .clk(clk125M)
-);
-
-mac_rx_cut_macframe_no_crc mac0_rxbuf_cut (
-    .mac_rx_data_i (dbg_rgmii_rx_data[0]),
-    .mac_rx_valid_i(dbg_rgmii_rx_den [0]),
-    .mac_rx_sof_i  (dbg_rgmii_rx_sof [0]),
-    .mac_rx_eof_i  (dbg_rgmii_rx_eof [0]),
-
-    .mac_rx_data_o (dbg1_rgmii_rx_data[0]),
-    .mac_rx_valid_o(dbg1_rgmii_rx_den [0]),
-    .mac_rx_sof_o  (dbg1_rgmii_rx_sof [0]),
-    .mac_rx_eof_o  (dbg1_rgmii_rx_eof [0]),
-
-    .rstn(fifo_rstn),//(mac_link[0]),//(1'b1),
-    .clk(clk125M)
-);
-
-mac_rxbuf # (
-    .SIM(SIM)
-) mac0_rxbuf (
-    .axis_tready(mac_axis_rx_tready_eth[0]), //input
-    .axis_tdata (mac_axis_rx_tdata_eth [0]), //output [31:0]
-    .axis_tkeep (mac_axis_rx_tkeep_eth [0]), //output [3:0]
-    .axis_tvalid(mac_axis_rx_tvalid_eth[0]), //output
-    .axis_tlast (mac_axis_rx_tlast_eth [0]), //output
-
-    .mac_rx_data (dbg1_rgmii_rx_data[0]), //(mac_rx_tdata [0]), //input [7:0]
-    .mac_rx_valid(dbg1_rgmii_rx_den [0]), //(mac_rx_tvalid[0]), //input
-    .mac_rx_sof  (dbg1_rgmii_rx_sof [0]), //(mac_rx_tuser [0]), //input
-    .mac_rx_eof  (dbg1_rgmii_rx_eof [0]), //(mac_rx_tlast [0]), //input
-    .mac_rx_err  (1'b0                 ), //(mac_rx_err   [0]), //input
-    .mac_rx_clk  (1'b0),
-
-    .rstn(fifo_rstn),//(mac_link[0]),//(fifo_rstn),
-    .clk(clk125M)
-);
-
-
-mac_txbuf # (
-    .SIM(SIM)
-) mac1_txbuf (
-    .synch(module_eth_tx_sync),
-
-    .axis_tready(mac_axis_rx_tready_eth[0]),
-    .axis_tdata (mac_axis_rx_tdata_eth [0]), //input [31:0]
-    .axis_tkeep (mac_axis_rx_tkeep_eth [0]), //input [3:0]
-    .axis_tvalid(mac_axis_rx_tvalid_eth[0]), //input
-    .axis_tlast (mac_axis_rx_tlast_eth [0]), //input
-
-    .mac_tx_data (mac_tx_tdata [1]), //output [7:0]
-    .mac_tx_valid(mac_tx_tvalid[1]), //output
-    .mac_tx_sof  (mac_tx_tuser [1]), //output
-    .mac_tx_eof  (mac_tx_tlast [1]), //output
-    .mac_tx_rq   (mac_tx_rq    [1]),
-    .mac_tx_ack  (mac_tx_ack   [1][0]),
-
-    .rstn(fifo_rstn),//(mac_link[1]),//(fifo_rstn),
-    .clk(clk125M)
-);
-
-
-mac_rx_cut_macframe_no_crc mac1_rxbuf_cut (
-    .mac_rx_data_i (dbg_rgmii_rx_data[1]),
-    .mac_rx_valid_i(dbg_rgmii_rx_den [1]),
-    .mac_rx_sof_i  (dbg_rgmii_rx_sof [1]),
-    .mac_rx_eof_i  (dbg_rgmii_rx_eof [1]),
-
-    .mac_rx_data_o (dbg1_rgmii_rx_data[1]),
-    .mac_rx_valid_o(dbg1_rgmii_rx_den [1]),
-    .mac_rx_sof_o  (dbg1_rgmii_rx_sof [1]),
-    .mac_rx_eof_o  (dbg1_rgmii_rx_eof [1]),
-
-    .rstn(fifo_rstn),//(mac_link[1]),//(1'b1),
-    .clk(clk125M)
-);
-
-mac_rxbuf # (
-    .SIM(SIM)
-) mac1_rxbuf (
-    .axis_tready(mac_axis_rx_tready_eth[1]), //input
-    .axis_tdata (mac_axis_rx_tdata_eth [1]), //output [31:0]
-    .axis_tkeep (mac_axis_rx_tkeep_eth [1]), //output [3:0]
-    .axis_tvalid(mac_axis_rx_tvalid_eth[1]), //output
-    .axis_tlast (mac_axis_rx_tlast_eth [1]), //output
-
-    .mac_rx_data (dbg1_rgmii_rx_data[1]), //(mac_rx_tdata [1]), //input [7:0]
-    .mac_rx_valid(dbg1_rgmii_rx_den [1]), //(mac_rx_tvalid[1]), //input
-    .mac_rx_sof  (dbg1_rgmii_rx_sof [1]), //(mac_rx_tuser [1]), //input
-    .mac_rx_eof  (dbg1_rgmii_rx_eof [1]), //(mac_rx_tlast [1]), //input
-    .mac_rx_err  (1'b0                 ), //(mac_rx_err   [1]), //input
-    .mac_rx_clk  (1'b0),
-
-    .rstn(fifo_rstn),//(mac_link[1]),//(fifo_rstn),
-    .clk(clk125M)
-);
-
-
-mac_txbuf # (
-    .SIM(SIM)
-) mac2_txbuf (
-    .synch(module_eth_tx_sync),
-
-    .axis_tready(mac_axis_rx_tready_eth[3]),
-    .axis_tdata (mac_axis_rx_tdata_eth [3]), //input [31:0]
-    .axis_tkeep (mac_axis_rx_tkeep_eth [3]), //input [3:0]
-    .axis_tvalid(mac_axis_rx_tvalid_eth[3]), //input
-    .axis_tlast (mac_axis_rx_tlast_eth [3]), //input
-
-    .mac_tx_data (mac_tx_tdata [2]), //output [7:0]
-    .mac_tx_valid(mac_tx_tvalid[2]), //output
-    .mac_tx_sof  (mac_tx_tuser [2]), //output
-    .mac_tx_eof  (mac_tx_tlast [2]), //output
-    .mac_tx_rq   (mac_tx_rq    [2]),
-    .mac_tx_ack  (mac_tx_ack   [2][0]),
-
-    .rstn(fifo_rstn),//(mac_link[2]),
-    .clk(clk125M)
-);
-
-mac_rx_cut_macframe_no_crc mac2_rxbuf_cut (
-    .mac_rx_data_i (dbg_rgmii_rx_data[2]),
-    .mac_rx_valid_i(dbg_rgmii_rx_den [2]),
-    .mac_rx_sof_i  (dbg_rgmii_rx_sof [2]),
-    .mac_rx_eof_i  (dbg_rgmii_rx_eof [2]),
-
-    .mac_rx_data_o (dbg1_rgmii_rx_data[2]),
-    .mac_rx_valid_o(dbg1_rgmii_rx_den [2]),
-    .mac_rx_sof_o  (dbg1_rgmii_rx_sof [2]),
-    .mac_rx_eof_o  (dbg1_rgmii_rx_eof [2]),
-
-    .rstn(fifo_rstn),//(mac_link[2]),//(1'b1),
-    .clk(clk125M)
-);
-
-mac_rxbuf # (
-    .SIM(SIM)
-) mac2_rxbuf (
-    .axis_tready(mac_axis_rx_tready_eth[2]), //input
-    .axis_tdata (mac_axis_rx_tdata_eth [2]), //output [31:0]
-    .axis_tkeep (mac_axis_rx_tkeep_eth [2]), //output [3:0]
-    .axis_tvalid(mac_axis_rx_tvalid_eth[2]), //output
-    .axis_tlast (mac_axis_rx_tlast_eth [2]), //output
-
-    .mac_rx_data (dbg1_rgmii_rx_data[2]), //(mac_rx_tdata [2]), //input [7:0]
-    .mac_rx_valid(dbg1_rgmii_rx_den [2]), //(mac_rx_tvalid[2]), //input
-    .mac_rx_sof  (dbg1_rgmii_rx_sof [2]), //(mac_rx_tuser [2]), //input
-    .mac_rx_eof  (dbg1_rgmii_rx_eof [2]), //(mac_rx_tlast [2]), //input
-    .mac_rx_err  (1'b0                 ), //(mac_rx_err   [2]), //input
-    .mac_rx_clk  (1'b0),
-
-    .rstn(fifo_rstn),//(mac_link[2]),
-    .clk(clk125M)
-);
-
-
-mac_txbuf # (
-    .SIM(SIM)
-) mac3_txbuf (
-    .synch(module_eth_tx_sync),
-
-    .axis_tready(mac_axis_rx_tready_eth[2]),
-    .axis_tdata (mac_axis_rx_tdata_eth [2]), //input [31:0]
-    .axis_tkeep (mac_axis_rx_tkeep_eth [2]), //input [3:0]
-    .axis_tvalid(mac_axis_rx_tvalid_eth[2]), //input
-    .axis_tlast (mac_axis_rx_tlast_eth [2]), //input
-
-    .mac_tx_data (mac_tx_tdata [3]), //output [7:0]
-    .mac_tx_valid(mac_tx_tvalid[3]), //output
-    .mac_tx_sof  (mac_tx_tuser [3]), //output
-    .mac_tx_eof  (mac_tx_tlast [3]), //output
-    .mac_tx_rq   (mac_tx_rq    [3]),
-    .mac_tx_ack  (mac_tx_ack   [3][0]),
-
-    .rstn(fifo_rstn),//(mac_link[3]),
-    .clk(clk125M)
-);
-
-mac_rx_cut_macframe_no_crc mac3_rxbuf_cut (
-    .mac_rx_data_i (dbg_rgmii_rx_data[3]),
-    .mac_rx_valid_i(dbg_rgmii_rx_den [3]),
-    .mac_rx_sof_i  (dbg_rgmii_rx_sof [3]),
-    .mac_rx_eof_i  (dbg_rgmii_rx_eof [3]),
-
-    .mac_rx_data_o (dbg1_rgmii_rx_data[3]),
-    .mac_rx_valid_o(dbg1_rgmii_rx_den [3]),
-    .mac_rx_sof_o  (dbg1_rgmii_rx_sof [3]),
-    .mac_rx_eof_o  (dbg1_rgmii_rx_eof [3]),
-
-    .rstn(fifo_rstn),//(mac_link[3]),//(1'b1),
-    .clk(clk125M)
-);
-
-mac_rxbuf # (
-    .SIM(SIM)
-) mac3_rxbuf (
-    .axis_tready(mac_axis_rx_tready_eth[3]), //input
-    .axis_tdata (mac_axis_rx_tdata_eth [3]), //output [31:0]
-    .axis_tkeep (mac_axis_rx_tkeep_eth [3]), //output [3:0]
-    .axis_tvalid(mac_axis_rx_tvalid_eth[3]), //output
-    .axis_tlast (mac_axis_rx_tlast_eth [3]), //output
-
-    .mac_rx_data (dbg1_rgmii_rx_data[3]), //(mac_rx_tdata [3]), //input [7:0]
-    .mac_rx_valid(dbg1_rgmii_rx_den [3]), //(mac_rx_tvalid[3]), //input
-    .mac_rx_sof  (dbg1_rgmii_rx_sof [3]), //(mac_rx_tuser [3]), //input
-    .mac_rx_eof  (dbg1_rgmii_rx_eof [3]), //(mac_rx_tlast [3]), //input
-    .mac_rx_err  (1'b0                 ), //(mac_rx_err   [3]), //input
-    .mac_rx_clk  (1'b0),
-
-    .rstn(fifo_rstn),//(mac_link[3]),
-    .clk(clk125M)
-);
-
 ila_0 rx_ila (
     .probe0({
-        mac_link,
-        fifo_rstn,
+        mac_tx_rq[0],
+        mac_tx_ack[0][0],
+        mac_tx_tdata[0],
+        mac_tx_tvalid[0],
+        mac_tx_tuser[0],
+        mac_tx_tlast[0],
 
-        mac_tx_tdata [1], //output [7:0]
-        mac_tx_tvalid[1], //output
-        mac_tx_tuser [1], //output
-        mac_tx_tlast [1], //output
-        mac_tx_rq    [1],
-        mac_tx_ack   [1][0],
-        dbg_tx_data  [1],
-        dbg_tx_den   [1],
-
-        dbg1_rgmii_rx_data[1], //input [7:0]
-        dbg1_rgmii_rx_den [1], //input
-        dbg1_rgmii_rx_sof [1], //input
-        dbg1_rgmii_rx_eof [1], //input
-
-        dbg_rgmii_rx_data[1], //input [7:0]
-        dbg_rgmii_rx_den [1], //input
-        dbg_rgmii_rx_sof [1], //input
-        dbg_rgmii_rx_eof [1], //input
-
-        mac_tx_tdata [0], //output [7:0]
-        mac_tx_tvalid[0], //output
-        mac_tx_tuser [0], //output
-        mac_tx_tlast [0], //output
-        mac_tx_rq    [0],
-        mac_tx_ack   [0][0],
-        dbg_tx_data  [0],
-        dbg_tx_den   [0],
-
-        dbg1_rgmii_rx_data[0], //input [7:0]
-        dbg1_rgmii_rx_den [0], //input
-        dbg1_rgmii_rx_sof [0], //input
-        dbg1_rgmii_rx_eof [0], //input
-
-        dbg_rgmii_rx_data[0], //input [7:0]
-        dbg_rgmii_rx_den [0], //input
-        dbg_rgmii_rx_sof [0], //input
-        dbg_rgmii_rx_eof [0] //input
+        mac_rx_tdata [0],
+        mac_rx_tvalid[0],
+        mac_rx_tuser[0],
+        mac_rx_tlast[0]
 
     }),
     .clk(clk125M)
