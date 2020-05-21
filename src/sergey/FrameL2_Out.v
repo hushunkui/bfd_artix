@@ -36,6 +36,8 @@ module FrameL2_Out
     output dbg_wDataCRCVal,
     output dbg_wDataCRCSoF,
     output dbg_wDataCRCEoF,
+    output [7:0] dbg_tx_data,
+    output       dbg_tx_den,
 
     output ClkOut,
     output ValOut,
@@ -65,7 +67,7 @@ EthScheduler EthScheduler_Inst
     .ValIn0 (ValIn0 ),
     .SoFIn0 (SoFIn0 ),
     .EoFIn0 (EoFIn0 ),
-    .ReqIn0 (1'b0),//(ReqIn0 ),
+    .ReqIn0 (ReqIn0 ),
     .DataIn0(DataIn0),
 
     .ValIn1 (ValIn1 ),
@@ -274,6 +276,10 @@ DDR_OUT	DDR_OUT_inst (
     .outclock ( Clk ),
     .dataout  ( {ClkOut,ValOut,DataOut} )
 );
+
+
+assign dbg_tx_data = DataReg8;
+assign dbg_tx_den = OutValid[7];
 
 endmodule
 

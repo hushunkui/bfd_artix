@@ -58,6 +58,8 @@ module CustomGMAC
     output dbg_wDataCRCVal,
     output dbg_wDataCRCSoF,
     output dbg_wDataCRCEoF,
+    output [7:0] dbg_tx_data,
+    output       dbg_tx_den,
 
     output SOF_OUT,
     output EOF_OUT,
@@ -351,7 +353,7 @@ FrameL2_Out  FrameL2_Out_inst
     .ValIn0 (wArpVal ),
     .SoFIn0 (wArpSoF ),
     .EoFIn0 (wArpEoF ),
-    .ReqIn0 (wArpReq ),
+    .ReqIn0 (1'b0),//wArpReq ),
     .DataIn0(wArpData),
 
     .ValIn1 (ValIn0 ),
@@ -380,6 +382,8 @@ FrameL2_Out  FrameL2_Out_inst
     .dbg_wDataCRCVal(dbg_wDataCRCVal),
     .dbg_wDataCRCSoF(dbg_wDataCRCSoF),
     .dbg_wDataCRCEoF(dbg_wDataCRCEoF),
+    .dbg_tx_data(dbg_tx_data),
+    .dbg_tx_den (dbg_tx_den ),
 
     .ClkOut  ( CLK_TX ),
     .ValOut  ( TX_CTL ),

@@ -213,23 +213,10 @@ proc create_root_design { parentCell } {
    CONFIG.HAS_REGION {0} \
    CONFIG.PROTOCOL {AXI4LITE} \
    ] $M_AXI_0
-  set aurora_axi_rx [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:axis_rtl:1.0 aurora_axi_rx ]
-  set_property -dict [ list \
-   CONFIG.FREQ_HZ {125000000} \
-   ] $aurora_axi_rx
-  set aurora_axi_tx [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:axis_rtl:1.0 aurora_axi_tx ]
-  set_property -dict [ list \
-   CONFIG.FREQ_HZ {125000000} \
-   CONFIG.HAS_TKEEP {1} \
-   CONFIG.HAS_TLAST {1} \
-   CONFIG.HAS_TREADY {1} \
-   CONFIG.HAS_TSTRB {0} \
-   CONFIG.LAYERED_METADATA {undef} \
-   CONFIG.TDATA_NUM_BYTES {4} \
-   CONFIG.TDEST_WIDTH {0} \
-   CONFIG.TID_WIDTH {0} \
-   CONFIG.TUSER_WIDTH {0} \
-   ] $aurora_axi_tx
+  set aurora1_control [ create_bd_intf_port -mode Slave -vlnv xilinx.com:display_aurora:core_control_in_rtl:1.0 aurora1_control ]
+  set aurora1_gt_rx [ create_bd_intf_port -mode Slave -vlnv xilinx.com:display_aurora:GT_Serial_Transceiver_Pins_RX_rtl:1.0 aurora1_gt_rx ]
+  set aurora1_gt_tx [ create_bd_intf_port -mode Master -vlnv xilinx.com:display_aurora:GT_Serial_Transceiver_Pins_TX_rtl:1.0 aurora1_gt_tx ]
+  set aurora1_status [ create_bd_intf_port -mode Master -vlnv xilinx.com:display_aurora:core_status_out_rtl:1.0 aurora1_status ]
   set aurora_control [ create_bd_intf_port -mode Slave -vlnv xilinx.com:display_aurora:core_control_in_rtl:1.0 aurora_control ]
   set aurora_gt_refclk [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 aurora_gt_refclk ]
   set_property -dict [ list \
@@ -242,7 +229,6 @@ proc create_root_design { parentCell } {
   # Create ports
   set aclk [ create_bd_port -dir I -type clk aclk ]
   set_property -dict [ list \
-   CONFIG.ASSOCIATED_BUSIF {M_AXI_0:aurora_axi_rx:aurora_axi_tx} \
    CONFIG.ASSOCIATED_RESET {areset_n} \
    CONFIG.FREQ_HZ {125000000} \
  ] $aclk
@@ -271,9 +257,9 @@ proc create_root_design { parentCell } {
    CONFIG.C_AURORA_LANES {1} \
    CONFIG.C_DRP_IF {false} \
    CONFIG.C_GT_CLOCK_1 {GTPQ0} \
-   CONFIG.C_GT_LOC_1 {1} \
+   CONFIG.C_GT_LOC_1 {X} \
    CONFIG.C_GT_LOC_2 {X} \
-   CONFIG.C_GT_LOC_3 {X} \
+   CONFIG.C_GT_LOC_3 {1} \
    CONFIG.C_LANE_WIDTH {4} \
    CONFIG.C_LINE_RATE {3.125} \
    CONFIG.C_USE_BYTESWAP {true} \
@@ -283,18 +269,37 @@ proc create_root_design { parentCell } {
    CONFIG.SupportLevel {1} \
  ] $aurora_8b10b_0
 
+  # Create instance: aurora_8b10b_1, and set properties
+  set aurora_8b10b_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:aurora_8b10b aurora_8b10b_1 ]
+  set_property -dict [ list \
+   CONFIG.C_AURORA_LANES {1} \
+   CONFIG.C_DRP_IF {false} \
+   CONFIG.C_GT_CLOCK_1 {GTPQ0} \
+   CONFIG.C_GT_LOC_1 {X} \
+   CONFIG.C_GT_LOC_2 {X} \
+   CONFIG.C_GT_LOC_3 {X} \
+   CONFIG.C_GT_LOC_4 {1} \
+   CONFIG.C_LANE_WIDTH {4} \
+   CONFIG.C_LINE_RATE {3.125} \
+   CONFIG.C_USE_BYTESWAP {true} \
+   CONFIG.Interface_Mode {Framing} \
+   CONFIG.SINGLEEND_GTREFCLK {false} \
+   CONFIG.SINGLEEND_INITCLK {false} \
+   CONFIG.SupportLevel {0} \
+ ] $aurora_8b10b_1
+
   # Create instance: aurora_axi_rx_fifo, and set properties
   set aurora_axi_rx_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo aurora_axi_rx_fifo ]
   set_property -dict [ list \
    CONFIG.FIFO_DEPTH {256} \
-   CONFIG.IS_ACLK_ASYNC {1} \
+   CONFIG.IS_ACLK_ASYNC {0} \
  ] $aurora_axi_rx_fifo
 
   # Create instance: aurora_axi_tx_fifo, and set properties
   set aurora_axi_tx_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo aurora_axi_tx_fifo ]
   set_property -dict [ list \
    CONFIG.FIFO_DEPTH {256} \
-   CONFIG.IS_ACLK_ASYNC {1} \
+   CONFIG.IS_ACLK_ASYNC {0} \
  ] $aurora_axi_tx_fifo
 
   # Create instance: axi_protocol_convert_0, and set properties
@@ -314,25 +319,40 @@ proc create_root_design { parentCell } {
 
   # Create interface connections
   connect_bd_intf_net -intf_net CORE_CONTROL_0_1 [get_bd_intf_ports aurora_control] [get_bd_intf_pins aurora_8b10b_0/CORE_CONTROL]
+  connect_bd_intf_net -intf_net CORE_CONTROL_0_2 [get_bd_intf_ports aurora1_control] [get_bd_intf_pins aurora_8b10b_1/CORE_CONTROL]
   connect_bd_intf_net -intf_net GT_DIFF_REFCLK1_0_1 [get_bd_intf_ports aurora_gt_refclk] [get_bd_intf_pins aurora_8b10b_0/GT_DIFF_REFCLK1]
   connect_bd_intf_net -intf_net GT_SERIAL_RX_0_1 [get_bd_intf_ports aurora_gt_rx] [get_bd_intf_pins aurora_8b10b_0/GT_SERIAL_RX]
+  connect_bd_intf_net -intf_net GT_SERIAL_RX_0_2 [get_bd_intf_ports aurora1_gt_rx] [get_bd_intf_pins aurora_8b10b_1/GT_SERIAL_RX]
   connect_bd_intf_net -intf_net aurora_8b10b_0_CORE_STATUS [get_bd_intf_ports aurora_status] [get_bd_intf_pins aurora_8b10b_0/CORE_STATUS]
   connect_bd_intf_net -intf_net aurora_8b10b_0_GT_SERIAL_TX [get_bd_intf_ports aurora_gt_tx] [get_bd_intf_pins aurora_8b10b_0/GT_SERIAL_TX]
   connect_bd_intf_net -intf_net aurora_8b10b_0_USER_DATA_M_AXI_RX [get_bd_intf_pins aurora_8b10b_0/USER_DATA_M_AXI_RX] [get_bd_intf_pins aurora_axi_rx_fifo/S_AXIS]
-  connect_bd_intf_net -intf_net aurora_axi_tx_1 [get_bd_intf_ports aurora_axi_tx] [get_bd_intf_pins aurora_axi_tx_fifo/S_AXIS]
+  connect_bd_intf_net -intf_net aurora_8b10b_1_CORE_STATUS [get_bd_intf_ports aurora1_status] [get_bd_intf_pins aurora_8b10b_1/CORE_STATUS]
+  connect_bd_intf_net -intf_net aurora_8b10b_1_GT_SERIAL_TX [get_bd_intf_ports aurora1_gt_tx] [get_bd_intf_pins aurora_8b10b_1/GT_SERIAL_TX]
+  connect_bd_intf_net -intf_net aurora_8b10b_1_USER_DATA_M_AXI_RX [get_bd_intf_pins aurora_8b10b_1/USER_DATA_M_AXI_RX] [get_bd_intf_pins aurora_axi_tx_fifo/S_AXIS]
+  connect_bd_intf_net -intf_net aurora_axi_rx_fifo_M_AXIS [get_bd_intf_pins aurora_8b10b_1/USER_DATA_S_AXI_TX] [get_bd_intf_pins aurora_axi_rx_fifo/M_AXIS]
   connect_bd_intf_net -intf_net aurora_axi_tx_fifo_M_AXIS [get_bd_intf_pins aurora_8b10b_0/USER_DATA_S_AXI_TX] [get_bd_intf_pins aurora_axi_tx_fifo/M_AXIS]
   connect_bd_intf_net -intf_net axi_protocol_convert_0_M_AXI [get_bd_intf_ports M_AXI_0] [get_bd_intf_pins axi_protocol_convert_0/M_AXI]
-  connect_bd_intf_net -intf_net axis_data_fifo_0_M_AXIS [get_bd_intf_ports aurora_axi_rx] [get_bd_intf_pins aurora_axi_rx_fifo/M_AXIS]
   connect_bd_intf_net -intf_net jtag_axi_0_M_AXI [get_bd_intf_pins axi_protocol_convert_0/S_AXI] [get_bd_intf_pins jtag_axi_0/M_AXI]
 
   # Create port connections
-  connect_bd_net -net aclk_0_1 [get_bd_ports aclk] [get_bd_pins aurora_axi_rx_fifo/m_axis_aclk] [get_bd_pins aurora_axi_tx_fifo/s_axis_aclk] [get_bd_pins axi_protocol_convert_0/aclk] [get_bd_pins jtag_axi_0/aclk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk]
-  connect_bd_net -net aurora_8b10b_0_user_clk_out [get_bd_ports aurora_usr_clk] [get_bd_pins aurora_8b10b_0/user_clk_out] [get_bd_pins aurora_axi_rx_fifo/s_axis_aclk] [get_bd_pins aurora_axi_tx_fifo/m_axis_aclk] [get_bd_pins proc_sys_reset_1/slowest_sync_clk]
-  connect_bd_net -net ext_reset_in_0_1 [get_bd_ports areset_n] [get_bd_pins proc_sys_reset_0/ext_reset_in] [get_bd_pins proc_sys_reset_1/ext_reset_in]
-  connect_bd_net -net gt_reset_0_1 [get_bd_ports aurora_gt_rst] [get_bd_pins aurora_8b10b_0/gt_reset]
-  connect_bd_net -net init_clk_in_0_1 [get_bd_ports aurora_init_clk] [get_bd_pins aurora_8b10b_0/drpclk_in] [get_bd_pins aurora_8b10b_0/init_clk_in]
-  connect_bd_net -net proc_sys_reset_0_peripheral_aresetn [get_bd_pins aurora_axi_rx_fifo/m_axis_aresetn] [get_bd_pins aurora_axi_tx_fifo/s_axis_aresetn] [get_bd_pins axi_protocol_convert_0/aresetn] [get_bd_pins jtag_axi_0/aresetn] [get_bd_pins proc_sys_reset_0/peripheral_aresetn]
-  connect_bd_net -net proc_sys_reset_1_peripheral_aresetn [get_bd_pins aurora_axi_rx_fifo/s_axis_aresetn] [get_bd_pins aurora_axi_tx_fifo/m_axis_aresetn] [get_bd_pins proc_sys_reset_1/peripheral_aresetn]
+  connect_bd_net -net aclk_0_1 [get_bd_ports aclk] [get_bd_pins axi_protocol_convert_0/aclk] [get_bd_pins jtag_axi_0/aclk] [get_bd_pins proc_sys_reset_0/slowest_sync_clk]
+  connect_bd_net -net aurora_8b10b_0_gt0_pll0outclk_out [get_bd_pins aurora_8b10b_0/gt0_pll0outclk_out] [get_bd_pins aurora_8b10b_1/gt0_pll0outclk_in]
+  connect_bd_net -net aurora_8b10b_0_gt0_pll0outrefclk_out [get_bd_pins aurora_8b10b_0/gt0_pll0outrefclk_out] [get_bd_pins aurora_8b10b_1/gt0_pll0outrefclk_in]
+  connect_bd_net -net aurora_8b10b_0_gt0_pll0refclklost_out [get_bd_pins aurora_8b10b_0/gt0_pll0refclklost_out] [get_bd_pins aurora_8b10b_1/gt0_pll0refclklost_in]
+  connect_bd_net -net aurora_8b10b_0_gt0_pll1outclk_out [get_bd_pins aurora_8b10b_0/gt0_pll1outclk_out] [get_bd_pins aurora_8b10b_1/gt0_pll1outclk_in]
+  connect_bd_net -net aurora_8b10b_0_gt0_pll1outrefclk_out [get_bd_pins aurora_8b10b_0/gt0_pll1outrefclk_out] [get_bd_pins aurora_8b10b_1/gt0_pll1outrefclk_in]
+  connect_bd_net -net aurora_8b10b_0_gt_refclk1_out [get_bd_pins aurora_8b10b_0/gt_refclk1_out] [get_bd_pins aurora_8b10b_1/gt_refclk1]
+  connect_bd_net -net aurora_8b10b_0_gt_reset_out [get_bd_pins aurora_8b10b_0/gt_reset_out] [get_bd_pins aurora_8b10b_1/gt_reset]
+  connect_bd_net -net aurora_8b10b_0_pll_not_locked_out [get_bd_pins aurora_8b10b_0/pll_not_locked_out] [get_bd_pins aurora_8b10b_1/pll_not_locked]
+  connect_bd_net -net aurora_8b10b_0_quad1_common_lock_out [get_bd_pins aurora_8b10b_0/quad1_common_lock_out] [get_bd_pins aurora_8b10b_1/quad1_common_lock_in]
+  connect_bd_net -net aurora_8b10b_0_sync_clk_out [get_bd_pins aurora_8b10b_0/sync_clk_out] [get_bd_pins aurora_8b10b_1/sync_clk]
+  connect_bd_net -net aurora_8b10b_0_sys_reset_out [get_bd_pins aurora_8b10b_0/sys_reset_out] [get_bd_pins aurora_8b10b_1/reset]
+  connect_bd_net -net aurora_8b10b_0_user_clk_out [get_bd_ports aurora_usr_clk] [get_bd_pins aurora_8b10b_0/user_clk_out] [get_bd_pins aurora_8b10b_1/user_clk] [get_bd_pins aurora_axi_rx_fifo/s_axis_aclk] [get_bd_pins aurora_axi_tx_fifo/s_axis_aclk] [get_bd_pins proc_sys_reset_1/slowest_sync_clk]
+  connect_bd_net -net ext_reset_in_0_1 [get_bd_ports areset_n] [get_bd_pins proc_sys_reset_0/ext_reset_in]
+  connect_bd_net -net gt_reset_0_1 [get_bd_ports aurora_gt_rst] [get_bd_pins aurora_8b10b_0/gt_reset] [get_bd_pins proc_sys_reset_1/ext_reset_in]
+  connect_bd_net -net init_clk_in_0_1 [get_bd_ports aurora_init_clk] [get_bd_pins aurora_8b10b_0/drpclk_in] [get_bd_pins aurora_8b10b_0/init_clk_in] [get_bd_pins aurora_8b10b_1/drpclk_in] [get_bd_pins aurora_8b10b_1/init_clk_in]
+  connect_bd_net -net proc_sys_reset_0_peripheral_aresetn [get_bd_pins axi_protocol_convert_0/aresetn] [get_bd_pins jtag_axi_0/aresetn] [get_bd_pins proc_sys_reset_0/peripheral_aresetn]
+  connect_bd_net -net proc_sys_reset_1_peripheral_aresetn [get_bd_pins aurora_axi_rx_fifo/s_axis_aresetn] [get_bd_pins aurora_axi_tx_fifo/s_axis_aresetn] [get_bd_pins proc_sys_reset_1/peripheral_aresetn]
   connect_bd_net -net reset_0_1 [get_bd_ports aurora_rst] [get_bd_pins aurora_8b10b_0/reset]
 
   # Create address segments
@@ -387,6 +407,7 @@ add_files -norecurse $script_folder/src/sergey/Link_Status.v
 add_files -norecurse $script_folder/src/sergey/RGMIIOverClockModule.v
 add_files -norecurse $script_folder/src/sergey/RGMIIOverClock.v
 add_files -norecurse $script_folder/src/sergey/RGMII_ClockSpeed_Test.v
+add_files -norecurse $script_folder/src/mac_rx_cut_macframe_no_crc.v
 add_files -norecurse $script_folder/src/core_gen/mac_rxbuf_axis_fifo/mac_rxbuf_axis_fifo.xci
 add_files -norecurse $script_folder/src/core_gen/mac_txbuf_axis_fifo/mac_txbuf_axis_fifo.xci
 add_files -norecurse $script_folder/src/core_gen/axis_data_fifo_0/axis_data_fifo_0.xci

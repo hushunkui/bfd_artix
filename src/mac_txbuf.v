@@ -28,7 +28,6 @@ module mac_txbuf #(
     enum int unsigned {
         S_IDLE,
         S_TXRQ,
-        S_WAITSYN,
         S_GET_TXD,
         S_TXD,
         S_TXD_LAST,
@@ -37,11 +36,10 @@ module mac_txbuf #(
 `else
     localparam S_IDLE     = 0;
     localparam S_TXRQ     = 1;
-    localparam S_WAITSYN  = 2;
-    localparam S_GET_TXD  = 3;
-    localparam S_TXD      = 4;
-    localparam S_TXD_LAST = 5;
-    localparam S_TX_END   = 6;
+    localparam S_GET_TXD  = 2;
+    localparam S_TXD      = 3;
+    localparam S_TXD_LAST = 4;
+    localparam S_TX_END   = 5;
     reg [2:0] fsm_cs = S_IDLE;
 `endif
 
@@ -63,6 +61,7 @@ always @(posedge clk) begin
 
     case (fsm_cs)
         S_IDLE : begin
+            bcnt <= 0;
             bcnt_last_count <= 0;
             if (tvalid) begin
                 tready <= 1'b0;
@@ -78,17 +77,10 @@ always @(posedge clk) begin
 
         S_TXRQ : begin
             if (mac_tx_ack) begin
-                mac_tx_rq <= 1'b0;
-                fsm_cs <= S_WAITSYN;
-            end
-        end
-
-        S_WAITSYN : begin
-            if (synch) begin
-                mac_tx_rq <= 1'b0;
                 mac_tx_data <= s_tdata[0  +: 8];
                 mac_tx_valid <= 1'b1;
                 mac_tx_sof <= 1'b1;
+                bcnt <= bcnt + 1;
                 if (s_tlast) begin
                     if (s_tkeep == 4'b0001) begin
                         mac_tx_eof <= 1'b1;
@@ -163,6 +155,7 @@ always @(posedge clk) begin
 
         S_TX_END : begin
             mac_tx_valid <= 1'b0;
+            mac_tx_rq <= 1'b0;
             tready <= 1'b1;
             fsm_cs <= S_IDLE;
         end

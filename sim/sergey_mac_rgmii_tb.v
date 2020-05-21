@@ -10,6 +10,10 @@ module mac_rgmii_tb(
     output reg rgmii_rx_den_o = 0
 );
 
+localparam dev_mac = 48'hC0A805050505;
+localparam dev_ip = 32'hC0A80097;
+localparam dev_port = 16'h04D2;
+
 reg clk = 1;
 always #20 clk = ~clk; //25MHz
 
@@ -43,7 +47,7 @@ function [31:0] BitReverse;
     end
 endfunction
 
-reg [31:0] tx_crc = -1;
+reg [31:0] tx_crc = 32'hFFFFFFFF;
 wire [31:0] tx_crc_corr = BitReverse(~tx_crc);
 
 function[31:0]  NextCRC;
@@ -113,7 +117,7 @@ task SendPreamble;
         SendByte(8'h55, 1'b1);
         SendByte(8'h55, 1'b1);
         SendByte(8'hD5, 1'b1);
-        tx_crc = -1;
+        tx_crc = 32'hFFFFFFFF;
     end
 endtask
 
@@ -230,7 +234,7 @@ task SendARPPacket;
         SendWord(ip_tgt); // Target protocol address
         // 18 bytes padding
         repeat (18) SendByte(8'h00, 1'b1);
-        SendCRC(1'b1);
+        SendCRC(1'b0);
     end
 endtask
 
@@ -450,7 +454,7 @@ task SendCRC_tt;
         SendByte(8'h21, 1'b1);
         #4; rx_ctl = 0;
         @(posedge rxc);
-        // rx_ctl = 0; //romashko
+        rx_ctl = 0; //romashko
         rxd = 4'hD;
     end
 endtask
@@ -573,28 +577,6 @@ wire txc;
 wire tx_ctl;
 wire [3:0] txd;
 
-wire [7:0] mac_tx_tdata;
-wire       mac_tx_tvalid;
-reg       mac_tx_sof = 0;
-reg       mac_tx_eof = 0;
-reg       mac_tx_rq = 0;
-reg       mac_tx_rdy = 0;
-wire [0:0] mac_tx_ack;
-wire [0:0] mac_tx_tuser;
-wire       mac_tx_tlast;
-reg [7:0] mac_tx_d = 0;
-reg mac_tx_den = 1'b0;
-
-wire [7:0] mac_rx_data;
-wire       mac_rx_valid;
-wire       mac_rx_sof;
-wire       mac_rx_eof;
-wire       mac_rx_err;
-
-wire [7:0] dbg_rgmii_rx_data;
-wire       dbg_rgmii_rx_den;
-wire       dbg_rgmii_rx_sof;
-wire       dbg_rgmii_rx_eof;
 
 reg start = 0;
 
@@ -603,6 +585,42 @@ wire clk125M;
 wire clk375M;
 wire clk125M_p90;
 
+localparam ETHCOUNT=4;
+wire [7:0]              dbg_rgmii_rx_data [ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0]     dbg_rgmii_rx_den;
+wire [ETHCOUNT-1:0]     dbg_rgmii_rx_sof;
+wire [ETHCOUNT-1:0]     dbg_rgmii_rx_eof;
+wire [7:0]              dbg1_rgmii_rx_data [ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0]     dbg1_rgmii_rx_den;
+wire [ETHCOUNT-1:0]     dbg1_rgmii_rx_sof;
+wire [ETHCOUNT-1:0]     dbg1_rgmii_rx_eof;
+wire [7:0]              dbg_tx_data [ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0]     dbg_tx_den;
+
+wire [ETHCOUNT-1:0] mac_axis_rx_tready_eth;
+wire [31:0]         mac_axis_rx_tdata_eth[ETHCOUNT-1:0];
+wire [3:0]          mac_axis_rx_tkeep_eth[ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0] mac_axis_rx_tvalid_eth;
+wire [ETHCOUNT-1:0] mac_axis_rx_tlast_eth ;
+
+wire [ETHCOUNT-1:0] mac_link;
+
+wire [7:0]              mac_rx_tdata [ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0]     mac_rx_tvalid;
+wire [ETHCOUNT-1:0]     mac_rx_tlast;
+wire [ETHCOUNT-1:0]     mac_rx_tuser;
+wire [ETHCOUNT-1:0]     mac_rx_err;
+wire [31:0]             mac_rx_cnterr [ETHCOUNT-1:0];
+
+wire [7:0]              mac_tx_tdata [ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0]     mac_tx_tvalid;
+wire [ETHCOUNT-1:0]     mac_tx_tlast;
+wire [ETHCOUNT-1:0]     mac_tx_tuser;
+wire [0:0]              mac_tx_ack [ETHCOUNT-1:0];
+wire [ETHCOUNT-1:0]     mac_tx_rq;
+
+
+reg buf_rstn = 1'b1;
 
 initial begin
     // $dumpfile("icarus/dump.fst");
@@ -619,16 +637,27 @@ initial begin
     rst = 1'b1;
     #100;
     rst = 1'b0;
+    buf_rstn = 1'b1;
 
     @(posedge pll0_locked);
 
-    // #6_000;
-    // SendARPPacket(48'hFFFF_FFFF_FFFF, 48'hE091_F5B4_06B0, 32'hC0A80101, 32'hC0A80120);
+    #1000;
+    @(posedge clk125M);
+    buf_rstn = 1'b1;
+    #500;
+    @(posedge clk125M);
+    buf_rstn = 1'b0;
+    #500;
+    @(posedge clk125M);
+    buf_rstn = 1'b1;
+
+    #1_000;
+    SendARPPacket(48'hFFFF_FFFF_FFFF, 48'hE091_F5B4_06B0, 32'hC0A80101, dev_ip);
     #1_000;
 
-    SendARPPacket(48'hC0A8_0505_0505, 48'hC0A8_0505_0505, 32'hC0A80507, 32'hC0A80507);
+    SendARPPacket(48'hFFFF_FFFF_FFFF, 48'hE091_F5B4_06B0, 32'hC0A80101, dev_ip);
     #1000;
-    SendARPPacket(48'hC0A8_0505_0505, 48'hC0A8_0505_0505, 32'hC0A80507, 32'hC0A80507);
+    SendARPPacket(dev_mac, 48'hC0A8_0505_0505, 32'hC0A80507, dev_ip);
     #1000;
     SendARPPacket(48'hC0A8_0505_0505, 48'hC0A8_0505_0505, 32'hC0A80507, 32'hC0A80507);
     #1000;
@@ -642,7 +671,7 @@ initial begin
     // SendTestPacket(48'hAAAA_FFFF_BBBB, 48'h0102_0304_0506, 1'b1);
     // #100;
 
-    SendTestUDP(48'hC0A8_0505_0505, 48'h0102_0304_0506, 32'hC0A80507, 32'hC0A80507, 16'h4d2, 16'h4d2);
+    SendTestUDP(dev_mac, 48'h0102_0304_0506, 32'hC0A80507, dev_ip, 16'h4d2, dev_port);
     #1000;
 
     @(posedge clk125M);
@@ -785,6 +814,16 @@ end
 //     end
 // end
 
+// pll_0 pll_0(
+//     .clk_out1(clk200M),
+//     .clk_out2(clk125M),
+//     .clk_out3(clk375M),
+//     .clk_out4(clk125M_p90),
+//     .locked(pll0_locked),
+//     .clk_in1(rxc),
+//     .reset(rst)
+// );
+
 clk25_wiz0 pll0(
     .clk_out1(clk200M),//(clk125M),
     .clk_out2(clk125M),//(clk125M_p90),
@@ -829,7 +868,10 @@ clk25_wiz0 pll0(
 //     .rst(~pll0_locked) //(1'b0) //
 // );
 
-CustomGMAC_Wrap  mac(
+CustomGMAC_Wrap  mac0(
+    // .dev_mac(dev_mac),
+    // .dev_ip(dev_ip),
+    // .dev_port(dev_port),
 
     .clk375(clk375M),
     .clk125(clk125M),
@@ -843,215 +885,119 @@ CustomGMAC_Wrap  mac(
     .TXDATA(txd   ),
 
     .MODE(),
-    .LINK_UP(LINK_UP),
+    .LINK_UP(mac_link[0]),
 
-    .DataIn0(mac_tx_d),
-    .ValIn0(mac_tx_den),
-    .SoFIn0(mac_tx_sof),
-    .EoFIn0(mac_tx_eof),
-    .ReqIn0(mac_tx_rq), //start) ,//
+    .DataIn0(mac_tx_tdata[0]),
+    .ValIn0(mac_tx_tvalid[0]),
+    .SoFIn0(mac_tx_tuser [0]),
+    .EoFIn0(mac_tx_tlast [0]),
+    .ReqIn0(mac_tx_rq    [0]), //start) ,//
 
-    .ReqConfirm(mac_tx_ack),
+    // output [0:0] ReqConfirm,
+    .ReqConfirm(mac_tx_ack[0]),
 
-    .dbg_rgmii_rx_data(dbg_rgmii_rx_data),
-    .dbg_rgmii_rx_den(dbg_rgmii_rx_den),
-    .dbg_rgmii_rx_sof(dbg_rgmii_rx_sof),
-    .dbg_rgmii_rx_eof(dbg_rgmii_rx_eof),
+    .dbg_rgmii_rx_data(dbg_rgmii_rx_data[0]),
+    .dbg_rgmii_rx_den (dbg_rgmii_rx_den [0]),
+    .dbg_rgmii_rx_sof (dbg_rgmii_rx_sof [0]),
+    .dbg_rgmii_rx_eof (dbg_rgmii_rx_eof [0]),
+    .dbg_fi(),
+    .dbg_fi_dcnt(),
+    .dbg_fi_wr_data_count(),
+    .dbg_fo(),
+    .dbg_fo_dcnt(),
+    .dbg_fo_rd_data_count(),
+    .dbg_fi_wRGMII_Clk(),
+    .dbg_fi_wDataDDRL(),
+    .dbg_fi_wDataDDRH(),
+    .dbg_fi_wCondition(),
+    .dbg_fi_LoadDDREnaD0(),
+    .dbg_crc(),
+    .dbg_crc_rdy(),
+    .dbg_wDataCRCOut(),
+    .dbg_wDataCRCVal(),
+    .dbg_wDataCRCSoF(),
+    .dbg_wDataCRCEoF(),
+    .dbg_tx_data(),
+    .dbg_tx_den(),
 
-    .Remote_MACOut(),//output [47:0]
-    .Remote_IP_Out(),//output [31:0]
-    .RemotePortOut(),//output [15:0]
-    .SOF_OUT(mac_rx_sof),
-    .EOF_OUT(mac_rx_eof),
-    .ENA_OUT(mac_rx_valid),
-    .ERR_OUT(mac_rx_err),
-    .DATA_OUT(mac_rx_data),
-    .InputCRC_ErrorCounter()//output [31 :0]
+    .Remote_MACOut(),
+    .Remote_IP_Out(),
+    .RemotePortOut(),
+    .SOF_OUT(),
+    .EOF_OUT(),
+    .ENA_OUT(),
+    .ERR_OUT(),
+    .DATA_OUT(),
+    .InputCRC_ErrorCounter()
+);
+
+mac_rx_cut_macframe_no_crc mac0_rxbuf_cut (
+    .mac_rx_data_i (dbg_rgmii_rx_data[0]),
+    .mac_rx_valid_i(dbg_rgmii_rx_den [0]),
+    .mac_rx_sof_i  (dbg_rgmii_rx_sof [0]),
+    .mac_rx_eof_i  (dbg_rgmii_rx_eof [0]),
+
+    .mac_rx_data_o (dbg1_rgmii_rx_data[0]),
+    .mac_rx_valid_o(dbg1_rgmii_rx_den [0]),
+    .mac_rx_sof_o  (dbg1_rgmii_rx_sof [0]),
+    .mac_rx_eof_o  (dbg1_rgmii_rx_eof [0]),
+
+    .rstn(buf_rstn),
+    .clk(clk125M)
+);
+
+mac_rxbuf # (
+    .SIM(1)
+) mac0_rxbuf (
+    .axis_tready(mac_axis_rx_tready_eth[0]), //input
+    .axis_tdata (mac_axis_rx_tdata_eth [0]), //output [31:0]
+    .axis_tkeep (mac_axis_rx_tkeep_eth [0]), //output [3:0]
+    .axis_tvalid(mac_axis_rx_tvalid_eth[0]), //output
+    .axis_tlast (mac_axis_rx_tlast_eth [0]), //output
+
+    .mac_rx_data (dbg1_rgmii_rx_data[0]), //(mac_rx_tdata [0]), //input [7:0]
+    .mac_rx_valid(dbg1_rgmii_rx_den [0]), //(mac_rx_tvalid[0]), //input
+    .mac_rx_sof  (dbg1_rgmii_rx_sof [0]), //(mac_rx_tuser [0]), //input
+    .mac_rx_eof  (dbg1_rgmii_rx_eof [0]), //(mac_rx_tlast [0]), //input
+    .mac_rx_err  (1'b0                 ), //(mac_rx_err   [0]), //input
+    .mac_rx_clk  (1'b0),
+
+    .rstn(buf_rstn),
+    .clk(clk125M)
+);
+
+mac_txbuf # (
+    .SIM(1)
+) mac0_txbuf (
+    .synch(module_eth_tx_sync),
+
+    .axis_tready(mac_axis_rx_tready_eth[0]),
+    .axis_tdata (mac_axis_rx_tdata_eth [0]), //input [31:0]
+    .axis_tkeep (mac_axis_rx_tkeep_eth [0]), //input [3:0]
+    .axis_tvalid(mac_axis_rx_tvalid_eth[0]), //input
+    .axis_tlast (mac_axis_rx_tlast_eth [0]), //input
+
+    .mac_tx_data (mac_tx_tdata [0]), //output [7:0]
+    .mac_tx_valid(mac_tx_tvalid[0]), //output
+    .mac_tx_sof  (mac_tx_tuser [0]), //output
+    .mac_tx_eof  (mac_tx_tlast [0]), //output
+    .mac_tx_rq   (mac_tx_rq    [0]),
+    .mac_tx_ack  (mac_tx_ack   [0][0]),
+
+    .rstn(buf_rstn),
+    .clk(clk125M)
 );
 
 
 
-// test_tx #(
-//     .TEST_DATA_WIDTH(8)
-// ) test_tx (
-//     .mac_tx_tdata (mac_tx_tdata ),
-//     .mac_tx_tvalid(mac_tx_tvalid),
-//     .mac_tx_sof  (mac_tx_sof  ),
-//     .mac_tx_eof  (mac_tx_eof  ),
-//     .mac_tx_rq   (mac_tx_rq   ),
-//     .mac_tx_ack  (mac_tx_ack[0]),
-
-//     .start(start),
-//     .pkt_size(16'd512),
-//     .pause_size(16'd128),
-
-//     .clk(clk125M),
-//     .rst(rst)
-// );
 
 
-reg [7:0] rgmii_rx_data = 0;
-reg       rgmii_rx_den = 0;
-reg       rgmii_rx_sof = 0;
-reg       rgmii_rx_eof = 0;
-
-reg [7:0] sr0_rgmii_rx_data = 0;
-reg [7:0] sr1_rgmii_rx_data = 0;
-reg [7:0] sr2_rgmii_rx_data = 0;
-reg [7:0] sr3_rgmii_rx_data = 0;
-//reg [7:0] rgmii_rx_data_o = 0;
-
-reg sr0_rgmii_rx_den = 0;
-reg sr1_rgmii_rx_den = 0;
-reg sr2_rgmii_rx_den = 0;
-reg sr3_rgmii_rx_den = 0;
-reg sr4_rgmii_rx_den = 0;
-reg sr5_rgmii_rx_den = 0;
-reg sr6_rgmii_rx_den = 0;
-reg sr7_rgmii_rx_den = 0;
-reg sr8_rgmii_rx_den = 0;
-reg sr9_rgmii_rx_den = 0;
-reg sr10_rgmii_rx_den = 0;
-reg sr11_rgmii_rx_den = 0;
-//reg rgmii_rx_den_o = 0;
-
-reg sr0_rgmii_rx_sof  = 0;
-reg sr1_rgmii_rx_sof  = 0;
-reg sr2_rgmii_rx_sof  = 0;
-reg sr3_rgmii_rx_sof  = 0;
-reg sr4_rgmii_rx_sof  = 0;
-reg sr5_rgmii_rx_sof  = 0;
-reg sr6_rgmii_rx_sof  = 0;
-reg sr7_rgmii_rx_sof  = 0;
-reg sr8_rgmii_rx_sof  = 0;
-reg sr9_rgmii_rx_sof  = 0;
-reg sr10_rgmii_rx_sof = 0;
-reg sr11_rgmii_rx_sof = 0;
-
-always @ (posedge clk125M) begin
-    rgmii_rx_data <= dbg_rgmii_rx_data;
-    rgmii_rx_den <= dbg_rgmii_rx_den;
-    rgmii_rx_sof <= dbg_rgmii_rx_sof;
-    rgmii_rx_eof <= dbg_rgmii_rx_eof;
-
-    sr0_rgmii_rx_data <= rgmii_rx_data;
-    sr1_rgmii_rx_data <= sr0_rgmii_rx_data;
-    sr2_rgmii_rx_data <= sr1_rgmii_rx_data;
-    sr3_rgmii_rx_data <= sr2_rgmii_rx_data;
-    rgmii_rx_data_o <= sr3_rgmii_rx_data;
-
-    sr0_rgmii_rx_den <= rgmii_rx_den;
-    sr1_rgmii_rx_den <= sr0_rgmii_rx_den;
-    sr2_rgmii_rx_den <= sr1_rgmii_rx_den;
-    sr3_rgmii_rx_den <= sr2_rgmii_rx_den;
-    sr4_rgmii_rx_den <= sr3_rgmii_rx_den;
-    sr5_rgmii_rx_den <= sr4_rgmii_rx_den;
-    sr6_rgmii_rx_den <= sr5_rgmii_rx_den;
-    sr7_rgmii_rx_den <= sr6_rgmii_rx_den;
-    sr8_rgmii_rx_den <= sr7_rgmii_rx_den;
-    sr9_rgmii_rx_den <= sr8_rgmii_rx_den;
-    sr10_rgmii_rx_den <= sr9_rgmii_rx_den;
-    sr11_rgmii_rx_den <= sr10_rgmii_rx_den;
-    rgmii_rx_den_o <= sr11_rgmii_rx_den & rgmii_rx_den;
-
-    sr0_rgmii_rx_sof <= rgmii_rx_sof;
-    sr1_rgmii_rx_sof <= sr0_rgmii_rx_sof;
-    sr2_rgmii_rx_sof <= sr1_rgmii_rx_sof;
-    sr3_rgmii_rx_sof <= sr2_rgmii_rx_sof;
-    sr4_rgmii_rx_sof <= sr3_rgmii_rx_sof;
-    sr5_rgmii_rx_sof <= sr4_rgmii_rx_sof;
-    sr6_rgmii_rx_sof <= sr5_rgmii_rx_sof;
-    sr7_rgmii_rx_sof <= sr6_rgmii_rx_sof;
-    sr8_rgmii_rx_sof <= sr7_rgmii_rx_sof;
-    sr9_rgmii_rx_sof <= sr8_rgmii_rx_sof;
-    sr10_rgmii_rx_sof <= sr9_rgmii_rx_sof;
-    sr11_rgmii_rx_sof <= sr10_rgmii_rx_sof;
-    rgmii_rx_sof_o <= sr11_rgmii_rx_sof;
-
-    rgmii_rx_eof_o <= rgmii_rx_eof;
-end
-
-eth_txfifo eth0_txfifo (
-    .s_axis_tready(),  // output wire s_axis_tready
-    .s_axis_tdata(rgmii_rx_data_o),    // input wire [7 : 0] s_axis_tdata
-    .s_axis_tvalid(rgmii_rx_den_o),  // input wire s_axis_tvalid
-    .s_axis_tuser({rgmii_rx_sof_o}),    // input wire [0 : 0] s_axis_tuser
-    .s_axis_tlast(rgmii_rx_eof_o),    // input wire s_axis_tlast
-
-    .m_axis_tready(mac_tx_rdy),  // input wire m_axis_tready
-    .m_axis_tdata(mac_tx_tdata),    // output wire [7 : 0] m_axis_tdata
-    .m_axis_tvalid(mac_tx_tvalid),  // output wire m_axis_tvalid
-    .m_axis_tuser(mac_tx_tuser),    // output wire [0 : 0] m_axis_tuser
-    .m_axis_tlast(mac_tx_tlast),    // output wire m_axis_tlast
-
-    .wr_rst_busy(),      // output wire wr_rst_busy
-    .rd_rst_busy(),      // output wire rd_rst_busy
-    .s_aclk(clk125M),                // input wire s_aclk
-    .s_aresetn(LINK_UP)          // input wire s_aresetn
-);
-
-// assign mac_tx_eof = mac_tx_tlast & mac_tx_tvalid & mac_tx_ack[0];
-// assign mac_tx_sof = mac_tx_tuser[0] & mac_tx_tvalid & mac_tx_ack[0];
-
-always @(posedge clk125M) begin
-    if (mac_tx_tvalid) begin
-        mac_tx_rq <= 1'b1;
-        if (mac_tx_ack[0]) begin
-            mac_tx_rdy <= 1'b1;
-            if (mac_tx_tlast) begin
-                mac_tx_rdy <= 1'b0;
-            end
-        end
-    end else begin
-        mac_tx_rq <= 1'b0;
-        mac_tx_rdy <= 1'b0;
-    end
-
-    mac_tx_d   <= mac_tx_tdata;
-    mac_tx_den <= mac_tx_rdy;
-    mac_tx_sof <= mac_tx_tuser[0] & mac_tx_rdy;
-    mac_tx_eof <= mac_tx_tlast & mac_tx_rdy;
-end
 
 
-// mac_fifo fifo(
-//     //USER IF
-//     .tx_fifo_aclk       (clk125M), //input
-//     .tx_fifo_resetn     (1'b1), //input
-//     .tx_axis_fifo_tdata (rgmii_rx_data_o),//input [7:0]
-//     .tx_axis_fifo_tvalid(rgmii_rx_den_o),//input
-//     .tx_axis_fifo_tlast (rgmii_rx_eof_o),//input
-//     .tx_axis_fifo_tready(), //output
 
-//     .rx_fifo_aclk       (clk125M), //input
-//     .rx_fifo_resetn     (1'b1), //input
-//     .rx_axis_fifo_tready(1'b1), //input
-//     .rx_axis_fifo_tdata (), //output [7:0]
-//     .rx_axis_fifo_tvalid(), //output
-//     .rx_axis_fifo_tlast (), //output
 
-//     //MAC IF
-//     .tx_mac_aclk        (clk125M  ), //input
-//     .tx_mac_resetn      (1'b1), //input
-//     .tx_axis_mac_tdata  (mac_tx_tdata), //output [7:0]
-//     .tx_axis_mac_tvalid (mac_tx_tvalid), //output
-//     .tx_axis_mac_tlast  (mac_tx_tlast), //output
-//     .tx_axis_mac_tready (mac_tx_ack[0]), //input
-//     .tx_axis_mac_tuser  (),//(mac_tx_tuser ), //output
-//     .tx_axis_mac_sof    (mac_tx_tuser[0]),
-//     .tx_fifo_overflow   (), //output
-//     .tx_fifo_status     (), //output   [3:0]
-//     .tx_collision       (1'b0), //input
-//     .tx_retransmit      (1'b0), //input
 
-//     .rx_mac_aclk        (clk125M   ),//input
-//     .rx_mac_resetn      (1'b1),//input
-//     .rx_axis_mac_tdata  (0),//input [7:0]
-//     .rx_axis_mac_tvalid (1'b0),//input
-//     .rx_axis_mac_tlast  (1'b0),//input
-//     .rx_axis_mac_tuser  (1'b0),//input
-//     .rx_fifo_status     (), //output   [3:0]
-//     .rx_fifo_overflow   ()  //output
-// );
+
+
 
 endmodule
