@@ -451,7 +451,7 @@ aurora_axi_tx_mux #(
     .ETHCOUNT(ETHCOUNT),
     .SIM(SIM)
 ) aurora_axi_tx_mux (
-    .axis_s_sel(3'd0),
+    .axis_s_sel(3'd1),
 
     .axis_s_tready(aurora_axi_tx_tready_eth), //output [ETHCOUNT-1:0]
     .axis_s_tdata (aurora_axi_tx_tdata_eth ), //input  [(ETHCOUNT*32)-1:0]
