@@ -59,8 +59,6 @@ module main #(
     input sysclk25
 );
 
-wire [63:0] probe;
-
 wire [3:0]              mac_link;
 
 wire [7:0]              mac_rx_tdata [ETHCOUNT-1:0];
@@ -118,15 +116,17 @@ wire aurora_status_tx_lock;
 wire aurora_status_tx_resetdone_out;
 wire aurora_user_clk;
 
-wire [31:0] aurora_axi_rx_tdata_eth [ETHCOUNT-1:0];
-wire [3:0] aurora_axi_rx_tkeep_eth [ETHCOUNT-1:0];
-wire [ETHCOUNT-1:0] aurora_axi_rx_tlast_eth;
-wire [ETHCOUNT-1:0] aurora_axi_rx_tvalid_eth;
-wire [31:0]aurora_axi_tx_tdata_eth [ETHCOUNT-1:0];
-wire [3:0]aurora_axi_tx_tkeep_eth [ETHCOUNT-1:0];
-wire [ETHCOUNT-1:0] aurora_axi_tx_tlast_eth;
-wire [ETHCOUNT-1:0] aurora_axi_tx_tready_eth;
-wire [ETHCOUNT-1:0] aurora_axi_tx_tvalid_eth;
+wire [ETHCOUNT-1:0]      aurora_axi_rx_tready_eth;
+wire [(ETHCOUNT*32)-1:0] aurora_axi_rx_tdata_eth;
+wire [(ETHCOUNT*4-1):0]  aurora_axi_rx_tkeep_eth;
+wire [ETHCOUNT-1:0]      aurora_axi_rx_tlast_eth;
+wire [ETHCOUNT-1:0]      aurora_axi_rx_tvalid_eth;
+
+wire [ETHCOUNT-1:0]      aurora_axi_tx_tready_eth;
+wire [(ETHCOUNT*32)-1:0] aurora_axi_tx_tdata_eth;
+wire [(ETHCOUNT*4-1):0]  aurora_axi_tx_tkeep_eth;
+wire [ETHCOUNT-1:0]      aurora_axi_tx_tlast_eth;
+wire [ETHCOUNT-1:0]      aurora_axi_tx_tvalid_eth;
 wire [ETHCOUNT-1:0] aurora_status_channel_up_eth;
 
 wire [31:0] M_AXI_0_awaddr ;
@@ -162,7 +162,7 @@ wire [(`FPGA_REG_DWIDTH * `FPGA_REG_COUNT)-1:0] reg_rd_data;
 wire [7:0]  reg_wr_addr;
 wire [15:0] reg_wr_data;
 wire        reg_wr_en;
-wire        reg_clk;
+
 reg [`FPGA_REG_DWIDTH-1:0] reg_test_array [0:`FPGA_REG_TEST_ARRAY_COUNT-1];
 reg [3:0] reg_eth_phy_rst = 4'd0;
 
@@ -190,8 +190,8 @@ BUFG sysclk25_bufg (
 );
 
 clk25_wiz0 pll0(
-    .clk_out1(clk200M),//(clk125M),
-    .clk_out2(clk125M),//(clk125M_p90),
+    .clk_out1(clk200M),
+    .clk_out2(clk125M),
     .clk_out3(clk375M),
     .clk_out4(clk125M_p90),
     .locked(mac_pll_locked),
@@ -208,8 +208,8 @@ firmware_rev m_firmware_rev (
 
 wire [11:0]  device_temp;
 mig_7series_v4_1_tempmon tempmon(
-  .clk(reg_clk),
-  .xadc_clk(reg_clk),
+  .clk(clk125M),
+  .xadc_clk(clk125M),
   .rst(1'b0),
   .device_temp_i(12'd0),
   .device_temp(device_temp)
@@ -325,7 +325,6 @@ usr_logic #(
 );
 
 
-assign reg_clk = clk125M;
 spi_slave #(
     .RD_OFFSET(`FPGA_RD_OFFSET),
     .REG_RD_DATA_WIDTH(`FPGA_REG_COUNT * `FPGA_REG_DWIDTH)
@@ -341,8 +340,8 @@ spi_slave #(
     .reg_wr_addr(reg_wr_addr),
     .reg_wr_data(reg_wr_data),
     .reg_wr_en  (reg_wr_en),
-    .reg_clk    (reg_clk),
-    .rst(1'b0)
+    .reg_clk    (clk125M),
+    .rst(~mac_pll_locked)
 );
 
 //Read User resisters
@@ -371,7 +370,7 @@ endgenerate
 
 integer i;
 //Write User resisters
-always @ (posedge reg_clk) begin
+always @ (posedge clk125M) begin
     for (i = 0; i < `FPGA_REG_TEST_ARRAY_COUNT; i = i + 1) begin
         if (reg_wr_en && (reg_wr_addr == (`FPGA_WREG_TEST_ARRAY + i))) reg_test_array[i] <= reg_wr_data;
     end
@@ -424,18 +423,12 @@ assign usr_lvds_p_o[1] = mac_link[1];
 assign usr_lvds_p_o[2] = mac_link[2];
 assign usr_lvds_p_o[3] = mac_link[3];
 
-
-
-wire [ETHCOUNT-1:0]      aurora_axi_rx_tready_tmp;
-wire [(ETHCOUNT*32)-1:0] aurora_axi_rx_tdata_tmp ;
-wire [(ETHCOUNT*4-1):0]  aurora_axi_rx_tkeep_tmp ;
-wire [ETHCOUNT-1:0]      aurora_axi_rx_tvalid_tmp;
-wire [ETHCOUNT-1:0]      aurora_axi_rx_tlast_tmp ;
-aurora_axi_tx_mux #(
+//aurora_axi_rx -> mac_txbuf -> eth_mac
+aurora_axi_rx_mux #(
     .ETHCOUNT(ETHCOUNT),
     .SIM(SIM)
-) aurora_tx_mux (
-    .axis_m_sel(3'd0),
+) aurora_axi_rx_mux (
+    // .axis_m_sel(3'd0),
 
     .axis_s_tready(aurora_axi_rx_tready), //output
     .axis_s_tdata (aurora_axi_rx_tdata ), //input [31:0]
@@ -443,33 +436,28 @@ aurora_axi_tx_mux #(
     .axis_s_tvalid(aurora_axi_rx_tvalid), //input
     .axis_s_tlast (aurora_axi_rx_tlast ), //input
 
-    .axis_m_tready(aurora_axi_rx_tready_tmp ), //input [ETHCOUNT-1:0]
-    .axis_m_tdata (aurora_axi_rx_tdata_tmp  ), //output [(ETHCOUNT*32)-1:0]
-    .axis_m_tkeep (aurora_axi_rx_tkeep_tmp  ), //output [(ETHCOUNT*4-1):0]
-    .axis_m_tvalid(aurora_axi_rx_tvalid_tmp ), //output [ETHCOUNT-1:0]
-    .axis_m_tlast (aurora_axi_rx_tlast_tmp  ), //output [ETHCOUNT-1:0]
+    .axis_m_tready(aurora_axi_rx_tready_eth ), //input [ETHCOUNT-1:0]
+    .axis_m_tdata (aurora_axi_rx_tdata_eth  ), //output [(ETHCOUNT*32)-1:0]
+    .axis_m_tkeep (aurora_axi_rx_tkeep_eth  ), //output [(ETHCOUNT*4-1):0]
+    .axis_m_tvalid(aurora_axi_rx_tvalid_eth ), //output [ETHCOUNT-1:0]
+    .axis_m_tlast (aurora_axi_rx_tlast_eth  ), //output [ETHCOUNT-1:0]
 
-    .rstn(1'b1),
+    .rstn(mac_pll_locked),
     .clk(clk125M)
 );
 
-
-wire [ETHCOUNT-1:0]      aurora_axi_tx_tready_tmp;
-wire [(ETHCOUNT*32)-1:0] aurora_axi_tx_tdata_tmp ;
-wire [(ETHCOUNT*4-1):0]  aurora_axi_tx_tkeep_tmp ;
-wire [ETHCOUNT-1:0]      aurora_axi_tx_tvalid_tmp;
-wire [ETHCOUNT-1:0]      aurora_axi_tx_tlast_tmp ;
-aurora_axi_rx_mux #(
+//aurora_axi_tx <- mac_rxbuf <- eth_mac
+aurora_axi_tx_mux #(
     .ETHCOUNT(ETHCOUNT),
     .SIM(SIM)
-) (
+) aurora_axi_tx_mux (
     .axis_s_sel(3'd0),
 
-    .axis_s_tready(aurora_axi_tx_tready_tmp), //output [ETHCOUNT-1:0]
-    .axis_s_tdata (aurora_axi_tx_tdata_tmp ), //input  [(ETHCOUNT*32)-1:0]
-    .axis_s_tkeep (aurora_axi_tx_tkeep_tmp ), //input  [(ETHCOUNT*4-1):0]
-    .axis_s_tvalid(aurora_axi_tx_tvalid_tmp), //input  [ETHCOUNT-1:0]
-    .axis_s_tlast (aurora_axi_tx_tlast_tmp ), //input  [ETHCOUNT-1:0]
+    .axis_s_tready(aurora_axi_tx_tready_eth), //output [ETHCOUNT-1:0]
+    .axis_s_tdata (aurora_axi_tx_tdata_eth ), //input  [(ETHCOUNT*32)-1:0]
+    .axis_s_tkeep (aurora_axi_tx_tkeep_eth ), //input  [(ETHCOUNT*4-1):0]
+    .axis_s_tvalid(aurora_axi_tx_tvalid_eth), //input  [ETHCOUNT-1:0]
+    .axis_s_tlast (aurora_axi_tx_tlast_eth ), //input  [ETHCOUNT-1:0]
 
     .axis_m_tready(aurora_axi_tx_tready), //input
     .axis_m_tdata (aurora_axi_tx_tdata ), //output[31:0]
@@ -477,7 +465,7 @@ aurora_axi_rx_mux #(
     .axis_m_tvalid(aurora_axi_tx_tvalid), //output
     .axis_m_tlast (aurora_axi_tx_tlast ), //output
 
-    .rstn(1'b1),
+    .rstn(mac_pll_locked),
     .clk(clk125M)
 );
 
@@ -486,19 +474,14 @@ generate
     for (x=0; x < ETHCOUNT; x=x+1)  begin : eth
         assign eth_phy_rst[x] = mac_pll_locked;
 
-        assign aurora_axi_rx_tdata_eth [x] = aurora_axi_rx_tdata_tmp [(x*32) +: 32];
-        assign aurora_axi_rx_tkeep_eth [x] = aurora_axi_rx_tkeep_tmp [(x*4) +: 4];
-        assign aurora_axi_rx_tvalid_eth[x] = aurora_axi_rx_tvalid_tmp[x];
-        assign aurora_axi_rx_tlast_eth [x] = aurora_axi_rx_tlast_tmp [x];
-
         mac_txbuf # (
             .SIM(SIM)
         ) txbuf (
             .synch(module_eth_tx_sync),
 
             .axis_tready(),
-            .axis_tdata (aurora_axi_rx_tdata_eth [x]), //input [31:0]
-            .axis_tkeep (aurora_axi_rx_tkeep_eth [x]), //input [3:0]
+            .axis_tdata (aurora_axi_rx_tdata_eth [(x*32) +: 32]), //input [31:0]
+            .axis_tkeep (aurora_axi_rx_tkeep_eth [(x*4) +: 4]), //input [3:0]
             .axis_tvalid(aurora_axi_rx_tvalid_eth[x]), //input
             .axis_tlast (aurora_axi_rx_tlast_eth [x]), //input
 
@@ -509,7 +492,7 @@ generate
             .mac_tx_rq   (mac_tx_rq    [x]),
             .mac_tx_ack  (mac_tx_ack   [x][0]),
 
-            .rstn(1'b1),
+            .rstn(mac_pll_locked),
             .clk(clk125M)
         );
 
@@ -573,8 +556,8 @@ generate
             .SIM(SIM)
         ) rxbuf (
             .axis_tready(aurora_axi_tx_tready_eth[x]), //input
-            .axis_tdata (aurora_axi_tx_tdata_eth [x]), //output [31:0]
-            .axis_tkeep (aurora_axi_tx_tkeep_eth [x]), //output [3:0]
+            .axis_tdata (aurora_axi_tx_tdata_eth [(x*32) +: 32]), //output [31:0]
+            .axis_tkeep (aurora_axi_tx_tkeep_eth [(x*4) +: 4]), //output [3:0]
             .axis_tvalid(aurora_axi_tx_tvalid_eth[x]), //output
             .axis_tlast (aurora_axi_tx_tlast_eth [x]), //output
 
@@ -584,33 +567,37 @@ generate
             .mac_rx_eof  (mac_rx_tlast [x]), //input
             .mac_rx_err  (mac_rx_err   [x]), //input
 
-            .rstn(1'b1),
+            .rstn(mac_pll_locked),
             .clk(clk125M)
         );
-
-        assign aurora_axi_tx_tdata_tmp [(x*32) +: 32] = aurora_axi_tx_tdata_eth [x];
-        assign aurora_axi_tx_tkeep_tmp [(x*4) +: 4] = aurora_axi_tx_tkeep_eth [x];
-        assign aurora_axi_tx_tvalid_tmp[x] = aurora_axi_tx_tvalid_eth[x];
-        assign aurora_axi_tx_tlast_tmp [x] = aurora_axi_tx_tlast_eth [x];
-
-        assign aurora_axi_tx_tready_eth[x] = aurora_axi_tx_tready_tmp [x];
-
     end
 endgenerate
 
 ila_0 rx_ila (
     .probe0({
-        mac_tx_rq[0],
-        mac_tx_ack[0][0],
-        mac_tx_tdata[0],
+        mac_tx_rq    [1],
+        mac_tx_ack   [1][0],
+        mac_tx_tdata [1],
+        mac_tx_tvalid[1],
+        mac_tx_tuser [1],
+        mac_tx_tlast [1],
+
+        mac_rx_tdata [1],
+        mac_rx_tvalid[1],
+        mac_rx_tuser [1],
+        mac_rx_tlast [1],
+
+        mac_tx_rq    [0],
+        mac_tx_ack   [0][0],
+        mac_tx_tdata [0],
         mac_tx_tvalid[0],
-        mac_tx_tuser[0],
-        mac_tx_tlast[0],
+        mac_tx_tuser [0],
+        mac_tx_tlast [0],
 
         mac_rx_tdata [0],
         mac_rx_tvalid[0],
-        mac_rx_tuser[0],
-        mac_rx_tlast[0]
+        mac_rx_tuser [0],
+        mac_rx_tlast [0]
 
     }),
     .clk(clk125M)
@@ -694,8 +681,8 @@ fpga_test_01 #(
 //     clk20_div <= ~clk20_div;
 // end
 
-assign dbg_out[0] = usr_spi_miso;//1'b0;
-assign dbg_out[1] = reg_ctrl[0] | usr_spi_cs[1];// clk20_div |
+assign dbg_out[0] = 1'b0;
+assign dbg_out[1] = reg_ctrl[0];
 
 
 endmodule
