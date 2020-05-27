@@ -23,6 +23,11 @@ module aurora_axi_tx_mux #(
     input clk
 );
 
+assign axis_s_tready[0] = (axis_s_sel[1:0] == 2'd0) ? axis_m_tready : 1'b0;
+assign axis_s_tready[1] = (axis_s_sel[1:0] == 2'd1) ? axis_m_tready : 1'b0;
+assign axis_s_tready[2] = (axis_s_sel[1:0] == 2'd2) ? axis_m_tready : 1'b0;
+assign axis_s_tready[3] = (axis_s_sel[1:0] == 2'd3) ? axis_m_tready : 1'b0;
+
 always @(posedge clk) begin
     case (axis_s_sel[1:0])
         2'd0 : begin

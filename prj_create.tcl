@@ -387,7 +387,7 @@ add_files -norecurse $script_folder/src/sergey/Link_Status.v
 add_files -norecurse $script_folder/src/sergey/RGMIIOverClockModule.v
 add_files -norecurse $script_folder/src/sergey/RGMIIOverClock.v
 add_files -norecurse $script_folder/src/sergey/RGMII_ClockSpeed_Test.v
-# add_files -norecurse $script_folder/src/mac_rx_cut_macframe_no_crc.v
+add_files -norecurse $script_folder/src/mac_rx_cut_macframe_no_crc.v
 add_files -norecurse $script_folder/src/core_gen/mac_rxbuf_axis_fifo/mac_rxbuf_axis_fifo.xci
 add_files -norecurse $script_folder/src/core_gen/mac_txbuf_axis_fifo/mac_txbuf_axis_fifo.xci
 add_files -norecurse $script_folder/src/core_gen/axis_data_fifo_0/axis_data_fifo_0.xci
