@@ -5,7 +5,7 @@ module aurora_axi_tx_mux #(
     parameter ETHCOUNT = 0,
     parameter SIM = 0
 ) (
-    input [2:0]  axis_s_sel,
+    input [1:0]  axis_s_sel,
 
     output [ETHCOUNT-1:0]      axis_s_tready,
     input  [(ETHCOUNT*32)-1:0] axis_s_tdata ,
