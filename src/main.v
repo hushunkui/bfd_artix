@@ -456,13 +456,33 @@ aurora_axi_tx_mux #(
     .ETHCOUNT(ETHCOUNT),
     .SIM(SIM)
 ) aurora_axi_tx_mux (
-    .axis_s_sel(eth_num),
+    .sel(eth_num),
 
+    // .axis_s_tready(aurora_axi_tx_tready_eth), //output [ETHCOUNT-1:0]
+    // .axis_s_tdata (aurora_axi_tx_tdata_eth ), //input  [(ETHCOUNT*32)-1:0]
+    // .axis_s_tkeep (aurora_axi_tx_tkeep_eth ), //input  [(ETHCOUNT*4-1):0]
+    // .axis_s_tvalid(aurora_axi_tx_tvalid_eth), //input  [ETHCOUNT-1:0]
+    // .axis_s_tlast (aurora_axi_tx_tlast_eth ), //input  [ETHCOUNT-1:0]
     .axis_s_tready(aurora_axi_tx_tready_eth), //output [ETHCOUNT-1:0]
-    .axis_s_tdata (aurora_axi_tx_tdata_eth ), //input  [(ETHCOUNT*32)-1:0]
-    .axis_s_tkeep (aurora_axi_tx_tkeep_eth ), //input  [(ETHCOUNT*4-1):0]
-    .axis_s_tvalid(aurora_axi_tx_tvalid_eth), //input  [ETHCOUNT-1:0]
-    .axis_s_tlast (aurora_axi_tx_tlast_eth ), //input  [ETHCOUNT-1:0]
+    .axis_s_tdata ({aurora_axi_tx_tdata_eth [(0*32) +:32],
+                    aurora_axi_tx_tdata_eth [(0*32) +:32],
+                    aurora_axi_tx_tdata_eth [(0*32) +:32],
+                    aurora_axi_tx_tdata_eth [(0*32) +:32]} ), //input  [(ETHCOUNT*32)-1:0]
+
+    .axis_s_tkeep ({aurora_axi_tx_tkeep_eth [(0*4) +:4],
+                    aurora_axi_tx_tkeep_eth [(0*4) +:4],
+                    aurora_axi_tx_tkeep_eth [(0*4) +:4],
+                    aurora_axi_tx_tkeep_eth [(0*4) +:4]}), //input  [(ETHCOUNT*4-1):0]
+
+    .axis_s_tvalid({aurora_axi_tx_tvalid_eth[0],
+                    aurora_axi_tx_tvalid_eth[0],
+                    aurora_axi_tx_tvalid_eth[0],
+                    aurora_axi_tx_tvalid_eth[0]}), //input  [ETHCOUNT-1:0]
+
+    .axis_s_tlast ({aurora_axi_tx_tlast_eth[0],
+                    aurora_axi_tx_tlast_eth[0],
+                    aurora_axi_tx_tlast_eth[0],
+                    aurora_axi_tx_tlast_eth[0]}), //input  [ETHCOUNT-1:0]
 
     .axis_m_tready(aurora_axi_tx_tready), //input
     .axis_m_tdata (aurora_axi_tx_tdata ), //output[31:0]
