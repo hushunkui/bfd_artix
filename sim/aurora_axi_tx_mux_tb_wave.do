@@ -8,7 +8,10 @@ add wave -noupdate /aurora_axi_tx_mux_tb/mac_rx_err
 add wave -noupdate /aurora_axi_tx_mux_tb/axis_tready
 add wave -noupdate -expand /aurora_axi_tx_mux_tb/axis_tdata
 add wave -noupdate /aurora_axi_tx_mux_tb/axis_tkeep
-add wave -noupdate /aurora_axi_tx_mux_tb/axis_tvalid
+add wave -noupdate -expand /aurora_axi_tx_mux_tb/aurora0_axi_tx_mux/axis_s_tvalid
+add wave -noupdate -expand /aurora_axi_tx_mux_tb/aurora0_axi_tx_mux/axis_s_tlast
+add wave -noupdate /aurora_axi_tx_mux_tb/aurora0_axi_tx_mux/axis_s_tready
+add wave -noupdate -expand /aurora_axi_tx_mux_tb/aurora0_axi_tx_mux/axis_s_tvalid_mask
 add wave -noupdate -expand /aurora_axi_tx_mux_tb/aurora0_axi_tx_mux/tdata
 add wave -noupdate /aurora_axi_tx_mux_tb/aurora0_axi_tx_mux/axis_m_tdata
 add wave -noupdate /aurora_axi_tx_mux_tb/aurora0_axi_tx_mux/axis_m_tkeep

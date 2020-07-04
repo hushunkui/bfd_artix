@@ -6,6 +6,7 @@ module aurora_axi_tx_mux #(
     parameter SIM = 0
 ) (
     input [1:0] sel,
+    input [ETHCOUNT-1:0] eth_mask, //1-mask, 0-normal work
 
     output [ETHCOUNT-1:0]      axis_s_tready,
     input  [(ETHCOUNT*32)-1:0] axis_s_tdata ,
@@ -33,23 +34,28 @@ reg signed [17:0] sum0123_a;
 reg signed [17:0] sum0123_b;
 reg [2:0] sr_axis_s_tvalid;
 reg [2:0] sr_axis_s_tlast;
+wire [ETHCOUNT-1:0] axis_s_tvalid_mask;
+wire [ETHCOUNT-1:0] axis_s_tlast_mask;
 
-assign axis_s_tready[0] = axis_m_tready & &axis_s_tvalid;
-assign axis_s_tready[1] = axis_m_tready & &axis_s_tvalid;
-assign axis_s_tready[2] = axis_m_tready & &axis_s_tvalid;
-assign axis_s_tready[3] = axis_m_tready & &axis_s_tvalid;
+assign axis_s_tvalid_mask = axis_s_tvalid | eth_mask;
+assign axis_s_tlast_mask = axis_s_tlast | eth_mask;
+
+assign axis_s_tready[0] = axis_m_tready & &axis_s_tvalid_mask;
+assign axis_s_tready[1] = axis_m_tready & &axis_s_tvalid_mask;
+assign axis_s_tready[2] = axis_m_tready & &axis_s_tvalid_mask;
+assign axis_s_tready[3] = axis_m_tready & &axis_s_tvalid_mask;
 
 always @(posedge clk) begin
     //satge 0
     for (x=0; x < ETHCOUNT; x=x+1) begin
-        if (axis_s_tvalid[x]) begin
+        if (!eth_mask[x]) begin
             tdata[x] <= axis_s_tdata[(x*32) +: 32];
         end else begin
             tdata[x] <= 0;
         end
     end
-    sr_axis_s_tvalid[0] <= &axis_s_tvalid;
-    sr_axis_s_tlast[0] <= &axis_s_tlast;
+    sr_axis_s_tvalid[0] <= &axis_s_tvalid_mask;
+    sr_axis_s_tlast[0] <= &axis_s_tlast_mask;
 
     //satge 1
     sum01_a[16:0] <= $signed(tdata[0][15: 0]) + $signed(tdata[1][15: 0]);

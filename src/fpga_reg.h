@@ -27,6 +27,7 @@
 #define FPGA_WREG_ETHPHY_MDIO_CLK_O     (FPGA_WR_OFFSET + 4) //16bit - valid bit(0)
 #define FPGA_WREG_ETHPHY_MDIO_DATA_O    (FPGA_WR_OFFSET + 5) //16bit - valid bit(0)
 #define FPGA_WREG_ETHPHY_MDIO_DIR_O     (FPGA_WR_OFFSET + 6) //16bit - valid bit(0)
+#define FPGA_WREG_ETH_MASK              (FPGA_WR_OFFSET + 7) //16bit
 
 // address map spi registers (RD)
 #define FPGA_RREG_FIRMWARE_DATE         (FPGA_RD_OFFSET + 0) //32bit
@@ -54,7 +55,7 @@
 #define FPGA_RREG_ETHPHY_MDIO_DATA_I    (FPGA_RD_OFFSET + 22) //16bit
 #define FPGA_RREG_AURORA_STATUS         (FPGA_RD_OFFSET + 23) //16bit
     #define FPGA_RREG_AURORA_CHANNEL_UP_BIT          (0)
-
+#define FPGA_RREG_ETH_MASK              (FPGA_RD_OFFSET + 24) //16bit
 
 //----------------------------------------
 //USER JTAG MASTER interface

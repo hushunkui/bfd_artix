@@ -219,12 +219,13 @@ aurora_axi_tx_mux #(
     .SIM(SIM)
 ) aurora0_axi_tx_mux (
     .sel(0), //input [1:0]
+    .eth_mask(4'b0010),
 
     .axis_s_tready(axis_tready), //output [ETHCOUNT-1:0]
     .axis_s_tdata ({axis_tdata[3],axis_tdata[2],axis_tdata[1],axis_tdata[0]}), //input  [(ETHCOUNT*32)-1:0]
     .axis_s_tkeep ({axis_tkeep[3],axis_tkeep[2],axis_tkeep[1],axis_tkeep[0]}), //input  [(ETHCOUNT*4-1):0]
-    .axis_s_tvalid(axis_tvalid), //input  [ETHCOUNT-1:0]
-    .axis_s_tlast (axis_tlast ), //input  [ETHCOUNT-1:0]
+    .axis_s_tvalid({axis_tvalid[3],axis_tvalid[2],1'b0,axis_tvalid[0]}), //input  [ETHCOUNT-1:0]
+    .axis_s_tlast ({axis_tlast[3],axis_tlast[2],1'b0,axis_tlast[0]}), //input  [ETHCOUNT-1:0]
 
     .axis_m_tready(axis_m_tready), //input
     .axis_m_tdata (axis_m_tdata ), //output reg [31:0]

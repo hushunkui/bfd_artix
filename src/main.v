@@ -161,6 +161,7 @@ wire [7:0] test_data [ETHCOUNT-1:0];
 wire [1:0] eth_num;
 wire [3:0] eth_en;
 wire  module_eth_tx_sync;
+reg [3:0] eth_mask = 0;
 
 wire usr_miso;
 wire [(`FPGA_REG_DWIDTH * `FPGA_REG_COUNT)-1:0] reg_rd_data;
@@ -365,6 +366,7 @@ assign reg_rd_data[`FPGA_RREG_ETHPHY_MDIO_DATA_O * `FPGA_REG_DWIDTH +: `FPGA_REG
 assign reg_rd_data[`FPGA_RREG_ETHPHY_MDIO_DIR_O * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = {15'd0, ethphy_mdio_dir};
 assign reg_rd_data[`FPGA_RREG_ETHPHY_MDIO_DATA_I * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = {15'd0, eth_phy_mdio};
 assign reg_rd_data[`FPGA_RREG_AURORA_STATUS * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = {15'd0, aurora_status_channel_up};
+assign reg_rd_data[`FPGA_RREG_ETH_MASK * `FPGA_REG_DWIDTH +: `FPGA_REG_DWIDTH] = {12'd0, eth_mask[3:0]};
 
 genvar a;
 generate
@@ -384,6 +386,7 @@ always @ (posedge clk125M) begin
     if (reg_wr_en && (reg_wr_addr == `FPGA_WREG_ETHPHY_MDIO_CLK_O)) begin eth_phy_mdc <= reg_wr_data[0]; end
     if (reg_wr_en && (reg_wr_addr == `FPGA_WREG_ETHPHY_MDIO_DATA_O)) begin ethphy_mdio_data <= reg_wr_data[0]; end
     if (reg_wr_en && (reg_wr_addr == `FPGA_WREG_ETHPHY_MDIO_DIR_O)) begin ethphy_mdio_dir <= reg_wr_data[0]; end
+    if (reg_wr_en && (reg_wr_addr == `FPGA_WREG_ETH_MASK)) begin eth_mask[3:0] <= reg_wr_data[3:0]; end
 end
 
 STARTUPE2 #(
@@ -457,6 +460,7 @@ aurora_axi_tx_mux #(
     .SIM(SIM)
 ) aurora_axi_tx_mux (
     .sel(eth_num),
+    .eth_mask(eth_mask),
 
     // .axis_s_tready(aurora_axi_tx_tready_eth), //output [ETHCOUNT-1:0]
     // .axis_s_tdata (aurora_axi_tx_tdata_eth ), //input  [(ETHCOUNT*32)-1:0]
