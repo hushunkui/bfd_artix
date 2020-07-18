@@ -5,7 +5,7 @@ module aurora_axi_tx_mux #(
     parameter ETHCOUNT = 0,
     parameter SIM = 0
 ) (
-    input [1:0] sel,
+    input [1:0] trunc,
     input [ETHCOUNT-1:0] eth_mask, //1-mask, 0-normal work
 
     output [ETHCOUNT-1:0]      axis_s_tready,
@@ -75,10 +75,10 @@ always @(posedge clk) begin
     sr_axis_s_tlast[2] <= sr_axis_s_tlast[1];
 
     //satge 3
-    if (sel == 2'd2) begin
+    if (trunc == 2'd2) begin
         axis_m_tdata[15: 0] <= sum0123_a[17:2];
         axis_m_tdata[31:16] <= sum0123_b[17:2];
-    end else if (sel == 2'd1) begin
+    end else if (trunc == 2'd1) begin
         axis_m_tdata[15: 0] <= sum0123_a[16:1];
         axis_m_tdata[31:16] <= sum0123_b[16:1];
     end else begin
