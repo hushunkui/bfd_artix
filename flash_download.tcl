@@ -15,6 +15,10 @@ set flash_index 0
 #Set fpga param
 set fpga_index 0
 
+#jtag_cable params
+set server localhost:3121
+set jtag_cable_index 0
+
 #Set file path
 set bit_file ./firmware/bfd_artix_firmware.bit
 set bit_file_golden ./firmware/bfd_artix_firmware_gold.bit
@@ -47,9 +51,6 @@ if { [catch { exec multiboot_address_table.bat >@ stdout } errmsg] } {
     return
 }
 
-#Set server path
-set server localhost:3121
-
 #Set unused pin termination - pull-none;pull-up;pull-down
 set unused_pins pull-none
 
@@ -61,7 +62,13 @@ write_cfgmem -force -format mcs -size $flash_size -interface $flash_interface -v
 #download firmware to flash
 open_hw
 connect_hw_server -url $server
-open_hw_target
+set jtag_cabel_list [lindex [get_hw_targets]]
+set jtag_cabel_cnt 0
+foreach i $jtag_cabel_list {
+    puts "jtag_cabel[$jtag_cabel_cnt] - $i";
+    incr jtag_cabel_cnt
+}
+open_hw_target [lindex [get_hw_targets] $jtag_cable_index]
 current_hw_device [lindex [get_hw_devices] $fpga_index]
 refresh_hw_device -update_hw_probes false [lindex [get_hw_devices] $fpga_index]
 
@@ -86,6 +93,6 @@ program_hw_cfgmem -hw_cfgmem [get_property PROGRAM.HW_CFGMEM [current_hw_device 
 puts "Start fpga firmware..."
 boot_hw_device  [current_hw_device]
 
-close_hw_target
+close_hw_target [lindex [get_hw_targets] $jtag_cable_index]
 disconnect_hw_server $server
 close_hw
