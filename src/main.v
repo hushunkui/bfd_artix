@@ -637,6 +637,13 @@ ila_0 rx_ila (
         mac_tx_tuser [0],
         mac_tx_tlast [0],
 
+        mac_tx_rq    [1],
+        mac_tx_ack   [1][0],
+        mac_tx_tdata [1],
+        mac_tx_tvalid[1],
+        mac_tx_tuser [1],
+        mac_tx_tlast [1],
+
         // mac_rx_tdata [0],
         // mac_rx_tvalid[0],
         // mac_rx_tuser [0],
@@ -653,6 +660,11 @@ ila_0 rx_ila (
         // aurora_axi_tx_tkeep , //output[3:0]
         aurora_axi_tx_tvalid, //output
         aurora_axi_tx_tlast , //output
+
+        dbg1_rgmii_rx_data[0],
+        dbg1_rgmii_rx_den [0],
+        dbg1_rgmii_rx_sof [0],
+        dbg1_rgmii_rx_eof [0],
 
         dbg1_rgmii_rx_data[1],
         dbg1_rgmii_rx_den [1],
