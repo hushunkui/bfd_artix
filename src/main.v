@@ -572,22 +572,26 @@ generate
             .InputCRC_ErrorCounter(mac_rx_cnterr[x]) //output  [31 :0]
         );
 
-        mac_rx_cut_macframe_no_crc # (
-            .SIM(0)
-        ) mac_rx_cut (
-            .mac_rx_data_i (dbg_rgmii_rx_data[x]),//(mac_rx_tdata [x]),
-            .mac_rx_valid_i(dbg_rgmii_rx_den [x]),//(mac_rx_tvalid[x]),
-            .mac_rx_sof_i  (dbg_rgmii_rx_sof [x]),//(mac_rx_tuser [x]),
-            .mac_rx_eof_i  (dbg_rgmii_rx_eof [x]),//(mac_rx_tlast [x]),
+        // mac_rx_cut_macframe_no_crc # (
+        //     .SIM(0)
+        // ) mac_rx_cut (
+        //     .mac_rx_data_i (dbg_rgmii_rx_data[x]),//mac_rx_tdata [x]),//
+        //     .mac_rx_valid_i(dbg_rgmii_rx_den [x]),//mac_rx_tvalid[x]),//
+        //     .mac_rx_sof_i  (dbg_rgmii_rx_sof [x]),//mac_rx_tuser [x]),//
+        //     .mac_rx_eof_i  (dbg_rgmii_rx_eof [x]),//mac_rx_tlast [x]),//
 
-            .mac_rx_data_o (dbg1_rgmii_rx_data[x]),//
-            .mac_rx_valid_o(dbg1_rgmii_rx_den [x]),//
-            .mac_rx_sof_o  (dbg1_rgmii_rx_sof [x]),//
-            .mac_rx_eof_o  (dbg1_rgmii_rx_eof [x]),//
+        //     .mac_rx_data_o (dbg1_rgmii_rx_data[x]),//
+        //     .mac_rx_valid_o(dbg1_rgmii_rx_den [x]),//
+        //     .mac_rx_sof_o  (dbg1_rgmii_rx_sof [x]),//
+        //     .mac_rx_eof_o  (dbg1_rgmii_rx_eof [x]),//
 
-            .rstn(mac_pll_locked),
-            .clk(clk125M)
-        );
+        //     .rstn(mac_pll_locked),
+        //     .clk(clk125M)
+        // );
+        assign dbg1_rgmii_rx_data[x] = mac_rx_tdata [x];
+        assign dbg1_rgmii_rx_den [x] = mac_rx_tvalid[x];
+        assign dbg1_rgmii_rx_sof [x] = mac_rx_tuser [x];
+        assign dbg1_rgmii_rx_eof [x] = mac_rx_tlast [x];
 
         mac_rxbuf # (
             .SIM(SIM)
@@ -643,6 +647,8 @@ ila_0 rx_ila (
         mac_tx_tvalid[1],
         mac_tx_tuser [1],
         mac_tx_tlast [1],
+
+        eth_tx_sync,
 
         // mac_rx_tdata [0],
         // mac_rx_tvalid[0],
