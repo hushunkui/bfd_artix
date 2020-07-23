@@ -13,6 +13,7 @@ module aurora_axi_tx_mux #(
     input  [(ETHCOUNT*4-1):0]  axis_s_tkeep ,
     input  [ETHCOUNT-1:0]      axis_s_tvalid,
     input  [ETHCOUNT-1:0]      axis_s_tlast ,
+    input  [ETHCOUNT-1:0]      axis_s_tuser , //err
 
     input             axis_m_tready,
     output reg [31:0] axis_m_tdata  = 32'd0,
@@ -37,8 +38,13 @@ reg [2:0] sr_axis_s_tlast;
 wire [ETHCOUNT-1:0] axis_s_tvalid_mask;
 wire [ETHCOUNT-1:0] axis_s_tlast_mask;
 
-assign axis_s_tvalid_mask = axis_s_tvalid | eth_mask;
-assign axis_s_tlast_mask = axis_s_tlast | eth_mask;
+genvar x1;
+generate
+    for (x1=0; x1 < ETHCOUNT; x1=x1+1)  begin : eth
+        assign axis_s_tvalid_mask[x1] = axis_s_tvalid[x1] | eth_mask[x1];
+        assign axis_s_tlast_mask[x1] = axis_s_tlast[x1] | eth_mask[x1];
+    end
+endgenerate
 
 assign axis_s_tready[0] = axis_m_tready & &axis_s_tvalid_mask;
 assign axis_s_tready[1] = axis_m_tready & &axis_s_tvalid_mask;

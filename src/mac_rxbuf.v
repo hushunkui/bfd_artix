@@ -10,6 +10,7 @@ module mac_rxbuf #(
     output [3:0]  axis_tkeep,
     output        axis_tvalid,
     output        axis_tlast,
+    output        axis_tuser,
 
     input [7:0] mac_rx_data ,
     input       mac_rx_valid,
@@ -90,12 +91,14 @@ mac_rxbuf_axis_fifo fifo (
     .s_axis_tkeep (tkeep ), // input [3 : 0]
     .s_axis_tvalid(tvalid), // input
     .s_axis_tlast (tlast ), // input
+    .s_axis_tuser (mac_rx_err), // input [0 : 0]
 
     .m_axis_tready(axis_tready), // input
     .m_axis_tvalid(axis_tvalid), // output
     .m_axis_tdata (axis_tdata ), // output [31 : 0]
     .m_axis_tkeep (axis_tkeep ), // output [3 : 0]
     .m_axis_tlast (axis_tlast ), // output
+    .m_axis_tuser (axis_tuser ), // output [0 : 0]
 
     .wr_rst_busy(),      // output
     .rd_rst_busy(),      // output

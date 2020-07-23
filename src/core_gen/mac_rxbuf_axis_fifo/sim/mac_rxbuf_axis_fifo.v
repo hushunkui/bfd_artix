@@ -63,11 +63,13 @@ module mac_rxbuf_axis_fifo (
   s_axis_tdata,
   s_axis_tkeep,
   s_axis_tlast,
+  s_axis_tuser,
   m_axis_tvalid,
   m_axis_tready,
   m_axis_tdata,
   m_axis_tkeep,
-  m_axis_tlast
+  m_axis_tlast,
+  m_axis_tuser
 );
 
 output wire wr_rst_busy;
@@ -86,9 +88,11 @@ output wire s_axis_tready;
 input wire [31 : 0] s_axis_tdata;
 (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S_AXIS TKEEP" *)
 input wire [3 : 0] s_axis_tkeep;
-(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME S_AXIS, TDATA_NUM_BYTES 4, TDEST_WIDTH 0, TID_WIDTH 0, TUSER_WIDTH 0, HAS_TREADY 1, HAS_TSTRB 0, HAS_TKEEP 1, HAS_TLAST 1, FREQ_HZ 100000000, PHASE 0.000, LAYERED_METADATA undef" *)
 (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S_AXIS TLAST" *)
 input wire s_axis_tlast;
+(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME S_AXIS, TDATA_NUM_BYTES 4, TDEST_WIDTH 0, TID_WIDTH 0, TUSER_WIDTH 1, HAS_TREADY 1, HAS_TSTRB 0, HAS_TKEEP 1, HAS_TLAST 1, FREQ_HZ 100000000, PHASE 0.000, LAYERED_METADATA undef" *)
+(* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 S_AXIS TUSER" *)
+input wire [0 : 0] s_axis_tuser;
 (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M_AXIS TVALID" *)
 output wire m_axis_tvalid;
 (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M_AXIS TREADY" *)
@@ -97,9 +101,11 @@ input wire m_axis_tready;
 output wire [31 : 0] m_axis_tdata;
 (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M_AXIS TKEEP" *)
 output wire [3 : 0] m_axis_tkeep;
-(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME M_AXIS, TDATA_NUM_BYTES 4, TDEST_WIDTH 0, TID_WIDTH 0, TUSER_WIDTH 0, HAS_TREADY 1, HAS_TSTRB 0, HAS_TKEEP 1, HAS_TLAST 1, FREQ_HZ 100000000, PHASE 0.000, LAYERED_METADATA undef" *)
 (* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M_AXIS TLAST" *)
 output wire m_axis_tlast;
+(* X_INTERFACE_PARAMETER = "XIL_INTERFACENAME M_AXIS, TDATA_NUM_BYTES 4, TDEST_WIDTH 0, TID_WIDTH 0, TUSER_WIDTH 1, HAS_TREADY 1, HAS_TSTRB 0, HAS_TKEEP 1, HAS_TLAST 1, FREQ_HZ 100000000, PHASE 0.000, LAYERED_METADATA undef" *)
+(* X_INTERFACE_INFO = "xilinx.com:interface:axis:1.0 M_AXIS TUSER" *)
+output wire [0 : 0] m_axis_tuser;
 
   fifo_generator_v13_2_2 #(
     .C_COMMON_CLOCK(1),
@@ -197,7 +203,7 @@ output wire m_axis_tlast;
     .C_HAS_AXIS_TDATA(1),
     .C_HAS_AXIS_TID(0),
     .C_HAS_AXIS_TDEST(0),
-    .C_HAS_AXIS_TUSER(0),
+    .C_HAS_AXIS_TUSER(1),
     .C_HAS_AXIS_TREADY(1),
     .C_HAS_AXIS_TLAST(1),
     .C_HAS_AXIS_TSTRB(0),
@@ -249,7 +255,7 @@ output wire m_axis_tlast;
     .C_DIN_WIDTH_WRCH(2),
     .C_DIN_WIDTH_RACH(32),
     .C_DIN_WIDTH_RDCH(64),
-    .C_DIN_WIDTH_AXIS(37),
+    .C_DIN_WIDTH_AXIS(38),
     .C_WR_DEPTH_WACH(16),
     .C_WR_DEPTH_WDCH(1024),
     .C_WR_DEPTH_WRCH(16),
@@ -448,7 +454,7 @@ output wire m_axis_tlast;
     .s_axis_tlast(s_axis_tlast),
     .s_axis_tid(1'B0),
     .s_axis_tdest(1'B0),
-    .s_axis_tuser(1'B0),
+    .s_axis_tuser(s_axis_tuser),
     .m_axis_tvalid(m_axis_tvalid),
     .m_axis_tready(m_axis_tready),
     .m_axis_tdata(m_axis_tdata),
@@ -457,7 +463,7 @@ output wire m_axis_tlast;
     .m_axis_tlast(m_axis_tlast),
     .m_axis_tid(),
     .m_axis_tdest(),
-    .m_axis_tuser(),
+    .m_axis_tuser(m_axis_tuser),
     .axi_aw_injectsbiterr(1'D0),
     .axi_aw_injectdbiterr(1'D0),
     .axi_aw_prog_full_thresh(4'B0),
