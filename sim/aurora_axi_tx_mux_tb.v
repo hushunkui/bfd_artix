@@ -23,6 +23,7 @@ wire [31:0] axis_tdata [ETHCOUNT-1:0];
 wire [3:0]  axis_tkeep [ETHCOUNT-1:0];
 wire [ETHCOUNT-1:0] axis_tvalid;
 wire [ETHCOUNT-1:0] axis_tlast ;
+wire [ETHCOUNT-1:0] axis_tuser ;
 
 localparam MACCOUNT = 1;
 reg [7:0] mac_rx_data [MACCOUNT-1:0];
@@ -201,6 +202,7 @@ generate
             .axis_tkeep (axis_tkeep [a]), //output [3:0]
             .axis_tvalid(axis_tvalid[a]), //output
             .axis_tlast (axis_tlast [a]), //output
+            .axis_tuser (axis_tuser [a]), //output
 
             .mac_rx_data (mac_rx_data[0] ), //input [7:0]
             .mac_rx_valid(mac_rx_valid[0]), //input
@@ -218,14 +220,15 @@ aurora_axi_tx_mux #(
     .ETHCOUNT(4),
     .SIM(SIM)
 ) aurora0_axi_tx_mux (
-    .sel(0), //input [1:0]
-    .eth_mask(4'b0010),
+    .trunc(0), //input [1:0]
+    .eth_mask(4'hE),
 
     .axis_s_tready(axis_tready), //output [ETHCOUNT-1:0]
     .axis_s_tdata ({axis_tdata[3],axis_tdata[2],axis_tdata[1],axis_tdata[0]}), //input  [(ETHCOUNT*32)-1:0]
     .axis_s_tkeep ({axis_tkeep[3],axis_tkeep[2],axis_tkeep[1],axis_tkeep[0]}), //input  [(ETHCOUNT*4-1):0]
-    .axis_s_tvalid({axis_tvalid[3],axis_tvalid[2],1'b0,axis_tvalid[0]}), //input  [ETHCOUNT-1:0]
-    .axis_s_tlast ({axis_tlast[3],axis_tlast[2],1'b0,axis_tlast[0]}), //input  [ETHCOUNT-1:0]
+    .axis_s_tvalid({axis_tvalid[3],axis_tvalid[2],axis_tvalid[1],axis_tvalid[0]}), //input  [ETHCOUNT-1:0]
+    .axis_s_tlast ({axis_tlast[3],axis_tlast[2],axis_tlast[1],axis_tlast[0]}), //input  [ETHCOUNT-1:0]
+    .axis_s_tuser ({axis_tuser[3],axis_tuser[2],axis_tuser[1],axis_tuser[0]}), //input  [ETHCOUNT-1:0]
 
     .axis_m_tready(axis_m_tready), //input
     .axis_m_tdata (axis_m_tdata ), //output reg [31:0]
